@@ -99,7 +99,7 @@ export function BookDetails({ updateBook, addJournal }: BookDetailsProps) {
 
       // Refresh book data after editing
       try {
-        const bookResponse = await fetch(`/api/books/${id}`)
+        const bookResponse = await fetch(`/books/${id}`)
         if (bookResponse.ok) {
           const bookData = await bookResponse.json()
           setBook(bookData)
@@ -110,22 +110,15 @@ export function BookDetails({ updateBook, addJournal }: BookDetailsProps) {
       }
     }
   }
-  const handleAddJournal = (content: string) => {
-    if (!book || !id) return
 
-    const journal = {
-      book_id: book.id,
-      title: `Entry for ${book.title}`,
-      content,
-      date: new Date().toISOString(),
-    }
-    addJournal(journal)
+  const handleAddJournal = async () => {
+    // Close the form
     setIsAddingJournal(false)
 
     // Refresh journals after adding
-    const fetchJournals = async () => {
+    if (id) {
       try {
-        const journalsResponse = await fetch(`/api/books/${id}/journals`)
+        const journalsResponse = await fetch(`/books/${id}/journals`)
         if (journalsResponse.ok) {
           const journalsData = await journalsResponse.json()
           setBookJournals(journalsData)
@@ -134,8 +127,8 @@ export function BookDetails({ updateBook, addJournal }: BookDetailsProps) {
         console.error('Failed to refresh journals:', err)
       }
     }
-    fetchJournals()
   }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
@@ -307,6 +300,7 @@ export function BookDetails({ updateBook, addJournal }: BookDetailsProps) {
         </div>
         {isAddingJournal ? (
           <AddJournalForm
+            bookId={book.id}
             onSubmit={handleAddJournal}
             onCancel={() => setIsAddingJournal(false)}
           />
