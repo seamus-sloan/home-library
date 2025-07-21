@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, cover_image, title, author, genre, rating FROM books WHERE id = ?",
+  "query": "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
   "describe": {
     "columns": [
       {
@@ -32,6 +32,16 @@
         "name": "rating",
         "ordinal": 5,
         "type_info": "Float"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 7,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -43,8 +53,10 @@
       false,
       false,
       false,
-      false
+      true,
+      true,
+      true
     ]
   },
-  "hash": "bc37665a955b57c877c05d4cab7bc0e759cdc503435e8a577deb8a0cf8f34988"
+  "hash": "306e2b7b7b339cea7e530eaca575b09ca74f3472dc442cbd1f17d630a49e5929"
 }

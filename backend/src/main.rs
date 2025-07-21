@@ -17,6 +17,8 @@ struct Book {
     author: String,
     genre: String,
     rating: Option<f64>,
+    created_at: Option<String>,
+    updated_at: Option<String>,
 }
 
 #[derive(serde_derive::Serialize)]
@@ -25,7 +27,8 @@ struct JournalEntry {
     book_id: i64,
     title: String,
     content: String,
-    date: String,
+    created_at: Option<String>,
+    updated_at: Option<String>,
 }
 
 #[tokio::main]

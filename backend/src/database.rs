@@ -1,4 +1,4 @@
-use sqlx::{Executor, Pool, Sqlite};
+use sqlx::{Pool, Sqlite};
 use tracing::{debug, info, warn};
 
 // Import the structs from main.rs
@@ -15,51 +15,14 @@ pub async fn init_db() -> Pool<Sqlite> {
     let pool = sqlx::sqlite::SqlitePool::connect_with(opt).await.unwrap();
     info!("Successfully connected to SQLite database");
 
-    debug!("Creating database tables if they don't exist");
-    create_tables(&pool).await;
-    info!("Database tables verified/created successfully");
+    debug!("Running database migrations");
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("Failed to run migrations");
+    info!("Database migrations completed successfully");
 
     pool
-}
-
-async fn create_tables(pool: &Pool<Sqlite>) {
-    debug!("Creating books table");
-    // Books table
-    pool.execute(
-        "
-        CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cover_image TEXT,
-            title TEXT NOT NULL,
-            author TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            rating REAL DEFAULT NULL
-        )
-        ",
-    )
-    .await
-    .unwrap();
-    debug!("Books table created/verified");
-
-    debug!("Creating journal_entries table");
-    // Journal entries table
-    pool.execute(
-        "
-        CREATE TABLE IF NOT EXISTS journal_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            book_id INTEGER NOT NULL,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL,
-            date TEXT NOT NULL,
-            FOREIGN KEY (book_id) REFERENCES books (id)
-        )
-        ",
-    )
-    .await
-    .unwrap();
-    debug!("Journal entries table created/verified");
-
-    info!("All database tables successfully created/verified");
 }
 
 // Database operations
@@ -99,7 +62,7 @@ pub async fn get_all_books(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error
 
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, cover_image, title, author, genre, rating FROM books"
+        "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
     )
     .fetch_all(pool)
     .await?;
@@ -122,7 +85,7 @@ pub async fn get_book_by_id(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Book>
 
     let book = sqlx::query_as!(
         Book,
-        "SELECT id, cover_image, title, author, genre, rating FROM books WHERE id = ?",
+        "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -149,7 +112,7 @@ pub async fn get_all_journals(pool: &Pool<Sqlite>) -> Result<Vec<JournalEntry>, 
 
     let journals = sqlx::query_as!(
         JournalEntry,
-        "SELECT id, book_id, title, content, date FROM journal_entries"
+        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries"
     )
     .fetch_all(pool)
     .await?;
@@ -178,7 +141,7 @@ pub async fn get_journals_by_book_id(
 
     let journals = sqlx::query_as!(
         JournalEntry,
-        "SELECT id, book_id, title, content, date FROM journal_entries WHERE book_id = ?",
+        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries WHERE book_id = ?",
         book_id
     )
     .fetch_all(pool)
