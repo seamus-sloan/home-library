@@ -62,6 +62,7 @@ async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/books", post(create_book))
         .route("/books", get(get_books))
         .route("/books/{id}", get(get_single_book))
+        .route("/books/{id}/journals", get(get_book_journals))
         .route("/journals", get(get_journals))
         .route("/journals/{id}", get(get_single_journal))
         .with_state(pool)
@@ -124,6 +125,25 @@ async fn get_single_book(
         Err(e) => {
             error!("Failed to fetch book by ID {}: {}", id, e);
             Json(None)
+        }
+    }
+}
+
+async fn get_book_journals(
+    State(pool): State<Pool<Sqlite>>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> Json<Vec<JournalEntry>> {
+    debug!("Fetching journals for book with ID: {}", id);
+
+    match database::get_journals_by_book_id(&pool, id).await {
+        Ok(journals) => {
+            info!("Found {} journals for book ID {}", journals.len(), id);
+            Json(journals)
+        }
+        Err(e) => {
+            error!("Failed to fetch journals for book ID {}: {}", id, e);
+            warn!("Returning empty journal list due to database error");
+            Json(vec![])
         }
     }
 }
