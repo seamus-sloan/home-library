@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, info, warn};
 
@@ -105,6 +106,41 @@ pub async fn get_book_by_id(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Book>
     }
 
     Ok(book)
+}
+
+pub async fn create_journal_entry(
+    pool: &Pool<Sqlite>,
+    mut journal: JournalEntry,
+) -> Result<JournalEntry, sqlx::Error> {
+    debug!(
+        "Creating new journal entry for book ID: {}",
+        journal.book_id
+    );
+    debug!(
+        "Journal details - Title: '{}', Content: '{}'",
+        journal.title, journal.content
+    );
+
+    let result = sqlx::query!(
+        "INSERT INTO journal_entries (book_id, title, content) VALUES (?, ?, ?)",
+        journal.book_id,
+        journal.title,
+        journal.content
+    )
+    .execute(pool)
+    .await?;
+
+    journal.id = result.last_insert_rowid();
+    info!(
+        "Successfully created journal entry '{}' with ID: {}",
+        journal.title, journal.id
+    );
+    debug!(
+        "New journal entry record: ID={}, Book ID={}, Title='{}'",
+        journal.id, journal.book_id, journal.title
+    );
+
+    Ok(journal)
 }
 
 pub async fn get_all_journals(pool: &Pool<Sqlite>) -> Result<Vec<JournalEntry>, sqlx::Error> {

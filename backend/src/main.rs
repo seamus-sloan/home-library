@@ -21,9 +21,11 @@ struct Book {
     updated_at: Option<String>,
 }
 
-#[derive(serde_derive::Serialize)]
+#[derive(serde_derive::Serialize, serde_derive::Deserialize, Debug)]
 struct JournalEntry {
+    #[serde(skip_deserializing)]
     id: i64,
+    #[serde(skip_deserializing)]
     book_id: i64,
     title: String,
     content: String,
@@ -63,6 +65,7 @@ async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/books", get(get_books))
         .route("/books/{id}", get(get_single_book))
         .route("/books/{id}/journals", get(get_book_journals))
+        .route("/books/{id}/journals", post(create_book_journal_entry))
         .route("/journals", get(get_journals))
         .route("/journals/{id}", get(get_single_journal))
         .with_state(pool)
@@ -144,6 +147,36 @@ async fn get_book_journals(
             error!("Failed to fetch journals for book ID {}: {}", id, e);
             warn!("Returning empty journal list due to database error");
             Json(vec![])
+        }
+    }
+}
+
+async fn create_book_journal_entry(
+    State(pool): State<Pool<Sqlite>>,
+    axum::extract::Path(book_id): axum::extract::Path<i64>,
+    Json(mut journal): Json<JournalEntry>,
+) -> Json<JournalEntry> {
+    debug!("Creating journal for book ID: {}", book_id);
+
+    // Set the book_id from the path parameter
+    journal.book_id = book_id;
+
+    info!(
+        "Journal details - Title: '{}', Content: '{}'",
+        journal.title, journal.content
+    );
+
+    match database::create_journal_entry(&pool, journal).await {
+        Ok(created_journal) => {
+            info!(
+                "Successfully created journal with ID: {}",
+                created_journal.id
+            );
+            Json(created_journal)
+        }
+        Err(e) => {
+            error!("Failed to create journal: {}", e);
+            panic!("Failed to create journal")
         }
     }
 }
