@@ -42,6 +42,11 @@ export function App() {
     }
     setJournals([...journals, newJournal])
   }
+
+  const updateBook = async (book: Book) => {
+    // TODO: Implement API call to update book in backend
+    console.log('Update book:', book)
+  }
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-900 text-gray-100">
@@ -67,7 +72,7 @@ export function App() {
             <Route
               path="/book/:id"
               element={
-                <BookDetails journals={journals} addJournal={addJournal} />
+                <BookDetails updateBook={updateBook} addJournal={addJournal} />
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
