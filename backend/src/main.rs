@@ -61,9 +61,9 @@ async fn app(pool: Pool<Sqlite>) -> Router {
     Router::new()
         .route("/books", post(create_book))
         .route("/books", get(get_books))
-        .route("/books/{id}", get(get_books))
+        .route("/books/{id}", get(get_single_book))
         .route("/journals", get(get_journals))
-        .route("/journals/{id}", get(get_journals))
+        .route("/journals/{id}", get(get_single_journal))
         .with_state(pool)
 }
 
@@ -106,6 +106,28 @@ async fn get_books(State(pool): State<Pool<Sqlite>>) -> Json<Vec<Book>> {
     }
 }
 
+async fn get_single_book(
+    State(pool): State<Pool<Sqlite>>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> Json<Option<Book>> {
+    debug!("Fetching book with ID: {}", id);
+
+    match database::get_book_by_id(&pool, id).await {
+        Ok(Some(book)) => {
+            info!("Found book with ID {}: '{}'", id, book.title);
+            Json(Some(book))
+        }
+        Ok(None) => {
+            warn!("No book found with ID: {}", id);
+            Json(None)
+        }
+        Err(e) => {
+            error!("Failed to fetch book by ID {}: {}", id, e);
+            Json(None)
+        }
+    }
+}
+
 async fn get_journals(State(pool): State<Pool<Sqlite>>) -> Json<Vec<JournalEntry>> {
     debug!("Fetching all journal entries from database");
 
@@ -122,6 +144,28 @@ async fn get_journals(State(pool): State<Pool<Sqlite>>) -> Json<Vec<JournalEntry
             error!("Failed to fetch journal entries: {}", e);
             warn!("Returning empty journal list due to database error");
             Json(vec![])
+        }
+    }
+}
+
+async fn get_single_journal(
+    State(pool): State<Pool<Sqlite>>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> Json<Option<JournalEntry>> {
+    debug!("Fetching journal entry with ID: {}", id);
+
+    match database::get_journal_by_id(&pool, id).await {
+        Ok(Some(journal)) => {
+            info!("Found journal entry with ID {}: '{}'", id, journal.title);
+            Json(Some(journal))
+        }
+        Ok(None) => {
+            warn!("No journal entry found with ID: {}", id);
+            Json(None)
+        }
+        Err(e) => {
+            error!("Failed to fetch journal entry by ID {}: {}", id, e);
+            Json(None)
         }
     }
 }

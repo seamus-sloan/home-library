@@ -130,6 +130,32 @@ pub async fn get_all_journals(pool: &Pool<Sqlite>) -> Result<Vec<JournalEntry>, 
     Ok(journals)
 }
 
+pub async fn get_journal_by_id(
+    pool: &Pool<Sqlite>,
+    id: i64,
+) -> Result<Option<JournalEntry>, sqlx::Error> {
+    debug!("Querying database for journal entry with ID: {}", id);
+
+    let journal = sqlx::query_as!(
+        JournalEntry,
+        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries WHERE id = ?",
+        id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    match &journal {
+        Some(j) => {
+            info!("Found journal entry with ID {}: '{}'", id, j.title);
+        }
+        None => {
+            warn!("No journal entry found with ID: {}", id);
+        }
+    }
+
+    Ok(journal)
+}
+
 pub async fn get_journals_by_book_id(
     pool: &Pool<Sqlite>,
     book_id: i64,
