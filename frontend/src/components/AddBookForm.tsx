@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
 import { ArrowLeftIcon } from 'lucide-react'
+import React, { useState } from 'react'
 interface AddBookFormProps {
   onSubmit: (book: {
     title: string
@@ -20,6 +20,8 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     title: '',
     author: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -36,7 +38,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
       })
     }
   }
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // Validate form
     const newErrors = {
@@ -44,9 +46,43 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
       author: formData.author ? '' : 'Author is required',
     }
     setErrors(newErrors)
-    // If no errors, submit the form
-    if (!newErrors.title && !newErrors.author) {
-      onSubmit(formData)
+
+    // Do not submit if there are any errors
+    if (newErrors.title || newErrors.author) {
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const response = await fetch('/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          author: formData.author,
+          genre: formData.genre,
+          cover_image: formData.cover_image,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to add book')
+      }
+
+      const newBook = await response.json()
+      onSubmit(newBook)
+
+    } catch (error) {
+      console.error('Error adding book:', error)
+      setErrors({
+        title: '',
+        author: error instanceof Error ? error.message : 'Failed to save book',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
   return (
