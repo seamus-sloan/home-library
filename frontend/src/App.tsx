@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { AddBookForm } from './components/AddBookForm'
 import { BookDetails } from './components/BookDetails'
 import { BookList } from './components/BookList'
 import { Header } from './components/Header'
+import { LoginPage } from './components/LoginPage'
+import { UserProvider, useUser } from './contexts/UserContext'
 import type { Book, JournalEntry } from './types'
 
-export function App() {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useUser()
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login')
+    }
+  }, [currentUser, navigate])
+  return currentUser ? <>{children}</> : null
+}
+
+function AppContent() {
   const [journals, setJournals] = useState<JournalEntry[]>([])
   const [isAddingBook, setIsAddingBook] = useState(false)
 
@@ -35,37 +48,52 @@ export function App() {
   }
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-900 text-gray-100">
-        <Header onAddClick={() => setIsAddingBook(true)} />
-        <main className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                isAddingBook ? (
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <Header onAddClick={() => setIsAddingBook(true)} />
+      <main className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              isAddingBook ? (
+                <ProtectedRoute>
                   <AddBookForm
                     onSubmit={() => {
                       setIsAddingBook(false)
-                      // BookList will refetch data automatically
                     }}
                     onCancel={() => setIsAddingBook(false)}
                   />
-                ) : (
+                </ProtectedRoute>
+              ) : (
+                <ProtectedRoute>
                   <BookList />
-                )
-              }
-            />
-            <Route
-              path="/book/:id"
-              element={
+                </ProtectedRoute>
+              )
+            }
+          />
+          <Route
+            path="/book/:id"
+            element={
+              <ProtectedRoute>
                 <BookDetails updateBook={updateBook} addJournal={addJournal} />
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+
+  )
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </BrowserRouter>
   )
 }

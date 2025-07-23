@@ -1,0 +1,51 @@
+import React, { createContext, useContext, useEffect, useState } from 'react'
+export interface User {
+  id: string
+  name: string
+  avatarColor: string
+}
+interface UserContextType {
+  currentUser: User | null
+  setCurrentUser: (user: User | null) => void
+  logout: () => void
+}
+const UserContext = createContext<UserContextType>({
+  currentUser: null,
+  setCurrentUser: () => {},
+  logout: () => {},
+})
+export const useUser = () => useContext(UserContext)
+export const UserProvider: React.FC<{
+  children: React.ReactNode
+}> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  // Load user from localStorage on initial render
+  useEffect(() => {
+    const savedUser = localStorage.getItem('currentUser')
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser))
+    }
+  }, [])
+  // Save user to localStorage whenever it changes
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser))
+    } else {
+      localStorage.removeItem('currentUser')
+    }
+  }, [currentUser])
+  const logout = () => {
+    setCurrentUser(null)
+  }
+  return (
+    <UserContext.Provider
+      value={{
+        currentUser,
+        setCurrentUser,
+        logout,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  )
+}

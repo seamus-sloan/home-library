@@ -1,6 +1,7 @@
 import { BookIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type JournalEntry } from '../types'
+import { UserAvatar } from './UserAvatar'
 
 interface JournalListProps {
   bookId: number
@@ -61,13 +62,42 @@ export function JournalList({ bookId }: JournalListProps) {
           minute: '2-digit',
           hour12: true,
         })
+        // return (
+        //   <div
+        //     key={journal.id}
+        //     className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
+        //   >           
+        //     <div className="text-gray-400 text-sm mb-2">{formattedDate}</div>
+        //     <p className="text-gray-200 whitespace-pre-wrap">
+        //       {journal.content}
+        //     </p>
+        //   </div>
+        // )
         return (
           <div
             key={journal.id}
             className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
           >
-            <div className="text-gray-400 text-sm mb-2">{formattedDate}</div>
-            <p className="text-gray-200 whitespace-pre-wrap">
+            <div className="flex items-center gap-3 mb-3">
+              {journal.userId && (
+                <UserAvatar
+                  user={{
+                    id: journal.userId,
+                    name: "TestName",
+                    avatarColor: "bg-purple-500",
+                  }}
+                  size="sm"
+                />
+              )}
+              <div>
+                <div className="text-sm font-medium text-gray-200">
+                  Anonymous
+                  {/* {journal.userName || 'Anonymous'} */}
+                </div>
+                <div className="text-xs text-gray-400">{formattedDate}</div>
+              </div>
+            </div>
+            <p className="text-gray-200 whitespace-pre-wrap pl-11">
               {journal.content}
             </p>
           </div>
