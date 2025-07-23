@@ -6,7 +6,7 @@ use tracing::{debug, info, warn};
 use url::form_urlencoded;
 
 // Import the structs from main.rs
-use crate::{Book, JournalEntry};
+use crate::{Book, JournalEntry, User};
 
 #[derive(Deserialize)]
 struct CoverResponse {
@@ -36,6 +36,29 @@ pub async fn init_db() -> Pool<Sqlite> {
     info!("Database migrations completed successfully");
 
     pool
+}
+
+pub async fn get_all_users(pool: &Pool<Sqlite>) -> Result<Vec<User>, sqlx::Error> {
+    debug!("Querying database for all users");
+
+    let users = sqlx::query_as!(
+        User,
+        "SELECT id, name, avatar_color, created_at, updated_at, last_login FROM users"
+    )
+    .fetch_all(pool)
+    .await?;
+
+    info!("Retrieved {} users from database", users.len());
+    if users.is_empty() {
+        debug!("No users found in database");
+    } else {
+        debug!(
+            "User names: {:?}",
+            users.iter().map(|u| &u.name).collect::<Vec<_>>()
+        );
+    }
+
+    Ok(users)
 }
 
 // Database operations

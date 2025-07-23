@@ -34,6 +34,16 @@ struct JournalEntry {
     updated_at: Option<String>,
 }
 
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+struct User {
+    id: i64,
+    name: String,
+    avatar_color: String,
+    created_at: Option<String>,
+    updated_at: Option<String>,
+    last_login: Option<String>,
+}
+
 #[tokio::main]
 async fn main() {
     // Initialize tracing subscriber for logging
@@ -62,6 +72,7 @@ async fn main() {
 async fn app(pool: Pool<Sqlite>) -> Router {
     debug!("Creating router with routes");
     Router::new()
+        .route("/users", get(get_users))
         .route("/books", post(create_book))
         .route("/books", get(get_books))
         .route("/books/{id}", get(get_single_book))
@@ -70,6 +81,22 @@ async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/journals", get(get_journals))
         .route("/journals/{id}", get(get_single_journal))
         .with_state(pool)
+}
+
+async fn get_users(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<User>>, StatusCode> {
+    debug!("Fetching all users from database");
+
+    match database::get_all_users(&pool).await {
+        Ok(users) => {
+            info!("Successfully retrieved {} users", users.len());
+            Ok(Json(users))
+        }
+        Err(e) => {
+            error!("Failed to fetch users: {}", e);
+            warn!("Returning empty user list due to database error");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 async fn create_book(
