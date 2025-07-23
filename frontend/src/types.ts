@@ -8,7 +8,7 @@ export interface Book {
 }
 
 export interface JournalEntry {
-  userId: any
+  userId: number | null
   id: number 
   book_id: number
   title: string

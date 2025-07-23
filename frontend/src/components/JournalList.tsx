@@ -14,7 +14,7 @@ export function JournalList({ bookId }: JournalListProps) {
   const [journals, setJournals] = useState<JournalEntry[]>([])
 
   useEffect(() => {
-    const fetchBookJournals = async() => {
+    const fetchBookJournals = async () => {
       try {
         setLoading(true)
         setError(null)
@@ -28,7 +28,7 @@ export function JournalList({ bookId }: JournalListProps) {
         const journalsData = await response.json()
         setJournals(journalsData)
 
-      } catch(error) {
+      } catch (error) {
         console.error('Failed to fetch journals:', error)
         setError(error instanceof Error ? error.message : 'Unknown error')
       } finally {
