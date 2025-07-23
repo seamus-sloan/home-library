@@ -9,7 +9,7 @@ interface BookDetailsProps {
   updateBook: (book: Book) => void
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
-export function BookDetails({ updateBook, addJournal }: BookDetailsProps) {
+export function BookDetails({ updateBook }: BookDetailsProps) {
   const { id } = useParams<{
     id: string
   }>()

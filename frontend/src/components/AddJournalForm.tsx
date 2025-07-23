@@ -14,7 +14,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     title: '',
     content: '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setIsSubmitting] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>

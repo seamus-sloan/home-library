@@ -20,7 +20,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     title: '',
     author: '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setIsSubmitting] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
