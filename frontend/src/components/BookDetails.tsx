@@ -16,7 +16,6 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
   const navigate = useNavigate()
 
   const [book, setBook] = useState<Book | null>(null)
-  const [bookJournals, setBookJournals] = useState<JournalEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -39,14 +38,6 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
         const bookData = await bookResponse.json()
         setBook(bookData)
         setEditFormData(bookData)
-
-        // Fetch book journals
-        const journalsResponse = await fetch(`/books/${id}/journals`)
-        if (!journalsResponse.ok) {
-          throw new Error('Failed to fetch journals')
-        }
-        const journalsData = await journalsResponse.json()
-        setBookJournals(journalsData)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -114,19 +105,6 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
   const handleAddJournal = async () => {
     // Close the form
     setIsAddingJournal(false)
-
-    // Refresh journals after adding
-    if (id) {
-      try {
-        const journalsResponse = await fetch(`/books/${id}/journals`)
-        if (journalsResponse.ok) {
-          const journalsData = await journalsResponse.json()
-          setBookJournals(journalsData)
-        }
-      } catch (err) {
-        console.error('Failed to refresh journals:', err)
-      }
-    }
   }
 
   return (
