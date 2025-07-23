@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries",
+  "query": "SELECT id, book_id, user_id, title, content, created_at, updated_at FROM journal_entries WHERE book_id = ?",
   "describe": {
     "columns": [
       {
@@ -14,30 +14,36 @@
         "type_info": "Integer"
       },
       {
-        "name": "title",
+        "name": "user_id",
         "ordinal": 2,
-        "type_info": "Text"
+        "type_info": "Integer"
       },
       {
-        "name": "content",
+        "name": "title",
         "ordinal": 3,
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "content",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 6,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
+      false,
       false,
       false,
       false,
@@ -46,5 +52,5 @@
       true
     ]
   },
-  "hash": "865a9a0fa15db0b3defb551a3982bc871b92ff828f423e7610deadfaf023134a"
+  "hash": "93a85ce0f41296b45f8dad9edb89e90c9ec821eac3ddf0b9cae040f04551e57f"
 }

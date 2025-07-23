@@ -83,14 +83,18 @@ pub async fn select_user(pool: &Pool<Sqlite>, user_id: i64) -> Result<User, sqlx
 
 // Database operations
 pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
-    debug!("Attempting to create book: '{}'", book.title);
+    debug!(
+        "Attempting to create book: '{}' for user: {}",
+        book.title, book.user_id
+    );
     debug!(
         "Book details - Author: '{}', Genre: '{}', Rating: {:?}",
         book.author, book.genre, book.rating
     );
 
     let result = sqlx::query!(
-        "INSERT INTO books (cover_image, title, author, genre, rating) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO books (user_id, cover_image, title, author, genre, rating) VALUES (?, ?, ?, ?, ?, ?)",
+        book.user_id,
         book.cover_image,
         book.title,
         book.author,
@@ -102,12 +106,12 @@ pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sq
 
     book.id = result.last_insert_rowid();
     info!(
-        "Successfully created book '{}' with ID: {}",
-        book.title, book.id
+        "Successfully created book '{}' with ID: {} for user: {}",
+        book.title, book.id, book.user_id
     );
     debug!(
-        "New book record: ID={}, Title='{}', Author='{}'",
-        book.id, book.title, book.author
+        "New book record: ID={}, User ID={}, Title='{}', Author='{}'",
+        book.id, book.user_id, book.title, book.author
     );
 
     Ok(book)
@@ -175,7 +179,7 @@ pub async fn get_all_books(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error
 
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
     )
     .fetch_all(pool)
     .await?;
@@ -198,7 +202,7 @@ pub async fn get_book_by_id(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Book>
 
     let book = sqlx::query_as!(
         Book,
-        "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -225,8 +229,8 @@ pub async fn create_journal_entry(
     mut journal: JournalEntry,
 ) -> Result<JournalEntry, sqlx::Error> {
     debug!(
-        "Creating new journal entry for book ID: {}",
-        journal.book_id
+        "Creating new journal entry for book ID: {} by user ID: {}",
+        journal.book_id, journal.user_id
     );
     debug!(
         "Journal details - Title: '{}', Content: '{}'",
@@ -234,8 +238,9 @@ pub async fn create_journal_entry(
     );
 
     let result = sqlx::query!(
-        "INSERT INTO journal_entries (book_id, title, content) VALUES (?, ?, ?)",
+        "INSERT INTO journal_entries (book_id, user_id, title, content) VALUES (?, ?, ?, ?)",
         journal.book_id,
+        journal.user_id,
         journal.title,
         journal.content
     )
@@ -244,12 +249,12 @@ pub async fn create_journal_entry(
 
     journal.id = result.last_insert_rowid();
     info!(
-        "Successfully created journal entry '{}' with ID: {}",
-        journal.title, journal.id
+        "Successfully created journal entry '{}' with ID: {} for user: {}",
+        journal.title, journal.id, journal.user_id
     );
     debug!(
-        "New journal entry record: ID={}, Book ID={}, Title='{}'",
-        journal.id, journal.book_id, journal.title
+        "New journal entry record: ID={}, Book ID={}, User ID={}, Title='{}'",
+        journal.id, journal.book_id, journal.user_id, journal.title
     );
 
     Ok(journal)
@@ -260,7 +265,7 @@ pub async fn get_all_journals(pool: &Pool<Sqlite>) -> Result<Vec<JournalEntry>, 
 
     let journals = sqlx::query_as!(
         JournalEntry,
-        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries"
+        "SELECT id, book_id, user_id, title, content, created_at, updated_at FROM journal_entries"
     )
     .fetch_all(pool)
     .await?;
@@ -286,7 +291,7 @@ pub async fn get_journal_by_id(
 
     let journal = sqlx::query_as!(
         JournalEntry,
-        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries WHERE id = ?",
+        "SELECT id, book_id, user_id, title, content, created_at, updated_at FROM journal_entries WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -315,7 +320,7 @@ pub async fn get_journals_by_book_id(
 
     let journals = sqlx::query_as!(
         JournalEntry,
-        "SELECT id, book_id, title, content, created_at, updated_at FROM journal_entries WHERE book_id = ?",
+        "SELECT id, book_id, user_id, title, content, created_at, updated_at FROM journal_entries WHERE book_id = ?",
         book_id
     )
     .fetch_all(pool)

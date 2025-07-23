@@ -1,4 +1,5 @@
 use axum::extract::State;
+use axum::http::HeaderMap;
 use axum::{
     Json, Router,
     routing::{get, post},
@@ -13,6 +14,8 @@ mod database;
 struct Book {
     #[serde(skip_deserializing)]
     id: i64,
+    #[serde(skip_deserializing)]
+    user_id: i64,
     cover_image: Option<String>,
     title: String,
     author: String,
@@ -28,6 +31,8 @@ struct JournalEntry {
     id: i64,
     #[serde(skip_deserializing)]
     book_id: i64,
+    #[serde(skip_deserializing)]
+    user_id: i64,
     title: String,
     content: String,
     created_at: Option<String>,
@@ -125,7 +130,8 @@ async fn select_user(
 
 async fn create_book(
     State(pool): State<Pool<Sqlite>>,
-    Json(book): Json<Book>,
+    headers: HeaderMap,
+    Json(mut book): Json<Book>,
 ) -> Result<Json<Book>, StatusCode> {
     if book.title.trim().is_empty() {
         return Err(StatusCode::BAD_REQUEST);
@@ -134,7 +140,31 @@ async fn create_book(
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    info!("Creating new book: {}", book.title);
+    // Extract user_id from headers
+    let user_id = match headers.get("currentUserId") {
+        Some(header_value) => match header_value.to_str() {
+            Ok(id_str) => match id_str.parse::<i64>() {
+                Ok(id) => id,
+                Err(_) => {
+                    error!("Invalid currentUserId header format: {}", id_str);
+                    return Err(StatusCode::BAD_REQUEST);
+                }
+            },
+            Err(_) => {
+                error!("currentUserId header contains invalid UTF-8");
+                return Err(StatusCode::BAD_REQUEST);
+            }
+        },
+        None => {
+            error!("Missing currentUserId header");
+            return Err(StatusCode::BAD_REQUEST);
+        }
+    };
+
+    // Set the user_id on the book
+    book.user_id = user_id;
+
+    info!("Creating new book: {} for user: {}", book.title, user_id);
     debug!(
         "Book details - Author: {}, Genre: {}, Rating: {:?}",
         book.author, book.genre, book.rating
@@ -231,16 +261,39 @@ async fn get_book_journals(
 async fn create_book_journal_entry(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(book_id): axum::extract::Path<i64>,
+    headers: HeaderMap,
     Json(mut journal): Json<JournalEntry>,
 ) -> Result<Json<JournalEntry>, StatusCode> {
     debug!("Creating journal for book ID: {}", book_id);
 
-    // Set the book_id from the path parameter
+    // Extract user_id from headers
+    let user_id = match headers.get("currentUserId") {
+        Some(header_value) => match header_value.to_str() {
+            Ok(id_str) => match id_str.parse::<i64>() {
+                Ok(id) => id,
+                Err(_) => {
+                    error!("Invalid currentUserId header format: {}", id_str);
+                    return Err(StatusCode::BAD_REQUEST);
+                }
+            },
+            Err(_) => {
+                error!("currentUserId header contains invalid UTF-8");
+                return Err(StatusCode::BAD_REQUEST);
+            }
+        },
+        None => {
+            error!("Missing currentUserId header");
+            return Err(StatusCode::BAD_REQUEST);
+        }
+    };
+
+    // Set the book_id from the path parameter and user_id from header
     journal.book_id = book_id;
+    journal.user_id = user_id;
 
     info!(
-        "Journal details - Title: '{}', Content: '{}'",
-        journal.title, journal.content
+        "Journal details - Title: '{}', Content: '{}', User ID: {}",
+        journal.title, journal.content, user_id
     );
 
     match database::create_journal_entry(&pool, journal).await {

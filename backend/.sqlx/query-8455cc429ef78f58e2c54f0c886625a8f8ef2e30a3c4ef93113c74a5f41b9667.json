@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
+  "query": "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
   "describe": {
     "columns": [
       {
@@ -9,38 +9,43 @@
         "type_info": "Integer"
       },
       {
-        "name": "cover_image",
+        "name": "user_id",
         "ordinal": 1,
-        "type_info": "Text"
+        "type_info": "Integer"
       },
       {
-        "name": "title",
+        "name": "cover_image",
         "ordinal": 2,
         "type_info": "Text"
       },
       {
-        "name": "author",
+        "name": "title",
         "ordinal": 3,
         "type_info": "Text"
       },
       {
-        "name": "genre",
+        "name": "author",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "rating",
+        "name": "genre",
         "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 6,
         "type_info": "Float"
       },
       {
         "name": "created_at",
-        "ordinal": 6,
+        "ordinal": 7,
         "type_info": "Text"
       },
       {
         "name": "updated_at",
-        "ordinal": 7,
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
@@ -48,6 +53,7 @@
       "Right": 1
     },
     "nullable": [
+      false,
       false,
       true,
       false,
@@ -58,5 +64,5 @@
       true
     ]
   },
-  "hash": "306e2b7b7b339cea7e530eaca575b09ca74f3472dc442cbd1f17d630a49e5929"
+  "hash": "8455cc429ef78f58e2c54f0c886625a8f8ef2e30a3c4ef93113c74a5f41b9667"
 }
