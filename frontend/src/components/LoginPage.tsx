@@ -1,25 +1,61 @@
 import { BookOpenIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { type User, useUser } from '../contexts/UserContext'
+
 export function LoginPage() {
     const { setCurrentUser } = useUser()
     const navigate = useNavigate()
-    const users: User[] = [
-        {
-            id: 1,
-            name: 'Kelsey',
-            avatarColor: 'bg-purple-500',
-        },
-        {
-            id: 2,
-            name: 'Seamus',
-            avatarColor: 'bg-blue-500',
-        },
-    ]
+    const [users, setUsers] = useState<User[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('/users')
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users')
+                }
+                const data = await response.json()
+                // Map the API response to match your User type
+                const mappedUsers: User[] = data.map((user: any) => ({
+                    id: user.id,
+                    name: user.name,
+                    avatarColor: user.avatar_color
+                }))
+                setUsers(mappedUsers)
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchUsers()
+    }, [])
+
     const handleUserSelect = (user: User) => {
         setCurrentUser(user)
         navigate('/')
     }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
+                <div className="text-white text-xl">Loading users...</div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
+                <div className="text-red-400 text-xl">Error: {error}</div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
             <div className="mb-16 flex items-center">
