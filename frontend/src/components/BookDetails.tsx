@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Book, JournalEntry } from '../App'
+import type { Book, JournalEntry } from '../types'
 import { AddJournalForm } from './AddJournalForm'
 import { JournalList } from './JournalList'
 

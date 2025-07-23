@@ -1,5 +1,5 @@
-import { type Book } from '../App'
 import { BookIcon } from 'lucide-react'
+import type { Book } from '../types'
 interface BookCardProps {
   book: Book
   onClick: () => void

@@ -1,7 +1,7 @@
 import { BookOpenIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { type Book } from '../App'
+import type { Book } from '../types'
 import { BookCard } from './BookCard'
 export function BookList() {
   const navigate = useNavigate()

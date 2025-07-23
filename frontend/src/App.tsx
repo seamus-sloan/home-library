@@ -4,21 +4,8 @@ import { AddBookForm } from './components/AddBookForm'
 import { BookDetails } from './components/BookDetails'
 import { BookList } from './components/BookList'
 import { Header } from './components/Header'
-export interface Book {
-  id: number // Changed from string to number to match backend
-  title: string
-  author: string
-  genre: string
-  cover_image: string | null // Changed to allow null and match backend
-  rating: number | null // Added rating field to match backend
-}
-export interface JournalEntry {
-  id: number // Changed from string to number
-  book_id: number // Changed from bookId to book_id and number type to match backend
-  title: string
-  content: string
-  date: string
-}
+import type { Book, JournalEntry } from './types'
+
 export function App() {
   const [journals, setJournals] = useState<JournalEntry[]>([])
   const [isAddingBook, setIsAddingBook] = useState(false)
@@ -44,9 +31,9 @@ export function App() {
   }
 
   const updateBook = async (book: Book) => {
-    // TODO: Implement API call to update book in backend
     console.log('Update book:', book)
   }
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-900 text-gray-100">

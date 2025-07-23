@@ -6,3 +6,12 @@ export interface Book {
   genre: string
   rating: number
 }
+
+export interface JournalEntry {
+  id: number 
+  book_id: number
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
+}
