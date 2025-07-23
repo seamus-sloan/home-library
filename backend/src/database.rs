@@ -61,6 +61,26 @@ pub async fn get_all_users(pool: &Pool<Sqlite>) -> Result<Vec<User>, sqlx::Error
     Ok(users)
 }
 
+pub async fn select_user(pool: &Pool<Sqlite>, user_id: i64) -> Result<User, sqlx::Error> {
+    debug!("Querying database for user with ID: {}", user_id);
+
+    // Update last_login and return the updated user in one query
+    let user = sqlx::query_as!(
+        User,
+        "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ? 
+         RETURNING id, name, avatar_color, created_at, updated_at, last_login",
+        user_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    info!(
+        "Selected user with ID {}: '{}' (last_login updated)",
+        user.id, user.name
+    );
+    Ok(user)
+}
+
 // Database operations
 pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
     debug!("Attempting to create book: '{}'", book.title);

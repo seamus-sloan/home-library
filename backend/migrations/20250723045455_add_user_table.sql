@@ -10,7 +10,7 @@ CREATE TABLE users (
 
 -- Insert the default users
 INSERT INTO users (name, avatar_color) VALUES 
-    ('Seamus', 'bg-blue-500'),
+    ('Seamus', 'bg-red-900'),
     ('Kelsey', 'bg-purple-500');
 
 ALTER TABLE journal_entries

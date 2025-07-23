@@ -4,13 +4,20 @@ import { useNavigate } from 'react-router-dom'
 import { type User, useUser } from '../contexts/UserContext'
 
 export function LoginPage() {
-    const { setCurrentUser } = useUser()
+    const { currentUser, setCurrentUser } = useUser()
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        // If a user is already selected, skip to the home page
+        if (currentUser) {
+            navigate('/')
+            return
+        }
+
+        // Otherwise, display the user selection page
         const fetchUsers = async () => {
             try {
                 const response = await fetch('/users')
@@ -35,9 +42,26 @@ export function LoginPage() {
         fetchUsers()
     }, [])
 
-    const handleUserSelect = (user: User) => {
-        setCurrentUser(user)
-        navigate('/')
+    const handleUserSelect = async (user: User) => {
+        try {
+            const response = await fetch('/users/select', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: user.id }),
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to select user')
+            }
+
+            setCurrentUser(await response.json())
+            navigate('/')
+        } catch (err) {
+            console.error('Error selecting user:', err)
+            setError(err instanceof Error ? err.message : 'Failed to select user')
+        }
     }
 
     if (loading) {

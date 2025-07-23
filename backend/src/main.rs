@@ -44,6 +44,11 @@ struct User {
     last_login: Option<String>,
 }
 
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+struct SelectUser {
+    id: i64,
+}
+
 #[tokio::main]
 async fn main() {
     // Initialize tracing subscriber for logging
@@ -73,6 +78,7 @@ async fn app(pool: Pool<Sqlite>) -> Router {
     debug!("Creating router with routes");
     Router::new()
         .route("/users", get(get_users))
+        .route("/users/select", post(select_user))
         .route("/books", post(create_book))
         .route("/books", get(get_books))
         .route("/books/{id}", get(get_single_book))
@@ -94,6 +100,24 @@ async fn get_users(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<User>>, 
         Err(e) => {
             error!("Failed to fetch users: {}", e);
             warn!("Returning empty user list due to database error");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+async fn select_user(
+    State(pool): State<Pool<Sqlite>>,
+    Json(user): Json<SelectUser>,
+) -> Result<Json<User>, StatusCode> {
+    info!("Selecting user: {}", user.id);
+
+    match database::select_user(&pool, user.id).await {
+        Ok(selected_user) => {
+            info!("Successfully selected user with ID: {}", selected_user.id);
+            Ok(Json(selected_user))
+        }
+        Err(e) => {
+            error!("Failed to select user: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
