@@ -1,9 +1,11 @@
 import { BookOpenIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useUser } from '../contexts/UserContext'
 import type { Book } from '../types'
 import { BookCard } from './BookCard'
 export function BookList() {
+  const { currentUser } = useUser()
   const navigate = useNavigate()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
@@ -15,7 +17,12 @@ export function BookList() {
         setLoading(true)
         setError(null)
 
-        const response = await fetch('/books')
+        const headers: HeadersInit = {}
+        if (currentUser) {
+          headers['currentUserId'] = currentUser.id.toString()
+        }
+
+        const response = await fetch('/books', { headers })
 
         if (!response.ok) {
           throw new Error('Failed to fetch books')

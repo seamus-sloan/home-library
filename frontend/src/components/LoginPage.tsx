@@ -26,12 +26,13 @@ export function LoginPage() {
                 }
                 const data = await response.json()
                 // Map the API response to match your User type
-                const mappedUsers: User[] = data.map((user: any) => ({
+                const mappedUsers: User[] = data.map((user: User) => ({
                     id: user.id,
                     name: user.name,
-                    avatarColor: user.avatar_color
+                    avatar_color: user.avatar_color
                 }))
                 setUsers(mappedUsers)
+                console.log('Fetched users:', mappedUsers)
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'An error occurred')
             } finally {
@@ -56,7 +57,9 @@ export function LoginPage() {
                 throw new Error('Failed to select user')
             }
 
-            setCurrentUser(await response.json())
+            const selectedUser = await response.json()
+
+            setCurrentUser(selectedUser)
             navigate('/')
         } catch (err) {
             console.error('Error selecting user:', err)
@@ -95,7 +98,7 @@ export function LoginPage() {
                         className="flex flex-col items-center cursor-pointer group"
                     >
                         <div
-                            className={`w-32 h-32 ${user.avatarColor} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-white transition-all`}
+                            className={`w-32 h-32 ${user.avatar_color} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-white transition-all`}
                         >
                             {user.name.charAt(0)}
                         </div>

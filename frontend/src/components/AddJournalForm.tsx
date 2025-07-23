@@ -9,11 +9,9 @@ interface AddJournalFormProps {
 }
 export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormProps) {
   const [formData, setFormData] = useState({
-    title: '',
     content: '',
   })
   const [errors, setErrors] = useState({
-    title: '',
     content: '',
   })
   const [, setIsSubmitting] = useState(false)
@@ -40,26 +38,32 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     e.preventDefault()
     // Validate form
     const newErrors = {
-      title: formData.title ? '' : 'Journal title is required',
+      // title: formData.title ? '' : 'Journal title is required',
       content: formData.content ? '' : 'Journal entry cannot be empty',
     }
     setErrors(newErrors)
 
     // Do not submit if there are any errors
-    if (newErrors.title || newErrors.content) {
+    if (newErrors.content) {
       return
     }
 
     try {
       setIsSubmitting(true)
 
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      if (currentUser) {
+        headers['currentUserId'] = currentUser.id.toString()
+      }
+
       const response = await fetch(`/books/${bookId}/journals`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
-          title: formData.title,
+          // Removing title for now
+          title: "",
           content: formData.content,
         }),
       })
@@ -69,7 +73,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
       }
 
       setFormData({
-        title: '',
+        // title: '',
         content: '',
       })
       onSubmit()
@@ -77,7 +81,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     catch (error) {
       console.error('Error adding journal entry:', error)
       setErrors({
-        title: '',
+        // title: '',
         content: error instanceof Error ? error.message : 'Failed to save journal entry',
       })
     }
@@ -103,7 +107,8 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
         </button>
       </div>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        {/* Having a journal title seems superfluous at the moment... */}
+        {/* <div className="mb-4">
           <textarea
             name="title"
             value={formData.title}
@@ -112,7 +117,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
             placeholder="Name your journal entry..."
           />
           {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
-        </div>
+        </div> */}
         <div className="mb-4">
           <textarea
             name="content"

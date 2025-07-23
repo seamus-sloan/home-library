@@ -1,5 +1,6 @@
 import { BookIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useUser, type User } from '../contexts/UserContext'
 import { type JournalEntry } from '../types'
 import { UserAvatar } from './UserAvatar'
 
@@ -8,35 +9,65 @@ interface JournalListProps {
 }
 
 export function JournalList({ bookId }: JournalListProps) {
-
+  const { currentUser } = useUser()
   const [, setLoading] = useState(true)
   const [, setError] = useState<string | null>(null)
   const [journals, setJournals] = useState<JournalEntry[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
-    const fetchBookJournals = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await fetch(`/books/${bookId}/journals`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch journals')
+        const headers: HeadersInit = {}
+        if (currentUser) {
+          headers['currentUserId'] = currentUser.id.toString()
         }
 
-        const journalsData = await response.json()
+        // Fetch journals and users in parallel
+        const [journalsResponse, usersResponse] = await Promise.all([
+          fetch(`/books/${bookId}/journals`, { headers }),
+          fetch('/users', { headers })
+        ])
+
+        if (!journalsResponse.ok) {
+          throw new Error('Failed to fetch journals')
+        }
+        if (!usersResponse.ok) {
+          throw new Error('Failed to fetch users')
+        }
+
+        const [journalsData, usersData] = await Promise.all([
+          journalsResponse.json(),
+          usersResponse.json()
+        ])
+
+        // Map the users API response to match your User type
+        const mappedUsers: User[] = usersData.map((user: User) => ({
+          id: user.id,
+          name: user.name,
+          avatar_color: user.avatar_color
+        }))
+
         setJournals(journalsData)
+        setUsers(mappedUsers)
 
       } catch (error) {
-        console.error('Failed to fetch journals:', error)
+        console.error('Failed to fetch data:', error)
         setError(error instanceof Error ? error.message : 'Unknown error')
       } finally {
         setLoading(false)
       }
     }
-    fetchBookJournals()
-  }, []);
+    fetchData()
+  }, [bookId, currentUser]);
+
+  // Helper function to find user by ID
+  const getUserById = (userId: number): User | null => {
+    return users.find(user => user.id === userId) || null
+  }
 
   if (journals.length === 0) {
     return (
@@ -62,37 +93,24 @@ export function JournalList({ bookId }: JournalListProps) {
           minute: '2-digit',
           hour12: true,
         })
-        // return (
-        //   <div
-        //     key={journal.id}
-        //     className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
-        //   >           
-        //     <div className="text-gray-400 text-sm mb-2">{formattedDate}</div>
-        //     <p className="text-gray-200 whitespace-pre-wrap">
-        //       {journal.content}
-        //     </p>
-        //   </div>
-        // )
+
+        const journalAuthor = journal.user_id ? getUserById(journal.user_id) : null
+
         return (
           <div
             key={journal.id}
             className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
           >
             <div className="flex items-center gap-3 mb-3">
-              {journal.userId && (
+              {journalAuthor && (
                 <UserAvatar
-                  user={{
-                    id: journal.userId,
-                    name: "TestName",
-                    avatarColor: "bg-purple-500",
-                  }}
+                  user={journalAuthor}
                   size="sm"
                 />
               )}
               <div>
                 <div className="text-sm font-medium text-gray-200">
-                  Anonymous
-                  {/* {journal.userName || 'Anonymous'} */}
+                  {journalAuthor ? journalAuthor.name : 'Anonymous'}
                 </div>
                 <div className="text-xs text-gray-400">{formattedDate}</div>
               </div>

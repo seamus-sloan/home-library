@@ -1,5 +1,6 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import React, { useState } from 'react'
+import { useUser } from '../contexts/UserContext'
 interface AddBookFormProps {
   onSubmit: (book: {
     title: string
@@ -10,6 +11,7 @@ interface AddBookFormProps {
   onCancel: () => void
 }
 export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
+  const { currentUser } = useUser()
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -55,11 +57,16 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     try {
       setIsSubmitting(true)
 
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+      if (currentUser) {
+        headers['currentUserId'] = currentUser.id.toString()
+      }
+
       const response = await fetch('/books', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           title: formData.title,
           author: formData.author,

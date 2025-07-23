@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useUser } from '../contexts/UserContext'
 import type { Book, JournalEntry } from '../types'
 import { AddJournalForm } from './AddJournalForm'
 import { JournalList } from './JournalList'
@@ -10,6 +11,7 @@ interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
 export function BookDetails({ updateBook }: BookDetailsProps) {
+  const { currentUser } = useUser()
   const { id } = useParams<{
     id: string
   }>()
@@ -30,8 +32,13 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
         setLoading(true)
         setError(null)
 
+        const headers: HeadersInit = {}
+        if (currentUser) {
+          headers['currentUserId'] = currentUser.id.toString()
+        }
+
         // Fetch book details
-        const bookResponse = await fetch(`/books/${id}`)
+        const bookResponse = await fetch(`/books/${id}`, { headers })
         if (!bookResponse.ok) {
           throw new Error('Failed to fetch book')
         }
@@ -90,7 +97,12 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
 
       // Refresh book data after editing
       try {
-        const bookResponse = await fetch(`/books/${id}`)
+        const headers: HeadersInit = {}
+        if (currentUser) {
+          headers['currentUserId'] = currentUser.id.toString()
+        }
+
+        const bookResponse = await fetch(`/books/${id}`, { headers })
         if (bookResponse.ok) {
           const bookData = await bookResponse.json()
           setBook(bookData)
@@ -250,16 +262,27 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               )}
             </div>
           </div>
-          <div className="w-full md:w-2/3 bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700">
-            <h1 className="text-3xl font-bold text-white mb-2">{book.title}</h1>
-            <p className="text-xl text-gray-300 mb-4">by {book.author}</p>
-            {book.genre && (
-              <div className="mb-4">
-                <span className="inline-block bg-purple-900 text-purple-200 px-3 py-1 rounded-full">
-                  {book.genre}
-                </span>
-              </div>
-            )}
+          <div className="w-full md:w-2/3 bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 flex flex-col">
+            <div className="flex-grow">
+              <h1 className="text-3xl font-bold text-white mb-2">{book.title}</h1>
+              <p className="text-xl text-gray-300 mb-4">by {book.author}</p>
+              {book.genre && (
+                <div className="mb-4">
+                  <span className="inline-block bg-purple-900 text-purple-200 px-3 py-1 rounded-full">
+                    {book.genre}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <span className="text-gray-400 text-sm italic">
+                Added on {new Date(book.created_at || 0).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </span>
+            </div>
           </div>
         </div>
       )}
