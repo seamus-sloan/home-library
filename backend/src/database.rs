@@ -3,6 +3,7 @@ use serde::Deserialize;
 use sqlx::{Pool, Sqlite};
 use std::error::Error;
 use tracing::{debug, info, warn};
+use url::form_urlencoded;
 
 // Import the structs from main.rs
 use crate::{Book, JournalEntry};
@@ -12,14 +13,18 @@ struct CoverResponse {
     url: String,
 }
 
+const DEFAULT_COVER_PATH: &str = "path/to/default/cover.jpg";
+const DATABASE_FILE: &str = "development.db";
+const BOOK_COVER_API_URL: &str = "https://bookcover.longitood.com/bookcover";
+
 pub async fn init_db() -> Pool<Sqlite> {
     debug!("Initializing SQLite database connection");
 
     let opt = sqlx::sqlite::SqliteConnectOptions::new()
-        .filename("test.db")
+        .filename(DATABASE_FILE)
         .create_if_missing(true);
 
-    debug!("Connecting to SQLite database: test.db");
+    debug!("Connecting to SQLite database: {}", DATABASE_FILE);
     let pool = sqlx::sqlite::SqlitePool::connect_with(opt).await.unwrap();
     info!("Successfully connected to SQLite database");
 
@@ -65,19 +70,19 @@ pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sq
     Ok(book)
 }
 
-pub async fn get_default_book_cover(
+pub async fn set_default_book_cover(
     pool: &Pool<Sqlite>,
     book: &Book,
 ) -> Result<String, Box<dyn Error>> {
     debug!("Fetching default cover for book: {}", book.title);
-    const BOOK_COVER_API_URL: &str = "https://bookcover.longitood.com/bookcover";
 
     // Create the fetch query based off the book title & author name
-    let query_title = book.title.replace(" ", "+");
-    let query_author = book.author.replace(" ", "+");
+    let encoded_title = form_urlencoded::byte_serialize(book.title.as_bytes()).collect::<String>();
+    let encoded_author =
+        form_urlencoded::byte_serialize(book.author.as_bytes()).collect::<String>();
     let query = format!(
         "{}?book_title={}&author_name={}",
-        BOOK_COVER_API_URL, query_title, query_author
+        BOOK_COVER_API_URL, encoded_title, encoded_author
     );
 
     debug!("Sending request to fetch default cover: {}", query);
@@ -87,21 +92,24 @@ pub async fn get_default_book_cover(
         Ok(res) => res,
         Err(e) => {
             debug!("Request failed: {}", e);
-            return Ok("path/to/default/cover.jpg".to_string());
+            return Ok(DEFAULT_COVER_PATH.to_string());
         }
     };
 
     if !response.status().is_success() {
-        debug!("Request returned non-success status: {}", response.status());
-        debug!("Request body: {:?}", response.text().await);
-        return Ok("path/to/default/cover.jpg".to_string());
+        warn!(
+            "Cover API returned status {}: {:?}",
+            response.status(),
+            response.text().await
+        );
+        return Ok(DEFAULT_COVER_PATH.to_string());
     }
 
     let body: CoverResponse = match response.json().await {
         Ok(data) => data,
         Err(e) => {
             debug!("Failed to parse JSON: {}", e);
-            return Ok("path/to/default/cover.jpg".to_string());
+            return Ok(DEFAULT_COVER_PATH.to_string());
         }
     };
 

@@ -3,6 +3,7 @@ use axum::{
     Json, Router,
     routing::{get, post},
 };
+use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
@@ -71,7 +72,17 @@ async fn app(pool: Pool<Sqlite>) -> Router {
         .with_state(pool)
 }
 
-async fn create_book(State(pool): State<Pool<Sqlite>>, Json(book): Json<Book>) -> Json<Book> {
+async fn create_book(
+    State(pool): State<Pool<Sqlite>>,
+    Json(book): Json<Book>,
+) -> Result<Json<Book>, StatusCode> {
+    if book.title.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    if book.author.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
     info!("Creating new book: {}", book.title);
     debug!(
         "Book details - Author: {}, Genre: {}, Rating: {:?}",
@@ -82,24 +93,30 @@ async fn create_book(State(pool): State<Pool<Sqlite>>, Json(book): Json<Book>) -
         Ok(created_book) => {
             info!("Successfully created book with ID: {}", created_book.id);
 
-            if !created_book.cover_image.as_ref().unwrap().is_empty() {
-                debug!("Cover image provided. Skipping default book cover.");
-            } else {
-                debug!("No cover image provided for book");
-                database::get_default_book_cover(&pool, &created_book)
-                    .await
-                    .expect("Failed to get default book cover");
+            match &created_book.cover_image {
+                Some(cover) if !cover.is_empty() => {
+                    debug!("Cover image provided. Skipping default book cover.");
+                }
+                _ => {
+                    debug!("No cover image provided for book");
+                    if let Err(e) = database::set_default_book_cover(&pool, &created_book).await {
+                        warn!("Failed to set default book cover: {}", e);
+                        // Continue without failing the entire request
+                    }
+                }
             }
-            Json(created_book)
+
+            // Even if we fail to fetch a cover via external api, we still create a book so we return success.
+            Ok(Json(created_book))
         }
         Err(e) => {
             error!("Failed to create book: {}", e);
-            panic!("Failed to create book")
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
-async fn get_books(State(pool): State<Pool<Sqlite>>) -> Json<Vec<Book>> {
+async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book>>, StatusCode> {
     debug!("Fetching all books from database");
 
     match database::get_all_books(&pool).await {
@@ -109,12 +126,12 @@ async fn get_books(State(pool): State<Pool<Sqlite>>) -> Json<Vec<Book>> {
                 "Books retrieved: {:?}",
                 books.iter().map(|b| &b.title).collect::<Vec<_>>()
             );
-            Json(books)
+            Ok(Json(books))
         }
         Err(e) => {
             error!("Failed to fetch books: {}", e);
             warn!("Returning empty book list due to database error");
-            Json(vec![])
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
@@ -122,21 +139,21 @@ async fn get_books(State(pool): State<Pool<Sqlite>>) -> Json<Vec<Book>> {
 async fn get_single_book(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> Json<Option<Book>> {
+) -> Result<Json<Option<Book>>, StatusCode> {
     debug!("Fetching book with ID: {}", id);
 
     match database::get_book_by_id(&pool, id).await {
         Ok(Some(book)) => {
             info!("Found book with ID {}: '{}'", id, book.title);
-            Json(Some(book))
+            Ok(Json(Some(book)))
         }
         Ok(None) => {
             warn!("No book found with ID: {}", id);
-            Json(None)
+            Ok(Json(None))
         }
         Err(e) => {
             error!("Failed to fetch book by ID {}: {}", id, e);
-            Json(None)
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
@@ -144,18 +161,18 @@ async fn get_single_book(
 async fn get_book_journals(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> Json<Vec<JournalEntry>> {
+) -> Result<Json<Vec<JournalEntry>>, StatusCode> {
     debug!("Fetching journals for book with ID: {}", id);
 
     match database::get_journals_by_book_id(&pool, id).await {
         Ok(journals) => {
             info!("Found {} journals for book ID {}", journals.len(), id);
-            Json(journals)
+            Ok(Json(journals))
         }
         Err(e) => {
             error!("Failed to fetch journals for book ID {}: {}", id, e);
             warn!("Returning empty journal list due to database error");
-            Json(vec![])
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
@@ -164,7 +181,7 @@ async fn create_book_journal_entry(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(book_id): axum::extract::Path<i64>,
     Json(mut journal): Json<JournalEntry>,
-) -> Json<JournalEntry> {
+) -> Result<Json<JournalEntry>, StatusCode> {
     debug!("Creating journal for book ID: {}", book_id);
 
     // Set the book_id from the path parameter
@@ -181,16 +198,18 @@ async fn create_book_journal_entry(
                 "Successfully created journal with ID: {}",
                 created_journal.id
             );
-            Json(created_journal)
+            Ok(Json(created_journal))
         }
         Err(e) => {
             error!("Failed to create journal: {}", e);
-            panic!("Failed to create journal")
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
-async fn get_journals(State(pool): State<Pool<Sqlite>>) -> Json<Vec<JournalEntry>> {
+async fn get_journals(
+    State(pool): State<Pool<Sqlite>>,
+) -> Result<Json<Vec<JournalEntry>>, StatusCode> {
     debug!("Fetching all journal entries from database");
 
     match database::get_all_journals(&pool).await {
@@ -200,12 +219,12 @@ async fn get_journals(State(pool): State<Pool<Sqlite>>) -> Json<Vec<JournalEntry
                 "Journal entries retrieved: {:?}",
                 journals.iter().map(|j| &j.title).collect::<Vec<_>>()
             );
-            Json(journals)
+            Ok(Json(journals))
         }
         Err(e) => {
             error!("Failed to fetch journal entries: {}", e);
             warn!("Returning empty journal list due to database error");
-            Json(vec![])
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
@@ -213,21 +232,21 @@ async fn get_journals(State(pool): State<Pool<Sqlite>>) -> Json<Vec<JournalEntry
 async fn get_single_journal(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> Json<Option<JournalEntry>> {
+) -> Result<Json<Option<JournalEntry>>, StatusCode> {
     debug!("Fetching journal entry with ID: {}", id);
 
     match database::get_journal_by_id(&pool, id).await {
         Ok(Some(journal)) => {
             info!("Found journal entry with ID {}: '{}'", id, journal.title);
-            Json(Some(journal))
+            Ok(Json(Some(journal)))
         }
         Ok(None) => {
             warn!("No journal entry found with ID: {}", id);
-            Json(None)
+            Ok(Json(None))
         }
         Err(e) => {
             error!("Failed to fetch journal entry by ID {}: {}", id, e);
-            Json(None)
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
