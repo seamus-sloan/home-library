@@ -81,6 +81,15 @@ async fn create_book(State(pool): State<Pool<Sqlite>>, Json(book): Json<Book>) -
     match database::create_book(&pool, book).await {
         Ok(created_book) => {
             info!("Successfully created book with ID: {}", created_book.id);
+
+            if !created_book.cover_image.as_ref().unwrap().is_empty() {
+                debug!("Cover image provided. Skipping default book cover.");
+            } else {
+                debug!("No cover image provided for book");
+                database::get_default_book_cover(&pool, &created_book)
+                    .await
+                    .expect("Failed to get default book cover");
+            }
             Json(created_book)
         }
         Err(e) => {

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE books SET cover_image = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "15de91ebf8ac3867a3c1b3cc2c53a54603b94ae6ca8685f1f0ff21b8679d331f"
+}

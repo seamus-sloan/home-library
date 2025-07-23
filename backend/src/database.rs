@@ -1,8 +1,16 @@
+use reqwest::Client;
+use serde::Deserialize;
 use sqlx::{Pool, Sqlite};
+use std::error::Error;
 use tracing::{debug, info, warn};
 
 // Import the structs from main.rs
 use crate::{Book, JournalEntry};
+
+#[derive(Deserialize)]
+struct CoverResponse {
+    url: String,
+}
 
 pub async fn init_db() -> Pool<Sqlite> {
     debug!("Initializing SQLite database connection");
@@ -55,6 +63,60 @@ pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sq
     );
 
     Ok(book)
+}
+
+pub async fn get_default_book_cover(
+    pool: &Pool<Sqlite>,
+    book: &Book,
+) -> Result<String, Box<dyn Error>> {
+    debug!("Fetching default cover for book: {}", book.title);
+    const BOOK_COVER_API_URL: &str = "https://bookcover.longitood.com/bookcover";
+
+    // Create the fetch query based off the book title & author name
+    let query_title = book.title.replace(" ", "+");
+    let query_author = book.author.replace(" ", "+");
+    let query = format!(
+        "{}?book_title={}&author_name={}",
+        BOOK_COVER_API_URL, query_title, query_author
+    );
+
+    debug!("Sending request to fetch default cover: {}", query);
+
+    let client = Client::new();
+    let response = match client.get(&query).send().await {
+        Ok(res) => res,
+        Err(e) => {
+            debug!("Request failed: {}", e);
+            return Ok("path/to/default/cover.jpg".to_string());
+        }
+    };
+
+    if !response.status().is_success() {
+        debug!("Request returned non-success status: {}", response.status());
+        debug!("Request body: {:?}", response.text().await);
+        return Ok("path/to/default/cover.jpg".to_string());
+    }
+
+    let body: CoverResponse = match response.json().await {
+        Ok(data) => data,
+        Err(e) => {
+            debug!("Failed to parse JSON: {}", e);
+            return Ok("path/to/default/cover.jpg".to_string());
+        }
+    };
+
+    debug!("Received cover URL: {}", body.url);
+
+    // Update the DB with the cover image
+    sqlx::query!(
+        "UPDATE books SET cover_image = ? WHERE id = ?",
+        body.url,
+        book.id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(body.url)
 }
 
 pub async fn get_all_books(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error> {
