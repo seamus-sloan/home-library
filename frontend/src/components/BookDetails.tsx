@@ -305,7 +305,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
             onCancel={() => setIsAddingJournal(false)}
           />
         ) : (
-          <JournalList journals={bookJournals} />
+          <JournalList bookId={book.id} />
         )}
       </div>
     </div>
