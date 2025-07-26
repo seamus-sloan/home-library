@@ -3,7 +3,7 @@ use sqlx::{Pool, Sqlite};
 use crate::models::tags::Tag;
 
 pub async fn get_all_tags_query(pool: &Pool<Sqlite>) -> Result<Vec<Tag>, sqlx::Error> {
-    let rows = sqlx::query_as!(Tag, "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags")
+    let rows = sqlx::query_as!(Tag, "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags ORDER BY name")
         .fetch_all(pool)
         .await?;
     Ok(rows)

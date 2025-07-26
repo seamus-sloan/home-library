@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags",
+  "query": "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags ORDER BY name",
   "describe": {
     "columns": [
       {
@@ -38,7 +38,7 @@
       "Right": 0
     },
     "nullable": [
-      false,
+      true,
       false,
       false,
       false,
@@ -46,5 +46,5 @@
       true
     ]
   },
-  "hash": "64da0909e5ba603bc9c6d3bbf0689d078f48562daa604271af85b2b874299cfa"
+  "hash": "6224cb855936dda170ba0bff33b73defb3c466a85b20adefc9f907e07a641bcc"
 }
