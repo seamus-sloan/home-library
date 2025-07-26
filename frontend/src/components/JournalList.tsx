@@ -1,25 +1,12 @@
 import { BookIcon } from 'lucide-react'
-import { type User } from '../contexts/UserContext'
-import { useGetBookJournalsQuery, useGetUsersQuery } from '../middleware/backend'
+import type { BookJournal } from '../types'
 import { UserAvatar } from './UserAvatar'
 
 interface JournalListProps {
-  bookId: number
+  journals: BookJournal[]
 }
 
-export function JournalList({ bookId }: JournalListProps) {
-  // Use RTK Query to fetch journals and users
-  const { data: journals = [], isLoading: journalsLoading, error: journalsError } = useGetBookJournalsQuery(bookId)
-  const { data: users = [], isLoading: usersLoading, error: usersError } = useGetUsersQuery()
-
-  const loading = journalsLoading || usersLoading
-  const error = journalsError || usersError
-
-  // Helper function to find user by ID
-  const getUserById = (userId: number): User | null => {
-    return users.find((user: User) => user.id === userId) || null
-  }
-
+export function JournalList({ journals }: JournalListProps) {
   if (journals.length === 0) {
     return (
       <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
@@ -34,38 +21,30 @@ export function JournalList({ bookId }: JournalListProps) {
   return (
     <div className="space-y-4">
       {journals.map((journal) => {
-        console.log('Date: ', journal.created_at)
-        const date = new Date(journal.created_at)
-        const formattedDate = date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        })
-
-        const journalAuthor = journal.user_id ? getUserById(journal.user_id) : null
-
         return (
           <div
             key={journal.id}
             className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md"
           >
             <div className="flex items-center gap-3 mb-3">
-              {journalAuthor && (
-                <UserAvatar
-                  user={journalAuthor}
-                  size="sm"
-                />
-              )}
+              <UserAvatar
+                user={{
+                  id: journal.user.id,
+                  name: journal.user.name,
+                  avatar_color: journal.user.avatar_color,
+                }}
+                size="sm"
+              />
               <div>
                 <div className="text-sm font-medium text-gray-200">
-                  {journalAuthor ? journalAuthor.name : 'Anonymous'}
+                  {journal.user.name}
                 </div>
-                <div className="text-xs text-gray-400">{formattedDate}</div>
+                <div className="text-xs text-gray-400">{journal.created_at}</div>
               </div>
             </div>
+            {/* {journal.title && (
+              <h4 className="text-lg font-semibold text-white mb-2 pl-11">{journal.title}</h4>
+            )} */}
             <p className="text-gray-200 whitespace-pre-wrap pl-11">
               {journal.content}
             </p>

@@ -53,6 +53,7 @@ pub struct BookJournal {
     pub title: String,
     pub content: String,
     pub user: JournalUser,
+    pub created_at: String,
 }
 
 #[derive(serde_derive::Serialize)]

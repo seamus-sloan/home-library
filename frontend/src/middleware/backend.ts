@@ -2,7 +2,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { User } from "../contexts/UserContext"
 import type { RootState } from '../store/store'
-import type { Book, JournalEntry, Tag } from "../types"
+import type { Book, BookWithDetails, JournalEntry, Tag } from "../types"
 
 // Define our API slice
 export const api = createApi({
@@ -29,7 +29,7 @@ export const api = createApi({
       providesTags: ['Book'],
     }),
     
-    getBook: builder.query<Book, string>({
+    getBook: builder.query<BookWithDetails, string>({
       query: (id) => `/books/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Book', id }],
     }),

@@ -14,8 +14,8 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  // Use RTK Query to fetch book data
-  const { data: book, isLoading: loading, error } = useGetBookQuery(id || '', {
+  // Use RTK Query to fetch book data (now includes tags and journals)
+  const { data: bookWithDetails, isLoading: loading, error } = useGetBookQuery(id || '', {
     skip: !id, // Skip the query if no ID is provided
   })
 
@@ -25,10 +25,22 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
 
   // Set edit form data when book data is loaded
   useEffect(() => {
-    if (book) {
-      setEditFormData(book)
+    if (bookWithDetails) {
+      // Convert BookWithDetails to Book for editing
+      const bookForEditing: Book = {
+        id: bookWithDetails.id,
+        user_id: bookWithDetails.user_id,
+        cover_image: bookWithDetails.cover_image,
+        title: bookWithDetails.title,
+        author: bookWithDetails.author,
+        genre: bookWithDetails.genre,
+        rating: bookWithDetails.rating || 0,
+        created_at: bookWithDetails.created_at,
+        updated_at: bookWithDetails.updated_at,
+      }
+      setEditFormData(bookForEditing)
     }
-  }, [book])
+  }, [bookWithDetails])
 
   if (loading) {
     return (
@@ -38,7 +50,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
     )
   }
 
-  if (error || !book) {
+  if (error || !bookWithDetails) {
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-bold text-gray-300 mb-4">
@@ -201,10 +213,10 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <div className="w-full md:w-1/3">
             <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
-              {book.cover_image ? (
+              {bookWithDetails.cover_image ? (
                 <img
-                  src={book.cover_image}
-                  alt={`${book.title} cover`}
+                  src={bookWithDetails.cover_image}
+                  alt={`${bookWithDetails.title} cover`}
                   className="w-full object-cover"
                   onError={e => {
                     const target = e.target as HTMLImageElement
@@ -223,19 +235,36 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
           </div>
           <div className="w-full md:w-2/3 bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 flex flex-col">
             <div className="flex-grow">
-              <h1 className="text-3xl font-bold text-white mb-2">{book.title}</h1>
-              <p className="text-xl text-gray-300 mb-4">by {book.author}</p>
-              {book.genre && (
+              <h1 className="text-3xl font-bold text-white mb-2">{bookWithDetails.title}</h1>
+              <p className="text-xl text-gray-300 mb-4">by {bookWithDetails.author}</p>
+              {bookWithDetails.genre && (
                 <div className="mb-4">
                   <span className="inline-block bg-purple-900 text-purple-200 px-3 py-1 rounded-full">
-                    {book.genre}
+                    {bookWithDetails.genre}
                   </span>
+                </div>
+              )}
+              {/* Display tags */}
+              {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2">Tags:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {bookWithDetails.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-block px-2 py-1 rounded-full text-xs font-medium text-white"
+                        style={{ backgroundColor: tag.color }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
             <div className="flex justify-end">
               <span className="text-gray-400 text-sm italic">
-                Added on {new Date(book.created_at || 0).toLocaleDateString('en-US', {
+                Added on {new Date(bookWithDetails.created_at || 0).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -260,12 +289,12 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
         </div>
         {isAddingJournal ? (
           <AddJournalForm
-            bookId={book.id}
+            bookId={bookWithDetails.id}
             onSubmit={handleAddJournal}
             onCancel={() => setIsAddingJournal(false)}
           />
         ) : (
-          <JournalList bookId={book.id} />
+          <JournalList journals={bookWithDetails.journals || []} />
         )}
       </div>
     </div>

@@ -196,36 +196,6 @@ pub async fn delete_book_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), sqlx:
     Ok(())
 }
 
-pub async fn get_book_by_id_query(
-    pool: &Pool<Sqlite>,
-    id: i64,
-) -> Result<Option<Book>, sqlx::Error> {
-    debug!("Querying database for book with ID: {}", id);
-
-    let book = sqlx::query_as!(
-        Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
-        id
-    )
-    .fetch_optional(pool)
-    .await?;
-
-    match &book {
-        Some(b) => {
-            info!("Found book with ID {}: '{}'", id, b.title);
-            debug!(
-                "Book details - Author: '{}', Genre: '{}'",
-                b.author, b.genre
-            );
-        }
-        None => {
-            warn!("No book found with ID: {}", id);
-        }
-    }
-
-    Ok(book)
-}
-
 pub async fn get_book_details_query(
     pool: &Pool<Sqlite>,
     id: i64,
@@ -273,7 +243,7 @@ pub async fn get_book_details_query(
 
     // Get journals for the book with user information
     let journals = sqlx::query(
-        "SELECT je.id, je.title, je.content, u.id as user_id, u.name as user_name, u.avatar_color
+        "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
          FROM journal_entries je
          INNER JOIN users u ON je.user_id = u.id
          WHERE je.book_id = ?
@@ -289,6 +259,7 @@ pub async fn get_book_details_query(
             id: row.get("id"),
             title: row.get("title"),
             content: row.get("content"),
+            created_at: row.get("created_at"),
             user: crate::models::books::JournalUser {
                 id: row.get("user_id"),
                 name: row.get("user_name"),
