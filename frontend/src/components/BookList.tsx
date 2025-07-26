@@ -1,23 +1,29 @@
-import { BookOpenIcon } from 'lucide-react'
+import { BookOpenIcon, SearchIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGetBooksQuery } from '../middleware/backend'
 import { BookCard } from './BookCard'
 
 export function BookList() {
   const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Use RTK Query to fetch books
-  const { data: books = [], isLoading: loading, error } = useGetBooksQuery()
+  // Use RTK Query to fetch books with search parameter
+  const { data: books = [], isLoading: loading, error } = useGetBooksQuery(
+    searchQuery.trim() ? { search: searchQuery.trim() } : undefined
+  )
 
   const handleBookClick = (bookId: number) => {
     navigate(`/book/${bookId}`)
   }
 
   if (loading) {
-    ; <div className="flex flex-col items-center justify-center py-20">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mb-4"></div>
-      <p className="text-amber-200 font-medium">Loading your books...</p>
-    </div>
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400 mb-4"></div>
+        <p className="text-amber-200 font-medium">Loading your books...</p>
+      </div>
+    )
   }
 
   if (error) {
@@ -38,7 +44,8 @@ export function BookList() {
     )
   }
 
-  if (books.length === 0) {
+  // Show empty library message only when not searching
+  if (books.length === 0 && !searchQuery.trim()) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="p-4 bg-zinc-900/50 rounded-full border border-zinc-800/50 mb-4">
@@ -56,16 +63,52 @@ export function BookList() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-amber-50 mb-8 tracking-wide border-b border-zinc-800 pb-4">Your Books</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {books.map(book => (
-          <BookCard
-            key={book.id}
-            book={book}
-            onClick={() => handleBookClick(book.id)}
+      <div className="mb-8 border-b border-zinc-800 pb-4">
+        {/* Search Field */}
+        <div className="relative max-w-md">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <SearchIcon className="h-5 w-5 text-amber-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search by title or author..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-50 placeholder-amber-400/50 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50 transition-colors"
           />
-        ))}
+        </div>
+
+        {/* Search Results Info */}
+        {searchQuery.trim() && books.length > 0 && (
+          <div className="mt-4 text-amber-300 text-sm">
+            Found {books.length} book{books.length !== 1 ? 's' : ''}
+          </div>
+        )}
       </div>
+
+      {/* Show books grid only if there are books */}
+      {books.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {books.map(book => (
+            <BookCard
+              key={book.id}
+              book={book}
+              onClick={() => handleBookClick(book.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* No Results Message */}
+      {searchQuery.trim() && books.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-amber-400 mb-2">🔍</div>
+          <h3 className="text-lg font-medium text-amber-200 mb-2">No books found</h3>
+          <p className="text-amber-300">
+            No books or authors found for "{searchQuery}". Try a different search term.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

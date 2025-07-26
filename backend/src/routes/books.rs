@@ -1,5 +1,5 @@
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::HeaderMap;
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
@@ -8,15 +8,36 @@ use tracing::{debug, error, info, warn};
 use crate::db::{
     create_book_query, create_book_tags, create_journal_entry, default_book_cover_query,
     delete_book_query, get_all_books_query, get_book_details_query, get_journals_by_book_id,
-    update_book_query, update_book_tags,
+    search_books_query, update_book_query, update_book_tags,
 };
 use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
 use crate::utils::extract_user_id_from_headers;
 
-pub async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book>>, StatusCode> {
-    debug!("Fetching all books from database");
+use serde::Deserialize;
 
-    match get_all_books_query(&pool).await {
+#[derive(Deserialize, Debug)]
+pub struct BookQueryParams {
+    search: Option<String>,
+}
+
+pub async fn get_books(
+    State(pool): State<Pool<Sqlite>>,
+    Query(params): Query<BookQueryParams>,
+) -> Result<Json<Vec<Book>>, StatusCode> {
+    debug!("Fetching books from database with params: {:?}", params);
+
+    let books = match params.search {
+        Some(search_term) => {
+            debug!("Searching books with term: {}", search_term);
+            search_books_query(&pool, &search_term).await
+        }
+        None => {
+            debug!("Fetching all books");
+            get_all_books_query(&pool).await
+        }
+    };
+
+    match books {
         Ok(books) => {
             info!("Successfully retrieved {} books", books.len());
             debug!(

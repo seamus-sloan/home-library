@@ -95,6 +95,40 @@ pub async fn get_all_books_query(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx:
 
     Ok(books)
 }
+
+pub async fn search_books_query(
+    pool: &Pool<Sqlite>,
+    search_term: &str,
+) -> Result<Vec<Book>, sqlx::Error> {
+    debug!("Searching books with term: '{}'", search_term);
+
+    let search_pattern = format!("%{}%", search_term);
+
+    let books = sqlx::query_as!(
+        Book,
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at 
+         FROM books 
+         WHERE title LIKE ? OR author LIKE ?
+         ORDER BY title",
+        search_pattern,
+        search_pattern
+    )
+    .fetch_all(pool)
+    .await?;
+
+    info!("Found {} books matching '{}'", books.len(), search_term);
+    if books.is_empty() {
+        debug!("No books found matching search term: '{}'", search_term);
+    } else {
+        debug!(
+            "Matching book titles: {:?}",
+            books.iter().map(|b| &b.title).collect::<Vec<_>>()
+        );
+    }
+
+    Ok(books)
+}
+
 pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
     debug!(
         "Attempting to create book: '{}' for user: {}",

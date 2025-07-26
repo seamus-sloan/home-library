@@ -77,7 +77,7 @@ pub async fn get_journal_by_id(
     .fetch_optional(pool)
     .await?;
 
-    match &journal {
+    match journal.as_ref() {
         Some(j) => {
             info!("Found journal entry with ID {}: '{}'", id, j.title);
         }

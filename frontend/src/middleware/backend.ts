@@ -24,9 +24,16 @@ export const api = createApi({
   tagTypes: ['Book', 'JournalEntry', 'Tag', 'User'],
   endpoints: (builder) => ({
     // #region Book Endpoints
-    getBooks: builder.query<Book[], void>({
-      query: () => '/books',
-      providesTags: ['Book'],
+    getBooks: builder.query<Book[], { search?: string } | void>({
+      query: (params) => {
+        const search = params && typeof params === 'object' && 'search' in params ? params.search : undefined
+        return search ? `/books?search=${encodeURIComponent(search)}` : '/books'
+      },
+      providesTags: (_result, _error, params) => {
+        const search = params && typeof params === 'object' && 'search' in params ? params.search : undefined
+        return search ? [{ type: 'Book', id: `search-${search}` }] : [{ type: 'Book', id: 'all' }]
+      },
+      keepUnusedDataFor: 0, // Don't cache unused data
     }),
     
     getBook: builder.query<BookWithDetails, string>({
