@@ -7,7 +7,7 @@ import { BookList } from './components/BookList'
 import { Header } from './components/Header'
 import { LoginPage } from './components/LoginPage'
 import type { RootState } from './store/store'
-import type { Book, JournalEntry } from './types'
+import type { JournalEntry } from './types'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
@@ -46,10 +46,6 @@ function AppContent() {
     setJournals([...journals, newJournal])
   }
 
-  const updateBook = async (book: Book) => {
-    console.log('Update book:', book)
-  }
-
   return (
     <div className="min-h-screen bg-black text-amber-50">
       <Header onAddClick={() => setIsAddingBook(true)} />
@@ -79,7 +75,7 @@ function AppContent() {
             path="/book/:id"
             element={
               <ProtectedRoute>
-                <BookDetails updateBook={updateBook} addJournal={addJournal} />
+                <BookDetails addJournal={addJournal} />
               </ProtectedRoute>
             }
           />

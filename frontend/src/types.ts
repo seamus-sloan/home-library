@@ -71,3 +71,12 @@ export interface BookWithDetails {
   tags: BookTag[]
   journals: BookJournal[]
 }
+
+export interface UpdateBookRequest {
+  cover_image?: string | null
+  title?: string
+  author?: string
+  genre?: string
+  rating?: number | null
+  tags?: number[]
+}

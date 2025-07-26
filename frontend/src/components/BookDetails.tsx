@@ -1,16 +1,16 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useGetBookQuery } from '../middleware/backend'
-import type { Book, JournalEntry } from '../types'
+import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
+import type { Book, JournalEntry, Tag } from '../types'
 import { AddJournalForm } from './AddJournalForm'
 import { JournalList } from './JournalList'
+import { TagSearch } from './TagSearch'
 
 interface BookDetailsProps {
-  updateBook: (book: Book) => void
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
-export function BookDetails({ updateBook }: BookDetailsProps) {
+export function BookDetails({}: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -19,9 +19,17 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
     skip: !id, // Skip the query if no ID is provided
   })
 
+  // Use mutation for updating books
+  const [updateBook, { isLoading: isUpdating }] = useUpdateBookMutation()
+
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
   const [editFormData, setEditFormData] = useState<Book | null>(null)
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+  const [errors, setErrors] = useState({
+    title: '',
+    author: '',
+  })
 
   // Set edit form data when book data is loaded
   useEffect(() => {
@@ -39,6 +47,16 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
         updated_at: bookWithDetails.updated_at,
       }
       setEditFormData(bookForEditing)
+      // Convert BookTag to Tag format for the tag selector
+      const tagsForEditing: Tag[] = (bookWithDetails.tags || []).map(bookTag => ({
+        id: bookTag.id,
+        user_id: bookWithDetails.user_id,
+        name: bookTag.name,
+        color: bookTag.color,
+        created_at: new Date().toISOString(), // We don't have this from BookTag
+        updated_at: new Date().toISOString(), // We don't have this from BookTag
+      }))
+      setSelectedTags(tagsForEditing)
     }
   }, [bookWithDetails])
 
@@ -75,13 +93,52 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
       ...editFormData,
       [name]: value,
     })
+    // Clear error when user types
+    if (errors[name as keyof typeof errors]) {
+      setErrors({
+        ...errors,
+        [name]: '',
+      })
+    }
   }
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editFormData && id) {
-      await updateBook(editFormData)
+    if (!editFormData || !id) return
+
+    // Validate form
+    const newErrors = {
+      title: editFormData.title ? '' : 'Title is required',
+      author: editFormData.author ? '' : 'Author is required',
+    }
+    setErrors(newErrors)
+
+    // Do not submit if there are any errors
+    if (newErrors.title || newErrors.author) {
+      return
+    }
+
+    try {
+      await updateBook({
+        id: editFormData.id,
+        book: {
+          title: editFormData.title,
+          author: editFormData.author,
+          genre: editFormData.genre,
+          cover_image: editFormData.cover_image,
+          rating: editFormData.rating,
+          tags: selectedTags.map(tag => tag.id), // Include selected tag IDs
+        }
+      }).unwrap()
       setIsEditing(false)
+      // Clear any errors on successful save
+      setErrors({ title: '', author: '' })
       // RTK Query will automatically refetch the book data due to cache invalidation
+    } catch (error) {
+      console.error('Error updating book:', error)
+      setErrors({
+        title: '',
+        author: error instanceof Error ? error.message : 'Failed to update book',
+      })
     }
   }
 
@@ -123,7 +180,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               htmlFor="title"
               className="block text-amber-200 font-medium mb-2"
             >
-              Book Title
+              Book Title <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -131,15 +188,19 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="title"
               value={editFormData.title}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
+              className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
+              placeholder="Enter book title"
             />
+            {errors.title && (
+              <p className="text-red-400 text-sm mt-1">{errors.title}</p>
+            )}
           </div>
           <div className="mb-4">
             <label
               htmlFor="author"
               className="block text-amber-200 font-medium mb-2"
             >
-              Author
+              Author <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -147,8 +208,12 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="author"
               value={editFormData.author}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
+              className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.author ? 'border-red-500' : 'border-zinc-700'}`}
+              placeholder="Enter author name"
             />
+            {errors.author && (
+              <p className="text-red-400 text-sm mt-1">{errors.author}</p>
+            )}
           </div>
           <div className="mb-4">
             <label
@@ -191,21 +256,55 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               value={editFormData.cover_image ? editFormData.cover_image : ''}
               onChange={handleEditChange}
               className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
+              placeholder="https://example.com/book-cover.jpg"
             />
+            <p className="text-amber-400 text-sm mt-1">
+              Leave blank to use a default cover
+            </p>
+          </div>
+          <div className="mb-6">
+            <label className="block text-amber-200 font-medium mb-2">
+              Tags
+            </label>
+            <TagSearch
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
+              placeholder="Search and select tags for this book..."
+              multiple={true}
+            />
+            <p className="text-amber-400 text-sm mt-1">
+              Add tags to help categorize and find this book later
+            </p>
           </div>
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setIsEditing(false)
+                setErrors({ title: '', author: '' })
+                // Reset tags to original values
+                if (bookWithDetails) {
+                  const tagsForEditing: Tag[] = (bookWithDetails.tags || []).map(bookTag => ({
+                    id: bookTag.id,
+                    user_id: bookWithDetails.user_id,
+                    name: bookTag.name,
+                    color: bookTag.color,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }))
+                  setSelectedTags(tagsForEditing)
+                }
+              }}
               className="px-4 py-2 border border-zinc-700 rounded-md hover:bg-zinc-800 transition-colors text-amber-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30"
+              disabled={isUpdating}
+              className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Changes
+              {isUpdating ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

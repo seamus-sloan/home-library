@@ -2,7 +2,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { User } from "../contexts/UserContext"
 import type { RootState } from '../store/store'
-import type { Book, BookWithDetails, JournalEntry, Tag } from "../types"
+import type { Book, BookWithDetails, JournalEntry, Tag, UpdateBookRequest } from "../types"
 
 // Define our API slice
 export const api = createApi({
@@ -48,6 +48,19 @@ export const api = createApi({
         body: book,
       }),
       invalidatesTags: ['Book'],
+    }),
+
+    updateBook: builder.mutation<BookWithDetails, { id: number; book: UpdateBookRequest }>({
+      query: ({ id, book }) => ({
+        url: `/books/${id}`,
+        method: 'PUT',
+        body: book,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Book', id: id.toString() },
+        { type: 'Book', id: 'all' },
+        'Book'
+      ],
     }),
     //#endregion
 
@@ -152,6 +165,7 @@ export const {
   useGetBooksQuery,
   useGetBookQuery,
   useAddBookMutation,
+  useUpdateBookMutation,
   useGetBookJournalsQuery,
   useGetJournalsQuery,
   useGetJournalQuery,
