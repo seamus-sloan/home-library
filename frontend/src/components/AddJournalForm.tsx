@@ -1,7 +1,8 @@
 import { XIcon } from 'lucide-react'
 import React, { useState } from 'react'
-import { useUser } from '../contexts/UserContext'
+import { useSelector } from 'react-redux'
 import { useAddJournalEntryMutation } from '../middleware/backend'
+import type { RootState } from '../store/store'
 import { UserAvatar } from './UserAvatar'
 interface AddJournalFormProps {
   bookId: number,
@@ -15,7 +16,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
   const [errors, setErrors] = useState({
     content: '',
   })
-  const { currentUser } = useUser()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
   const [addJournalEntry, { isLoading: isSubmitting }] = useAddJournalEntryMutation()
 
 

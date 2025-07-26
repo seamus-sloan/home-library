@@ -1,10 +1,13 @@
 import { LogOutIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { useUser } from '../contexts/UserContext'
+import type { RootState } from '../store/store'
+import { logout } from '../store/userSlice'
 import { UserAvatar } from './UserAvatar'
 export function UserMenu() {
-    const { currentUser, logout } = useUser()
+    const dispatch = useDispatch()
+    const currentUser = useSelector((state: RootState) => state.user.currentUser)
     const [isOpen, setIsOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
@@ -20,7 +23,7 @@ export function UserMenu() {
         }
     }, [])
     const handleLogout = () => {
-        logout()
+        dispatch(logout())
         navigate('/login')
     }
     if (!currentUser) return null

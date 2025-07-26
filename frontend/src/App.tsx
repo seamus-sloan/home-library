@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { AddBookForm } from './components/AddBookForm'
 import { BookDetails } from './components/BookDetails'
 import { BookList } from './components/BookList'
 import { Header } from './components/Header'
 import { LoginPage } from './components/LoginPage'
-import { UserProvider, useUser } from './contexts/UserContext'
+import type { RootState } from './store/store'
 import type { Book, JournalEntry } from './types'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { currentUser } = useUser()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
   const navigate = useNavigate()
+
   useEffect(() => {
     if (!currentUser) {
       navigate('/login')
     }
   }, [currentUser, navigate])
+
   return currentUser ? <>{children}</> : null
 }
 
@@ -91,9 +94,7 @@ function AppContent() {
 export function App() {
   return (
     <BrowserRouter>
-      <UserProvider>
-        <AppContent />
-      </UserProvider>
+      <AppContent />
     </BrowserRouter>
   )
 }

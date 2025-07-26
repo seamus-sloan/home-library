@@ -1,7 +1,8 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import React, { useState } from 'react'
-import { useUser } from '../contexts/UserContext'
+import { useSelector } from 'react-redux'
 import { useAddBookMutation } from '../middleware/backend'
+import type { RootState } from '../store/store'
 import type { Tag } from '../types'
 import { TagSearch } from './TagSearch'
 
@@ -16,7 +17,7 @@ interface AddBookFormProps {
   onCancel: () => void
 }
 export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
-  const { currentUser } = useUser()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
   const [addBook, { isLoading: isSubmitting }] = useAddBookMutation()
 
   const [formData, setFormData] = useState({

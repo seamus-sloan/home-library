@@ -1,12 +1,13 @@
 import { BookOpenIcon, PlusCircleIcon } from 'lucide-react'
+import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { useUser } from '../contexts/UserContext'
+import type { RootState } from '../store/store'
 import { UserMenu } from './UserMenu'
 interface HeaderProps {
   onAddClick: () => void
 }
 export function Header({ onAddClick }: HeaderProps) {
-  const { currentUser } = useUser()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
   if (!currentUser) return null
   return (
     <header className="bg-gray-800 shadow-md border-b border-gray-700">

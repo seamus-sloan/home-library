@@ -1,5 +1,7 @@
+// import the correct RootState type from your store
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { User } from "../contexts/UserContext"
+import type { RootState } from '../store/store'
 import type { Book, JournalEntry, Tag } from "../types"
 
 // Define our API slice
@@ -7,22 +9,14 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: '/',
-    prepareHeaders: (headers) => {
+    prepareHeaders: (headers, {getState}) => {
+        const state = getState() as RootState
+        const currentUserId = state.user?.currentUser?.id
+        if (currentUserId) {
+          headers.set('currentUserId', currentUserId.toString())
+        }
       // Set content type
       headers.set('Content-Type', 'application/json')
-      
-      // Get current user from localStorage and set currentUserId header
-      const storedUser = localStorage.getItem('currentUser')
-      if (storedUser) {
-        try {
-          const currentUser = JSON.parse(storedUser)
-          if (currentUser?.id) {
-            headers.set('currentUserId', currentUser.id.toString())
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored user:', error)
-        }
-      }
       
       return headers
     },
@@ -138,7 +132,7 @@ export const api = createApi({
       query: (userId) => ({
         url: '/users/select',
         method: 'POST',
-        body: { userId },
+        body: { id: userId }, // Backend expects 'id', not 'userId'
       }),
       invalidatesTags: ['User'],
     }),

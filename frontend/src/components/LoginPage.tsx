@@ -1,29 +1,36 @@
 import { BookOpenIcon } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { type User, useUser } from '../contexts/UserContext'
+import type { User } from '../contexts/UserContext'
 import { useGetUsersQuery, useSelectUserMutation } from '../middleware/backend'
+import type { RootState } from '../store/store'
+import { setCurrentUser } from '../store/userSlice'
 
 export function LoginPage() {
-    const { currentUser, setCurrentUser } = useUser()
+    const dispatch = useDispatch()
+    const currentUser = useSelector((state: RootState) => state.user.currentUser)
     const navigate = useNavigate()
+    const hasNavigated = useRef(false)
 
     // Use RTK Query to fetch users
     const { data: users = [], isLoading: loading, error } = useGetUsersQuery()
     const [selectUser] = useSelectUserMutation()
 
     useEffect(() => {
-        // If a user is already selected, skip to the home page
-        if (currentUser) {
-            navigate('/')
+        // If a user is already selected and we haven't navigated yet, skip to the home page
+        if (currentUser && !hasNavigated.current) {
+            hasNavigated.current = true
+            navigate('/', { replace: true }) // Use replace to avoid back button issues
         }
     }, [currentUser, navigate])
 
     const handleUserSelect = async (user: User) => {
         try {
             const selectedUser = await selectUser(user.id).unwrap()
-            setCurrentUser(selectedUser)
-            navigate('/')
+            dispatch(setCurrentUser(selectedUser))
+            hasNavigated.current = true
+            navigate('/', { replace: true })
         } catch (err) {
             console.error('Error selecting user:', err)
         }
