@@ -1,6 +1,6 @@
 import { ChevronDownIcon, PlusIcon, TagIcon, XIcon } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { useUser } from '../contexts/UserContext'
+import { useAddTagMutation, useGetTagsQuery } from '../middleware/backend'
 import type { Tag } from '../types'
 
 interface TagSearchProps {
@@ -18,50 +18,21 @@ export function TagSearch({
     className = "",
     multiple = true
 }: TagSearchProps) {
-    const { currentUser } = useUser()
     const [searchTerm, setSearchTerm] = useState('')
-    const [availableTags, setAvailableTags] = useState<Tag[]>([])
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [newTagColor, setNewTagColor] = useState('#3b82f6')
-    const [isCreatingTag, setIsCreatingTag] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
 
-    // Fetch tags based on search term
-    useEffect(() => {
-        const fetchTags = async () => {
-            setIsLoading(true)
-            try {
-                const headers: HeadersInit = {}
-                if (currentUser) {
-                    headers['currentUserId'] = currentUser.id.toString()
-                    headers['Content-Type'] = 'application/json'
-                }
+    // Use RTK Query to fetch tags
+    const {
+        data: availableTags = [],
+        isLoading
+    } = useGetTagsQuery(searchTerm.trim() ? { name: searchTerm.trim() } : undefined)
 
-                const url = searchTerm.trim()
-                    ? `/tags?name=${encodeURIComponent(searchTerm.trim())}`
-                    : '/tags'
-
-                const response = await fetch(url, { headers })
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch tags')
-                }
-
-                const tags: Tag[] = await response.json()
-                setAvailableTags(tags)
-            } catch (error) {
-                console.error('Error fetching tags:', error)
-                setAvailableTags([])
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        fetchTags()
-    }, [searchTerm, currentUser])
+    // Use RTK Query mutation for creating tags
+    const [addTag, { isLoading: isCreatingTag }] = useAddTagMutation()
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -112,35 +83,17 @@ export function TagSearch({
     const handleCreateTag = async () => {
         if (!searchTerm.trim()) return
 
-        setIsCreatingTag(true)
         try {
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-            }
-            if (currentUser) {
-                headers['currentUserId'] = currentUser.id.toString()
-            }
-
-            const response = await fetch('/tags', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    name: searchTerm.trim(),
-                    color: newTagColor,
-                }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to create tag')
-            }
-
-            const newTag: Tag = await response.json()
+            const result = await addTag({
+                name: searchTerm.trim(),
+                color: newTagColor,
+            }).unwrap()
 
             // Add the new tag to the selected tags
             if (multiple) {
-                onTagsChange([...selectedTags, newTag])
+                onTagsChange([...selectedTags, result])
             } else {
-                onTagsChange([newTag])
+                onTagsChange([result])
             }
 
             // Reset form
@@ -149,13 +102,10 @@ export function TagSearch({
             setIsDropdownOpen(false)
             setNewTagColor('#3b82f6')
 
-            // Refresh the available tags
-            setAvailableTags(prev => [...prev, newTag])
+            // RTK Query will automatically refetch the tags due to invalidatesTags
 
         } catch (error) {
             console.error('Error creating tag:', error)
-        } finally {
-            setIsCreatingTag(false)
         }
     }
 
@@ -306,8 +256,8 @@ export function TagSearch({
                                                     setNewTagColor(color)
                                                 }}
                                                 className={`w-8 h-8 rounded-full border-3 transition-all hover:scale-110 ${newTagColor === color
-                                                        ? 'border-purple-400 shadow-lg ring-2 ring-purple-400'
-                                                        : 'border-gray-400 hover:border-gray-300'
+                                                    ? 'border-purple-400 shadow-lg ring-2 ring-purple-400'
+                                                    : 'border-gray-400 hover:border-gray-300'
                                                     }`}
                                                 style={{ backgroundColor: color }}
                                                 title={`Select ${color}`}

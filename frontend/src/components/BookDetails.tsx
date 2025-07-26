@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useUser } from '../contexts/UserContext'
+import { useGetBookQuery } from '../middleware/backend'
 import type { Book, JournalEntry } from '../types'
 import { AddJournalForm } from './AddJournalForm'
 import { JournalList } from './JournalList'
@@ -11,49 +11,24 @@ interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
 export function BookDetails({ updateBook }: BookDetailsProps) {
-  const { currentUser } = useUser()
-  const { id } = useParams<{
-    id: string
-  }>()
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [book, setBook] = useState<Book | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Use RTK Query to fetch book data
+  const { data: book, isLoading: loading, error } = useGetBookQuery(id || '', {
+    skip: !id, // Skip the query if no ID is provided
+  })
+
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
   const [editFormData, setEditFormData] = useState<Book | null>(null)
 
+  // Set edit form data when book data is loaded
   useEffect(() => {
-    if (!id) return
-
-    const fetchBookData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const headers: HeadersInit = {}
-        if (currentUser) {
-          headers['currentUserId'] = currentUser.id.toString()
-        }
-
-        // Fetch book details
-        const bookResponse = await fetch(`/books/${id}`, { headers })
-        if (!bookResponse.ok) {
-          throw new Error('Failed to fetch book')
-        }
-        const bookData = await bookResponse.json()
-        setBook(bookData)
-        setEditFormData(bookData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
+    if (book) {
+      setEditFormData(book)
     }
-
-    fetchBookData()
-  }, [id])
+  }, [book])
 
   if (loading) {
     return (
@@ -67,7 +42,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-bold text-gray-300 mb-4">
-          {error || 'Book not found'}
+          {error ? 'Error loading book' : 'Book not found'}
         </h2>
         <button
           onClick={() => navigate('/')}
@@ -94,23 +69,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
     if (editFormData && id) {
       await updateBook(editFormData)
       setIsEditing(false)
-
-      // Refresh book data after editing
-      try {
-        const headers: HeadersInit = {}
-        if (currentUser) {
-          headers['currentUserId'] = currentUser.id.toString()
-        }
-
-        const bookResponse = await fetch(`/books/${id}`, { headers })
-        if (bookResponse.ok) {
-          const bookData = await bookResponse.json()
-          setBook(bookData)
-          setEditFormData(bookData)
-        }
-      } catch (err) {
-        console.error('Failed to refresh book data:', err)
-      }
+      // RTK Query will automatically refetch the book data due to cache invalidation
     }
   }
 

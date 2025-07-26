@@ -1,7 +1,6 @@
 import { BookIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useUser, type User } from '../contexts/UserContext'
-import { type JournalEntry } from '../types'
+import { type User } from '../contexts/UserContext'
+import { useGetBookJournalsQuery, useGetUsersQuery } from '../middleware/backend'
 import { UserAvatar } from './UserAvatar'
 
 interface JournalListProps {
@@ -9,64 +8,16 @@ interface JournalListProps {
 }
 
 export function JournalList({ bookId }: JournalListProps) {
-  const { currentUser } = useUser()
-  const [, setLoading] = useState(true)
-  const [, setError] = useState<string | null>(null)
-  const [journals, setJournals] = useState<JournalEntry[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  // Use RTK Query to fetch journals and users
+  const { data: journals = [], isLoading: journalsLoading, error: journalsError } = useGetBookJournalsQuery(bookId)
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useGetUsersQuery()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const headers: HeadersInit = {}
-        if (currentUser) {
-          headers['currentUserId'] = currentUser.id.toString()
-        }
-
-        // Fetch journals and users in parallel
-        const [journalsResponse, usersResponse] = await Promise.all([
-          fetch(`/books/${bookId}/journals`, { headers }),
-          fetch('/users', { headers })
-        ])
-
-        if (!journalsResponse.ok) {
-          throw new Error('Failed to fetch journals')
-        }
-        if (!usersResponse.ok) {
-          throw new Error('Failed to fetch users')
-        }
-
-        const [journalsData, usersData] = await Promise.all([
-          journalsResponse.json(),
-          usersResponse.json()
-        ])
-
-        // Map the users API response to match your User type
-        const mappedUsers: User[] = usersData.map((user: User) => ({
-          id: user.id,
-          name: user.name,
-          avatar_color: user.avatar_color
-        }))
-
-        setJournals(journalsData)
-        setUsers(mappedUsers)
-
-      } catch (error) {
-        console.error('Failed to fetch data:', error)
-        setError(error instanceof Error ? error.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [bookId, currentUser]);
+  const loading = journalsLoading || usersLoading
+  const error = journalsError || usersError
 
   // Helper function to find user by ID
   const getUserById = (userId: number): User | null => {
-    return users.find(user => user.id === userId) || null
+    return users.find((user: User) => user.id === userId) || null
   }
 
   if (journals.length === 0) {

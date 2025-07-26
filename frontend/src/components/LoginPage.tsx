@@ -1,69 +1,31 @@
 import { BookOpenIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { type User, useUser } from '../contexts/UserContext'
+import { useGetUsersQuery, useSelectUserMutation } from '../middleware/backend'
 
 export function LoginPage() {
     const { currentUser, setCurrentUser } = useUser()
     const navigate = useNavigate()
-    const [users, setUsers] = useState<User[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+
+    // Use RTK Query to fetch users
+    const { data: users = [], isLoading: loading, error } = useGetUsersQuery()
+    const [selectUser] = useSelectUserMutation()
 
     useEffect(() => {
         // If a user is already selected, skip to the home page
         if (currentUser) {
             navigate('/')
-            return
         }
-
-        // Otherwise, display the user selection page
-        const fetchUsers = async () => {
-            try {
-                const response = await fetch('/users')
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users')
-                }
-                const data = await response.json()
-                // Map the API response to match your User type
-                const mappedUsers: User[] = data.map((user: User) => ({
-                    id: user.id,
-                    name: user.name,
-                    avatar_color: user.avatar_color
-                }))
-                setUsers(mappedUsers)
-                console.log('Fetched users:', mappedUsers)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred')
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchUsers()
-    }, [])
+    }, [currentUser, navigate])
 
     const handleUserSelect = async (user: User) => {
         try {
-            const response = await fetch('/users/select', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: user.id }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to select user')
-            }
-
-            const selectedUser = await response.json()
-
+            const selectedUser = await selectUser(user.id).unwrap()
             setCurrentUser(selectedUser)
             navigate('/')
         } catch (err) {
             console.error('Error selecting user:', err)
-            setError(err instanceof Error ? err.message : 'Failed to select user')
         }
     }
 
@@ -78,7 +40,7 @@ export function LoginPage() {
     if (error) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
-                <div className="text-red-400 text-xl">Error: {error}</div>
+                <div className="text-red-400 text-xl">Error loading users</div>
             </div>
         )
     }

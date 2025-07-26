@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { useUser } from '../contexts/UserContext'
+import { useAddBookMutation } from '../middleware/backend'
 import type { Tag } from '../types'
 import { TagSearch } from './TagSearch'
 
@@ -16,6 +17,8 @@ interface AddBookFormProps {
 }
 export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
   const { currentUser } = useUser()
+  const [addBook, { isLoading: isSubmitting }] = useAddBookMutation()
+
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -27,7 +30,6 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     title: '',
     author: '',
   })
-  const [, setIsSubmitting] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -60,41 +62,30 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     }
 
     try {
-      setIsSubmitting(true)
+      const newBook = await addBook({
+        user_id: currentUser?.id || null,
+        title: formData.title,
+        author: formData.author,
+        genre: formData.genre,
+        cover_image: formData.cover_image || null,
+        rating: 0, // Default rating
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).unwrap()
 
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      }
-      if (currentUser) {
-        headers['currentUserId'] = currentUser.id.toString()
-      }
-
-      const response = await fetch('/books', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          title: formData.title,
-          author: formData.author,
-          genre: formData.genre,
-          cover_image: formData.cover_image,
-        }),
+      onSubmit({
+        title: newBook.title,
+        author: newBook.author,
+        genre: newBook.genre,
+        cover_image: newBook.cover_image || '',
+        tags: selectedTags
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to add book')
-      }
-
-      const newBook = await response.json()
-      onSubmit({ ...newBook, tags: selectedTags })
-
     } catch (error) {
       console.error('Error adding book:', error)
       setErrors({
         title: '',
         author: error instanceof Error ? error.message : 'Failed to save book',
       })
-    } finally {
-      setIsSubmitting(false)
     }
   }
   return (

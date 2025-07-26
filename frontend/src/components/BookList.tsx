@@ -1,44 +1,12 @@
 import { BookOpenIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useUser } from '../contexts/UserContext'
-import type { Book } from '../types'
+import { useGetBooksQuery } from '../middleware/backend'
 import { BookCard } from './BookCard'
 export function BookList() {
-  const { currentUser } = useUser()
   const navigate = useNavigate()
-  const [books, setBooks] = useState<Book[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const headers: HeadersInit = {}
-        if (currentUser) {
-          headers['currentUserId'] = currentUser.id.toString()
-        }
-
-        const response = await fetch('/books', { headers })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch books')
-        }
-
-        const booksData = await response.json()
-        setBooks(booksData)
-      } catch (err) {
-        console.error('Failed to fetch books:', err)
-        setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchBooks()
-  }, [])
+  // Use RTK Query to fetch books
+  const { data: books = [], isLoading: loading, error } = useGetBooksQuery()
 
   const handleBookClick = (bookId: number) => {
     navigate(`/book/${bookId}`)
@@ -58,7 +26,7 @@ export function BookList() {
         <h2 className="text-2xl font-medium text-gray-300 mb-2">
           Error loading books
         </h2>
-        <p className="text-gray-400 text-center max-w-md">{error}</p>
+        <p className="text-gray-400 text-center max-w-md">Failed to load books</p>
         <button
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"

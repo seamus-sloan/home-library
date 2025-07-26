@@ -1,6 +1,7 @@
 import { XIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { useUser } from '../contexts/UserContext'
+import { useAddJournalEntryMutation } from '../middleware/backend'
 import { UserAvatar } from './UserAvatar'
 interface AddJournalFormProps {
   bookId: number,
@@ -14,8 +15,8 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
   const [errors, setErrors] = useState({
     content: '',
   })
-  const [, setIsSubmitting] = useState(false)
   const { currentUser } = useUser()
+  const [addJournalEntry, { isLoading: isSubmitting }] = useAddJournalEntryMutation()
 
 
   const handleChange = (
@@ -49,44 +50,24 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     }
 
     try {
-      setIsSubmitting(true)
-
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      }
-      if (currentUser) {
-        headers['currentUserId'] = currentUser.id.toString()
-      }
-
-      const response = await fetch(`/books/${bookId}/journals`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          // Removing title for now
-          title: "",
+      await addJournalEntry({
+        bookId,
+        entry: {
+          user_id: currentUser?.id || null,
+          title: "", // Removing title for now
           content: formData.content,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to add journal entry: ${response.status}`)
-      }
+        },
+      }).unwrap()
 
       setFormData({
-        // title: '',
         content: '',
       })
       onSubmit()
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error adding journal entry:', error)
       setErrors({
-        // title: '',
         content: error instanceof Error ? error.message : 'Failed to save journal entry',
       })
-    }
-    finally {
-      setIsSubmitting(false)
     }
   }
 
