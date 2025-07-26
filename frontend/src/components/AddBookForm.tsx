@@ -94,21 +94,21 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
       <div className="flex items-center mb-6">
         <button
           onClick={onCancel}
-          className="mr-4 text-gray-400 hover:text-gray-200"
+          className="mr-4 text-amber-400 hover:text-amber-200"
           aria-label="Go back"
         >
           <ArrowLeftIcon size={20} />
         </button>
-        <h2 className="text-2xl font-semibold text-white">Add New Book</h2>
+        <h2 className="text-2xl font-semibold text-amber-50">Add New Book</h2>
       </div>
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-800 p-6 rounded-lg shadow-md max-w-2xl mx-auto border border-gray-700"
+        className="bg-zinc-900 p-6 rounded-lg shadow-md max-w-2xl mx-auto border border-zinc-800"
       >
         <div className="mb-4">
           <label
             htmlFor="title"
-            className="block text-gray-200 font-medium mb-2"
+            className="block text-amber-200 font-medium mb-2"
           >
             Book Title <span className="text-red-400">*</span>
           </label>
@@ -118,7 +118,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white ${errors.title ? 'border-red-500' : 'border-gray-600'}`}
+            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
             placeholder="Enter book title"
           />
           {errors.title && (
@@ -128,7 +128,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
         <div className="mb-4">
           <label
             htmlFor="author"
-            className="block text-gray-200 font-medium mb-2"
+            className="block text-amber-200 font-medium mb-2"
           >
             Author <span className="text-red-400">*</span>
           </label>
@@ -138,7 +138,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
             name="author"
             value={formData.author}
             onChange={handleChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white ${errors.author ? 'border-red-500' : 'border-gray-600'}`}
+            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.author ? 'border-red-500' : 'border-zinc-700'}`}
             placeholder="Enter author name"
           />
           {errors.author && (
@@ -148,7 +148,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
         <div className="mb-4">
           <label
             htmlFor="genre"
-            className="block text-gray-200 font-medium mb-2"
+            className="block text-amber-200 font-medium mb-2"
           >
             Genre
           </label>
@@ -157,7 +157,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
             name="genre"
             value={formData.genre}
             onChange={handleChange}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
           >
             <option value="">Select a genre</option>
             <option value="Fiction">Fiction</option>
@@ -175,7 +175,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
         <div className="mb-6">
           <label
             htmlFor="cover_image"
-            className="block text-gray-200 font-medium mb-2"
+            className="block text-amber-200 font-medium mb-2"
           >
             Cover Image URL
           </label>
@@ -185,15 +185,15 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
             name="cover_image"
             value={formData.cover_image}
             onChange={handleChange}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
             placeholder="https://example.com/book-cover.jpg"
           />
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-amber-400 text-sm mt-1">
             Leave blank to use a default cover
           </p>
         </div>
         <div className="mb-6">
-          <label className="block text-gray-200 font-medium mb-2">
+          <label className="block text-amber-200 font-medium mb-2">
             Tags
           </label>
           <TagSearch
@@ -202,7 +202,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
             placeholder="Search and select tags for this book..."
             multiple={true}
           />
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-amber-400 text-sm mt-1">
             Add tags to help categorize and find this book later
           </p>
         </div>
@@ -210,13 +210,13 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-600 rounded-md hover:bg-gray-700 transition-colors text-gray-300"
+            className="px-4 py-2 border border-zinc-700 rounded-md hover:bg-zinc-800 transition-colors text-amber-300"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30"
           >
             Add Book
           </button>

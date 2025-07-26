@@ -74,15 +74,15 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
 
   if (!currentUser) return null
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 shadow-md">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
           <UserAvatar user={currentUser} size="sm" />
-          <h4 className="text-lg font-medium text-white">New Journal Entry</h4>
+          <h4 className="text-lg font-medium text-amber-50">New Journal Entry</h4>
         </div>
         <button
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-200"
+          className="text-amber-400 hover:text-amber-200"
           aria-label="Close"
         >
           <XIcon size={18} />
@@ -95,7 +95,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white min-h-[150px] ${errors.title ? 'border-red-500' : 'border-gray-600'}`}
+            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 min-h-[150px] ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
             placeholder="Name your journal entry..."
           />
           {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
@@ -105,7 +105,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
             name="content"
             value={formData.content}
             onChange={handleChange}
-            className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white min-h-[150px] ${errors.content ? 'border-red-500' : 'border-gray-600'}`}
+            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 min-h-[150px] ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}
             placeholder="Write your thoughts about this book..."
           />
           {errors.content && <p className="text-red-400 text-sm mt-1">{errors.content}</p>}
@@ -114,13 +114,13 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-600 rounded-md hover:bg-gray-700 transition-colors text-gray-300"
+            className="px-4 py-2 border border-zinc-700 rounded-md hover:bg-zinc-800 transition-colors text-amber-300"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30"
           >
             Save Entry
           </button>

@@ -45,7 +45,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
   if (loading) {
     return (
       <div className="text-center py-10">
-        <h2 className="text-2xl font-bold text-gray-300 mb-4">Loading...</h2>
+        <h2 className="text-2xl font-bold text-amber-200 mb-4">Loading...</h2>
       </div>
     )
   }
@@ -53,12 +53,12 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
   if (error || !bookWithDetails) {
     return (
       <div className="text-center py-10">
-        <h2 className="text-2xl font-bold text-gray-300 mb-4">
+        <h2 className="text-2xl font-bold text-amber-200 mb-4">
           {error ? 'Error loading book' : 'Book not found'}
         </h2>
         <button
           onClick={() => navigate('/')}
-          className="text-purple-400 hover:text-purple-300 flex items-center gap-2 mx-auto"
+          className="text-amber-400 hover:text-amber-300 flex items-center gap-2 mx-auto"
         >
           <ArrowLeftIcon size={18} />
           Return to library
@@ -95,18 +95,18 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate('/')}
-          className="mr-4 text-gray-400 hover:text-gray-200"
+          className="mr-4 text-amber-400 hover:text-amber-200"
           aria-label="Go back"
         >
           <ArrowLeftIcon size={20} />
         </button>
-        <h2 className="text-2xl font-semibold text-white flex-grow">
+        <h2 className="text-2xl font-semibold text-amber-50 flex-grow">
           Book Details
         </h2>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1 text-purple-400 hover:text-purple-300"
+            className="flex items-center gap-1 text-amber-400 hover:text-amber-300"
           >
             <EditIcon size={18} />
             <span>Edit</span>
@@ -116,12 +116,12 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
       {isEditing && editFormData ? (
         <form
           onSubmit={handleEditSubmit}
-          className="bg-gray-800 p-6 rounded-lg shadow-md mb-8 border border-gray-700"
+          className="bg-zinc-900 p-6 rounded-lg shadow-md mb-8 border border-zinc-800"
         >
           <div className="mb-4">
             <label
               htmlFor="title"
-              className="block text-gray-200 font-medium mb-2"
+              className="block text-amber-200 font-medium mb-2"
             >
               Book Title
             </label>
@@ -131,13 +131,13 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="title"
               value={editFormData.title}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
             />
           </div>
           <div className="mb-4">
             <label
               htmlFor="author"
-              className="block text-gray-200 font-medium mb-2"
+              className="block text-amber-200 font-medium mb-2"
             >
               Author
             </label>
@@ -147,13 +147,13 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="author"
               value={editFormData.author}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
             />
           </div>
           <div className="mb-4">
             <label
               htmlFor="genre"
-              className="block text-gray-200 font-medium mb-2"
+              className="block text-amber-200 font-medium mb-2"
             >
               Genre
             </label>
@@ -162,7 +162,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="genre"
               value={editFormData.genre}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
             >
               <option value="">Select a genre</option>
               <option value="Fiction">Fiction</option>
@@ -180,7 +180,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
           <div className="mb-6">
             <label
               htmlFor="cover_image"
-              className="block text-gray-200 font-medium mb-2"
+              className="block text-amber-200 font-medium mb-2"
             >
               Cover Image URL
             </label>
@@ -190,20 +190,20 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               name="cover_image"
               value={editFormData.cover_image ? editFormData.cover_image : ''}
               onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
             />
           </div>
           <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 border border-gray-600 rounded-md hover:bg-gray-700 transition-colors text-gray-300"
+              className="px-4 py-2 border border-zinc-700 rounded-md hover:bg-zinc-800 transition-colors text-amber-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30"
             >
               Save Changes
             </button>
@@ -212,7 +212,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
       ) : (
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <div className="w-full md:w-1/3">
-            <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
+            <div className="bg-zinc-900 rounded-lg overflow-hidden shadow-lg border border-zinc-800">
               {bookWithDetails.cover_image ? (
                 <img
                   src={bookWithDetails.cover_image}
@@ -222,24 +222,24 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
                     const target = e.target as HTMLImageElement
                     target.onerror = null
                     target.src =
-                      'https://placehold.co/400x600/2a2a2a/6b6b6b?text=No+Image'
+                      'https://placehold.co/400x600/18181b/71717a?text=No+Image'
                   }}
                 />
               ) : (
-                <div className="h-64 bg-gray-700 flex flex-col items-center justify-center text-gray-500">
+                <div className="h-64 bg-zinc-800 flex flex-col items-center justify-center text-amber-600">
                   <BookOpenIcon size={64} />
                   <span className="mt-2">No cover image</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="w-full md:w-2/3 bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 flex flex-col">
+          <div className="w-full md:w-2/3 bg-zinc-900 p-6 rounded-lg shadow-md border border-zinc-800 flex flex-col">
             <div className="flex-grow">
-              <h1 className="text-3xl font-bold text-white mb-2">{bookWithDetails.title}</h1>
-              <p className="text-xl text-gray-300 mb-4">by {bookWithDetails.author}</p>
+              <h1 className="text-3xl font-bold text-amber-50 mb-2">{bookWithDetails.title}</h1>
+              <p className="text-xl text-amber-200 mb-4">by {bookWithDetails.author}</p>
               {bookWithDetails.genre && (
                 <div className="mb-4">
-                  <span className="inline-block bg-purple-900 text-purple-200 px-3 py-1 rounded-full">
+                  <span className="inline-block bg-amber-900/40 text-amber-200 px-3 py-1 rounded-full border border-amber-700/30">
                     {bookWithDetails.genre}
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               {/* Display tags */}
               {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-300 mb-2">Tags:</h4>
+                  <h4 className="text-sm font-medium text-amber-200 mb-2">Tags:</h4>
                   <div className="flex flex-wrap gap-2">
                     {bookWithDetails.tags.map((tag) => (
                       <span
@@ -263,7 +263,7 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
               )}
             </div>
             <div className="flex justify-end">
-              <span className="text-gray-400 text-sm italic">
+              <span className="text-amber-400 text-sm italic">
                 Added on {new Date(bookWithDetails.created_at || 0).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -276,11 +276,11 @@ export function BookDetails({ updateBook }: BookDetailsProps) {
       )}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-white">Reading Journal</h3>
+          <h3 className="text-xl font-semibold text-amber-50">Reading Journal</h3>
           {!isAddingJournal && (
             <button
               onClick={() => setIsAddingJournal(true)}
-              className="flex items-center gap-1 text-purple-400 hover:text-purple-300"
+              className="flex items-center gap-1 text-amber-400 hover:text-amber-300"
             >
               <PlusIcon size={18} />
               <span>Add Entry</span>

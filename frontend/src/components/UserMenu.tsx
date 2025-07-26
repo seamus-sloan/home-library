@@ -34,19 +34,19 @@ export function UserMenu() {
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
                 <UserAvatar user={currentUser} size="sm" />
-                <span className="text-gray-200 hidden sm:inline">
+                <span className="text-amber-200 hidden sm:inline font-medium">
                     {currentUser.name}
                 </span>
             </button>
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700">
-                    <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm text-gray-400">Signed in as</p>
-                        <p className="font-medium text-white">{currentUser.name}</p>
+                <div className="absolute right-0 mt-2 w-48 bg-zinc-900/95 rounded-lg shadow-xl py-1 z-10 border border-zinc-800/50 backdrop-blur-sm">
+                    <div className="px-4 py-2 border-b border-zinc-800/50">
+                        <p className="text-sm text-amber-300">Signed in as</p>
+                        <p className="font-medium text-amber-50">{currentUser.name}</p>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-gray-200 hover:bg-gray-700 flex items-center gap-2"
+                        className="w-full text-left px-4 py-2 text-amber-200 hover:bg-zinc-800/50 flex items-center gap-2 transition-colors"
                     >
                         <LogOutIcon size={16} />
                         <span>Sign Out</span>

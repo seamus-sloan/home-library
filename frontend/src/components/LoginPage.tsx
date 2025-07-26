@@ -38,27 +38,27 @@ export function LoginPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
-                <div className="text-white text-xl">Loading users...</div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
+                <div className="text-amber-200 text-xl">Loading users...</div>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
                 <div className="text-red-400 text-xl">Error loading users</div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-black px-4">
             <div className="mb-16 flex items-center">
-                <BookOpenIcon size={40} className="text-purple-400 mr-3" />
-                <h1 className="text-3xl font-bold text-white">The Sloan Library</h1>
+                <BookOpenIcon size={40} className="text-amber-400 mr-3" />
+                <h1 className="text-3xl font-bold text-amber-50">The Sloan Library</h1>
             </div>
-            <h2 className="text-4xl font-medium text-white mb-12">Who's reading?</h2>
+            <h2 className="text-4xl font-medium text-amber-50 mb-12">Who's reading?</h2>
             <div className="grid grid-cols-2 gap-8 max-w-md">
                 {users.map((user) => (
                     <div
@@ -67,11 +67,11 @@ export function LoginPage() {
                         className="flex flex-col items-center cursor-pointer group"
                     >
                         <div
-                            className={`w-32 h-32 ${user.avatar_color} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-white transition-all`}
+                            className={`w-32 h-32 ${user.avatar_color} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-amber-400 transition-all`}
                         >
                             {user.name.charAt(0)}
                         </div>
-                        <span className="text-gray-300 text-xl group-hover:text-white transition-colors">
+                        <span className="text-amber-300 text-xl group-hover:text-amber-50 transition-colors">
                             {user.name}
                         </span>
                     </div>

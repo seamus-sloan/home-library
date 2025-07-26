@@ -51,7 +51,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen bg-black text-amber-50">
       <Header onAddClick={() => setIsAddingBook(true)} />
       <main className="container mx-auto px-4 py-8">
         <Routes>
