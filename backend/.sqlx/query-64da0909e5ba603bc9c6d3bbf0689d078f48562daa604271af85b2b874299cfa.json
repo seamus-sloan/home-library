@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "user_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "color",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "64da0909e5ba603bc9c6d3bbf0689d078f48562daa604271af85b2b874299cfa"
+}

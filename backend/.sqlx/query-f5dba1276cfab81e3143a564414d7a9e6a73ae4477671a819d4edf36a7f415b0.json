@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO tags (user_id, name, color) VALUES (?, ?, ?) RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "user_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "color",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "f5dba1276cfab81e3143a564414d7a9e6a73ae4477671a819d4edf36a7f415b0"
+}

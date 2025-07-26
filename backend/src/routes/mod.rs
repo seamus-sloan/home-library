@@ -5,4 +5,5 @@ pub mod users;
 
 pub use books::*;
 pub use journal_entries::*;
+pub use tags::*;
 pub use users::*;

@@ -4,6 +4,7 @@ mod app;
 mod db;
 mod models;
 mod routes;
+mod utils;
 
 use crate::app::app;
 use crate::db::init_db;

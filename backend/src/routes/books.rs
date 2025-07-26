@@ -1,12 +1,16 @@
+use axum::Json;
 use axum::extract::State;
 use axum::http::HeaderMap;
-use axum::Json;
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
-use crate::db::{create_book as db_create_book, set_default_book_cover, get_all_books, get_book_by_id, get_journals_by_book_id, create_journal_entry};
+use crate::db::{
+    create_book as db_create_book, create_journal_entry, get_all_books, get_book_by_id,
+    get_journals_by_book_id, set_default_book_cover,
+};
 use crate::models::Book;
+use crate::utils::extract_user_id_from_headers;
 
 pub async fn create_book(
     State(pool): State<Pool<Sqlite>>,
@@ -21,25 +25,7 @@ pub async fn create_book(
     }
 
     // Extract user_id from headers
-    let user_id = match headers.get("currentUserId") {
-        Some(header_value) => match header_value.to_str() {
-            Ok(id_str) => match id_str.parse::<i64>() {
-                Ok(id) => id,
-                Err(_) => {
-                    error!("Invalid currentUserId header format: {}", id_str);
-                    return Err(StatusCode::BAD_REQUEST);
-                }
-            },
-            Err(_) => {
-                error!("currentUserId header contains invalid UTF-8");
-                return Err(StatusCode::BAD_REQUEST);
-            }
-        },
-        None => {
-            error!("Missing currentUserId header");
-            return Err(StatusCode::BAD_REQUEST);
-        }
-    };
+    let user_id = extract_user_id_from_headers(&headers)?;
 
     // Set the user_id on the book
     book.user_id = user_id;
@@ -147,25 +133,7 @@ pub async fn create_book_journal_entry(
     debug!("Creating journal for book ID: {}", book_id);
 
     // Extract user_id from headers
-    let user_id = match headers.get("currentUserId") {
-        Some(header_value) => match header_value.to_str() {
-            Ok(id_str) => match id_str.parse::<i64>() {
-                Ok(id) => id,
-                Err(_) => {
-                    error!("Invalid currentUserId header format: {}", id_str);
-                    return Err(StatusCode::BAD_REQUEST);
-                }
-            },
-            Err(_) => {
-                error!("currentUserId header contains invalid UTF-8");
-                return Err(StatusCode::BAD_REQUEST);
-            }
-        },
-        None => {
-            error!("Missing currentUserId header");
-            return Err(StatusCode::BAD_REQUEST);
-        }
-    };
+    let user_id = extract_user_id_from_headers(&headers)?;
 
     // Set the book_id from the path parameter and user_id from header
     journal.book_id = book_id;
