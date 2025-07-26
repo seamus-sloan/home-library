@@ -9,6 +9,18 @@ pub async fn get_all_tags_query(pool: &Pool<Sqlite>) -> Result<Vec<Tag>, sqlx::E
     Ok(rows)
 }
 
+pub async fn get_tags_by_name_query(pool: &Pool<Sqlite>, name_filter: &str) -> Result<Vec<Tag>, sqlx::Error> {
+    let pattern = format!("%{}%", name_filter);
+    let rows = sqlx::query_as!(
+        Tag, 
+        "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags WHERE name LIKE ? ORDER BY name",
+        pattern
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(rows)
+}
+
 pub async fn get_tag_by_id_query(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Tag>, sqlx::Error> {
     let tag = sqlx::query_as!(Tag, "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags WHERE id = ?", id)
         .fetch_optional(pool)

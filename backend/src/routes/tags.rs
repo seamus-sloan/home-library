@@ -1,19 +1,41 @@
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::HeaderMap;
 use reqwest::StatusCode;
+use serde::Deserialize;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
 use crate::db::{
-    create_tag_query, delete_tag_query, get_all_tags_query, get_tag_by_id_query, update_tag_query,
+    create_tag_query, delete_tag_query, get_all_tags_query, get_tag_by_id_query,
+    get_tags_by_name_query, update_tag_query,
 };
 use crate::models::tags::Tag;
 use crate::utils::extract_user_id_from_headers;
 
-pub async fn get_tags(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Tag>>, StatusCode> {
-    debug!("Fetching all tags from database");
-    match get_all_tags_query(&pool).await {
+#[derive(Deserialize, Debug)]
+pub struct TagQueryParams {
+    name: Option<String>,
+}
+
+pub async fn get_tags(
+    State(pool): State<Pool<Sqlite>>,
+    Query(params): Query<TagQueryParams>,
+) -> Result<Json<Vec<Tag>>, StatusCode> {
+    debug!("Fetching tags from database with params: {:?}", params);
+
+    let tags = match params.name {
+        Some(name_filter) => {
+            debug!("Filtering tags by name: {}", name_filter);
+            get_tags_by_name_query(&pool, &name_filter).await
+        }
+        None => {
+            debug!("Fetching all tags");
+            get_all_tags_query(&pool).await
+        }
+    };
+
+    match tags {
         Ok(tags) => Ok(Json(tags)),
         Err(e) => {
             error!("Failed to fetch tags: {}", e);

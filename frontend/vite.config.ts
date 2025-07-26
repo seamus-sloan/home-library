@@ -8,6 +8,7 @@ export default defineConfig({
       '/users': 'http://localhost:3000',
       '/books': 'http://localhost:3000',
       '/journals': 'http://localhost:3000',
+      '/tags': 'http://localhost:3000',
     },
   },
   plugins: [react()],

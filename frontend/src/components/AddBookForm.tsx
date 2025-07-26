@@ -1,12 +1,16 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { useUser } from '../contexts/UserContext'
+import type { Tag } from '../types'
+import { TagSearch } from './TagSearch'
+
 interface AddBookFormProps {
   onSubmit: (book: {
     title: string
     author: string
     genre: string
     cover_image: string
+    tags?: Tag[]
   }) => void
   onCancel: () => void
 }
@@ -18,6 +22,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
     genre: '',
     cover_image: '',
   })
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
   const [errors, setErrors] = useState({
     title: '',
     author: '',
@@ -80,7 +85,7 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
       }
 
       const newBook = await response.json()
-      onSubmit(newBook)
+      onSubmit({ ...newBook, tags: selectedTags })
 
     } catch (error) {
       console.error('Error adding book:', error)
@@ -193,6 +198,20 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
           />
           <p className="text-gray-400 text-sm mt-1">
             Leave blank to use a default cover
+          </p>
+        </div>
+        <div className="mb-6">
+          <label className="block text-gray-200 font-medium mb-2">
+            Tags
+          </label>
+          <TagSearch
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            placeholder="Search and select tags for this book..."
+            multiple={true}
+          />
+          <p className="text-gray-400 text-sm mt-1">
+            Add tags to help categorize and find this book later
           </p>
         </div>
         <div className="flex justify-end gap-3">
