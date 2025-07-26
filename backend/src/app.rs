@@ -14,7 +14,7 @@ pub async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/users/select", post(select_user))
         .route("/books", get(get_books))
         .route("/books", post(create_book))
-        .route("/books/{id}", get(get_book_by_id))
+        .route("/books/{id}", get(get_book_details))
         .route("/books/{id}", put(update_book))
         .route("/books/{id}", delete(delete_book))
         .route("/books/{id}/journals", get(get_book_journals))

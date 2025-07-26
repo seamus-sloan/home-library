@@ -1,11 +1,11 @@
 use reqwest::Client;
 use serde::Deserialize;
-use sqlx::{Pool, Sqlite};
+use sqlx::{Pool, Row, Sqlite};
 use std::error::Error;
 use tracing::{debug, info, warn};
 use url::form_urlencoded;
 
-use crate::models::Book;
+use crate::models::{Book, BookJournal, BookTag, BookWithDetails};
 
 #[derive(Deserialize)]
 struct CoverResponse {
@@ -129,6 +129,41 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Bo
 
     Ok(book)
 }
+
+pub async fn create_book_tags(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    tag_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    debug!(
+        "Creating book_tags relationships for book {} with {} tags",
+        book_id,
+        tag_ids.len()
+    );
+
+    for &tag_id in tag_ids {
+        sqlx::query!(
+            "INSERT INTO book_tags (book_id, tag_id) VALUES (?, ?)",
+            book_id,
+            tag_id
+        )
+        .execute(pool)
+        .await?;
+
+        debug!(
+            "Created book_tag relationship: book_id={}, tag_id={}",
+            book_id, tag_id
+        );
+    }
+
+    info!(
+        "Successfully created {} book_tag relationships for book {}",
+        tag_ids.len(),
+        book_id
+    );
+    Ok(())
+}
+
 pub async fn update_book_query(
     pool: &Pool<Sqlite>,
     id: i64,
@@ -189,4 +224,133 @@ pub async fn get_book_by_id_query(
     }
 
     Ok(book)
+}
+
+pub async fn get_book_details_query(
+    pool: &Pool<Sqlite>,
+    id: i64,
+) -> Result<Option<BookWithDetails>, sqlx::Error> {
+    debug!("Querying database for book with details for ID: {}", id);
+
+    // First get the book
+    let book = sqlx::query_as!(
+        Book,
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
+        id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    let Some(book) = book else {
+        warn!("No book found with ID: {}", id);
+        return Ok(None);
+    };
+
+    info!("Found book with ID {}: '{}'", id, book.title);
+
+    // Get tags for the book
+    let tags = sqlx::query(
+        "SELECT t.id, t.name, t.color 
+         FROM tags t 
+         INNER JOIN book_tags bt ON t.id = bt.tag_id 
+         WHERE bt.book_id = ?
+         ORDER BY t.name",
+    )
+    .bind(id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_tags: Vec<BookTag> = tags
+        .into_iter()
+        .map(|row| BookTag {
+            id: row.get("id"),
+            name: row.get("name"),
+            color: row.get("color"),
+        })
+        .collect();
+
+    debug!("Found {} tags for book {}", book_tags.len(), id);
+
+    // Get journals for the book with user information
+    let journals = sqlx::query(
+        "SELECT je.id, je.title, je.content, u.id as user_id, u.name as user_name, u.avatar_color
+         FROM journal_entries je
+         INNER JOIN users u ON je.user_id = u.id
+         WHERE je.book_id = ?
+         ORDER BY je.created_at DESC",
+    )
+    .bind(id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_journals: Vec<BookJournal> = journals
+        .into_iter()
+        .map(|row| BookJournal {
+            id: row.get("id"),
+            title: row.get("title"),
+            content: row.get("content"),
+            user: crate::models::books::JournalUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                avatar_color: row.get("avatar_color"),
+            },
+        })
+        .collect();
+
+    debug!("Found {} journals for book {}", book_journals.len(), id);
+
+    let book_with_details = BookWithDetails {
+        id: book.id,
+        user_id: book.user_id,
+        cover_image: book.cover_image,
+        title: book.title,
+        author: book.author,
+        genre: book.genre,
+        rating: book.rating,
+        created_at: book.created_at,
+        updated_at: book.updated_at,
+        tags: book_tags,
+        journals: book_journals,
+    };
+
+    Ok(Some(book_with_details))
+}
+
+pub async fn delete_book_tags(pool: &Pool<Sqlite>, book_id: i64) -> Result<(), sqlx::Error> {
+    debug!("Deleting all book_tags relationships for book {}", book_id);
+
+    let result = sqlx::query("DELETE FROM book_tags WHERE book_id = ?")
+        .bind(book_id)
+        .execute(pool)
+        .await?;
+
+    info!(
+        "Deleted {} book_tag relationships for book {}",
+        result.rows_affected(),
+        book_id
+    );
+    Ok(())
+}
+
+pub async fn update_book_tags(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    tag_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    debug!(
+        "Updating book_tags relationships for book {} with {} tags",
+        book_id,
+        tag_ids.len()
+    );
+
+    // First, delete all existing tags for this book
+    delete_book_tags(pool, book_id).await?;
+
+    // Then add the new tags if any
+    if !tag_ids.is_empty() {
+        create_book_tags(pool, book_id, tag_ids).await?;
+    }
+
+    info!("Successfully updated book_tags for book {}", book_id);
+    Ok(())
 }

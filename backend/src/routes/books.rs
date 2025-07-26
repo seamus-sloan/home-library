@@ -6,10 +6,11 @@ use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
 use crate::db::{
-    create_book_query, create_journal_entry, default_book_cover_query, delete_book_query,
-    get_all_books_query, get_book_by_id_query, get_journals_by_book_id, update_book_query,
+    create_book_query, create_book_tags, create_journal_entry, default_book_cover_query,
+    delete_book_query, get_all_books_query, get_book_details_query, get_journals_by_book_id,
+    update_book_query, update_book_tags,
 };
-use crate::models::Book;
+use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
 use crate::utils::extract_user_id_from_headers;
 
 pub async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book>>, StatusCode> {
@@ -35,20 +36,30 @@ pub async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book
 pub async fn create_book(
     State(pool): State<Pool<Sqlite>>,
     headers: HeaderMap,
-    Json(mut book): Json<Book>,
+    Json(request): Json<CreateBookRequest>,
 ) -> Result<Json<Book>, StatusCode> {
-    if book.title.trim().is_empty() {
+    if request.title.trim().is_empty() {
         return Err(StatusCode::BAD_REQUEST);
     }
-    if book.author.trim().is_empty() {
+    if request.author.trim().is_empty() {
         return Err(StatusCode::BAD_REQUEST);
     }
 
     // Extract user_id from headers
     let user_id = extract_user_id_from_headers(&headers)?;
 
-    // Set the user_id on the book
-    book.user_id = user_id;
+    // Create a Book from the request
+    let book = Book {
+        id: 0, // Will be set by the database
+        user_id,
+        cover_image: request.cover_image,
+        title: request.title,
+        author: request.author,
+        genre: request.genre,
+        rating: request.rating,
+        created_at: None,
+        updated_at: None,
+    };
 
     info!("Creating new book: {} for user: {}", book.title, user_id);
     debug!(
@@ -59,6 +70,21 @@ pub async fn create_book(
     match create_book_query(&pool, book).await {
         Ok(created_book) => {
             info!("Successfully created book with ID: {}", created_book.id);
+
+            // Handle tags if provided
+            if let Some(tag_ids) = request.tags {
+                if !tag_ids.is_empty() {
+                    debug!(
+                        "Creating book_tags relationships for {} tags",
+                        tag_ids.len()
+                    );
+                    if let Err(e) = create_book_tags(&pool, created_book.id, &tag_ids).await {
+                        error!("Failed to create book_tags relationships: {}", e);
+                        // Continue without failing the entire request
+                        warn!("Book created successfully but tags were not associated");
+                    }
+                }
+            }
 
             match &created_book.cover_image {
                 Some(cover) if !cover.is_empty() => {
@@ -83,13 +109,13 @@ pub async fn create_book(
     }
 }
 
-pub async fn get_book_by_id(
+pub async fn get_book_details(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> Result<Json<Option<Book>>, StatusCode> {
-    debug!("Fetching book with ID: {}", id);
+) -> Result<Json<Option<BookWithDetails>>, StatusCode> {
+    debug!("Fetching book with details for ID: {}", id);
 
-    match get_book_by_id_query(&pool, id).await {
+    match get_book_details_query(&pool, id).await {
         Ok(Some(book)) => {
             info!("Found book with ID {}: '{}'", id, book.title);
             Ok(Json(Some(book)))
@@ -109,20 +135,73 @@ pub async fn update_book(
     State(pool): State<Pool<Sqlite>>,
     Path(id): Path<i64>,
     headers: HeaderMap,
-    Json(mut book): Json<Book>,
-) -> Result<Json<Book>, StatusCode> {
+    Json(request): Json<UpdateBookRequest>,
+) -> Result<Json<BookWithDetails>, StatusCode> {
     // Extract user_id from headers
     let user_id = extract_user_id_from_headers(&headers)?;
 
-    book.user_id = user_id;
-
-    match update_book_query(&pool, id, book).await {
-        Ok(updated_book) => {
-            info!("Successfully updated book with ID: {}", updated_book.id);
-            Ok(Json(updated_book))
+    // First, get the current book to preserve fields that aren't being updated
+    let current_book = match get_book_details_query(&pool, id).await {
+        Ok(Some(book)) => book,
+        Ok(None) => {
+            warn!("No book found with ID: {}", id);
+            return Err(StatusCode::NOT_FOUND);
         }
         Err(e) => {
+            error!("Failed to fetch book by ID {}: {}", id, e);
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    // Create updated book struct, preserving existing values for fields not provided
+    let updated_book = Book {
+        id,
+        user_id,
+        cover_image: request.cover_image.or(current_book.cover_image),
+        title: request.title.unwrap_or(current_book.title),
+        author: request.author.unwrap_or(current_book.author),
+        genre: request.genre.unwrap_or(current_book.genre),
+        rating: request.rating.unwrap_or(current_book.rating),
+        created_at: current_book.created_at,
+        updated_at: current_book.updated_at,
+    };
+
+    // Update the book in the database
+    let updated_book = match update_book_query(&pool, id, updated_book).await {
+        Ok(book) => book,
+        Err(e) => {
             error!("Failed to update book: {}", e);
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    info!("Successfully updated book with ID: {}", updated_book.id);
+
+    // Handle tags if provided
+    if let Some(tag_ids) = request.tags {
+        debug!("Updating tags for book {} with {} tags", id, tag_ids.len());
+        if let Err(e) = update_book_tags(&pool, id, &tag_ids).await {
+            error!("Failed to update book tags: {}", e);
+            // Continue without failing the entire request
+            warn!("Book updated successfully but tags were not updated");
+        }
+    }
+
+    // Return the updated book with details
+    match get_book_details_query(&pool, id).await {
+        Ok(Some(book_with_details)) => {
+            info!(
+                "Successfully retrieved updated book with details for ID: {}",
+                id
+            );
+            Ok(Json(book_with_details))
+        }
+        Ok(None) => {
+            error!("Book disappeared after update - this should not happen");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+        Err(e) => {
+            error!("Failed to fetch updated book details: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

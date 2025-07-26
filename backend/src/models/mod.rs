@@ -3,6 +3,8 @@ pub mod journal_entries;
 pub mod tags;
 pub mod users;
 
-pub use books::Book;
+pub use books::{
+    Book, BookJournal, BookTag, BookWithDetails, CreateBookRequest, UpdateBookRequest,
+};
 pub use journal_entries::JournalEntry;
 pub use users::{SelectUser, User};
