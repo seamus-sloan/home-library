@@ -5,11 +5,12 @@ use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
-use crate::db::{
-    create_book_query, create_book_tags, create_journal_entry, default_book_cover_query,
-    delete_book_query, get_all_books_query, get_book_details_query, get_journals_by_book_id,
-    search_books_query, update_book_query, update_book_tags,
+use crate::db::book_queries::{
+    create_book_query, create_book_tags, default_book_cover_query, delete_book_query,
+    get_all_books_with_details_query, get_book_details_query, search_books_with_details_query,
+    update_book_query, update_book_tags,
 };
+use crate::db::journal_queries::{create_journal_entry, get_journals_by_book_id};
 use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
 use crate::utils::extract_user_id_from_headers;
 
@@ -23,17 +24,17 @@ pub struct BookQueryParams {
 pub async fn get_books(
     State(pool): State<Pool<Sqlite>>,
     Query(params): Query<BookQueryParams>,
-) -> Result<Json<Vec<Book>>, StatusCode> {
+) -> Result<Json<Vec<BookWithDetails>>, StatusCode> {
     debug!("Fetching books from database with params: {:?}", params);
 
     let books = match params.search {
         Some(search_term) => {
             debug!("Searching books with term: {}", search_term);
-            search_books_query(&pool, &search_term).await
+            search_books_with_details_query(&pool, &search_term).await
         }
         None => {
             debug!("Fetching all books");
-            get_all_books_query(&pool).await
+            get_all_books_with_details_query(&pool).await
         }
     };
 

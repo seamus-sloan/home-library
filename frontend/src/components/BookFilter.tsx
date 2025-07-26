@@ -8,8 +8,11 @@ interface BookFilterProps {
     onGenreChange: (genre: string) => void
     selectedRating: number | null
     onRatingChange: (rating: number | null) => void
+    selectedTag: string
+    onTagChange: (tag: string) => void
     genres: string[]
     ratings: number[]
+    tags: string[]
     onClearFilters: () => void
     hasActiveFilters: boolean
 }
@@ -21,8 +24,11 @@ export function BookFilter({
     onGenreChange,
     selectedRating,
     onRatingChange,
+    selectedTag,
+    onTagChange,
     genres,
     ratings,
+    tags,
     onClearFilters,
     hasActiveFilters
 }: BookFilterProps) {
@@ -97,6 +103,25 @@ export function BookFilter({
                                     {ratings.map(rating => (
                                         <option key={rating} value={rating}>
                                             {rating} Stars
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Tags Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-amber-200 mb-2">
+                                    Tags
+                                </label>
+                                <select
+                                    value={selectedTag || ''}
+                                    onChange={(e) => onTagChange(e.target.value)}
+                                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50"
+                                >
+                                    <option value="">All Tags</option>
+                                    {tags.map(tag => (
+                                        <option key={tag} value={tag}>
+                                            {tag}
                                         </option>
                                     ))}
                                 </select>

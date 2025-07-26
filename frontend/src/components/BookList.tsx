@@ -12,7 +12,7 @@ export function BookList() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedGenre, setSelectedGenre] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
-  const [selectedTags, setSelectedTags] = useState<number[]>([])
+  const [selectedTag, setSelectedTag] = useState<string>('')
 
   // Use RTK Query to fetch books with search parameter
   const { data: books = [], isLoading: loading, error } = useGetBooksQuery(
@@ -31,6 +31,13 @@ export function BookList() {
     return Array.from(ratingSet).sort((a, b) => a - b)
   }, [books])
 
+  const tags = useMemo(() => {
+    const tagSet = new Set(books.flatMap(book =>
+      book.tags.map(tag => tag.name)
+    ))
+    return Array.from(tagSet).sort()
+  }, [books])
+
   // Filter books based on search and filter criteria
   const filteredBooks = useMemo(() => {
     return books.filter(book => {
@@ -44,12 +51,17 @@ export function BookList() {
         return false
       }
 
-      // Tag filter - this would need to be implemented on the backend
-      // For now, we'll skip tag filtering as it requires book details with tags
+      // Tag filter
+      if (selectedTag) {
+        const bookTagNames = book.tags.map(tag => tag.name)
+        if (!bookTagNames.includes(selectedTag)) {
+          return false
+        }
+      }
 
       return true
     })
-  }, [books, selectedGenre, selectedRating, selectedTags])
+  }, [books, selectedGenre, selectedRating, selectedTag])
 
   const handleBookClick = (bookId: number) => {
     navigate(`/book/${bookId}`)
@@ -58,10 +70,10 @@ export function BookList() {
   const clearFilters = () => {
     setSelectedGenre('')
     setSelectedRating(null)
-    setSelectedTags([])
+    setSelectedTag('')
   }
 
-  const hasActiveFilters = Boolean(selectedGenre || selectedRating !== null || selectedTags.length > 0)
+  const hasActiveFilters = Boolean(selectedGenre || selectedRating !== null || selectedTag)
 
   if (loading) {
     return (
@@ -127,8 +139,11 @@ export function BookList() {
             onGenreChange={setSelectedGenre}
             selectedRating={selectedRating}
             onRatingChange={setSelectedRating}
+            selectedTag={selectedTag}
+            onTagChange={setSelectedTag}
             genres={genres}
             ratings={ratings}
+            tags={tags}
             onClearFilters={clearFilters}
             hasActiveFilters={hasActiveFilters}
           />

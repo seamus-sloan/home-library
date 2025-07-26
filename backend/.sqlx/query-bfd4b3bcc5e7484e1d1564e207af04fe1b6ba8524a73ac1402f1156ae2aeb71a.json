@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books ORDER BY updated_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "user_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "cover_image",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "genre",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 6,
+        "type_info": "Float"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "bfd4b3bcc5e7484e1d1564e207af04fe1b6ba8524a73ac1402f1156ae2aeb71a"
+}

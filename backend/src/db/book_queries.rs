@@ -359,3 +359,198 @@ pub async fn update_book_tags(
     info!("Successfully updated book_tags for book {}", book_id);
     Ok(())
 }
+
+pub async fn get_all_books_with_details_query(
+    pool: &Pool<Sqlite>,
+) -> Result<Vec<BookWithDetails>, sqlx::Error> {
+    debug!("Querying database for all books with details");
+
+    // First get all books
+    let books = sqlx::query_as!(
+        Book,
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
+    )
+    .fetch_all(pool)
+    .await?;
+
+    info!("Found {} books", books.len());
+
+    let mut books_with_details = Vec::new();
+
+    for book in books {
+        // Get tags for each book
+        let tags = sqlx::query(
+            "SELECT t.id, t.name, t.color 
+             FROM tags t 
+             INNER JOIN book_tags bt ON t.id = bt.tag_id 
+             WHERE bt.book_id = ?
+             ORDER BY t.name",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_tags: Vec<BookTag> = tags
+            .into_iter()
+            .map(|row| BookTag {
+                id: row.get("id"),
+                name: row.get("name"),
+                color: row.get("color"),
+            })
+            .collect();
+
+        // Get journals for the book with user information
+        let journals = sqlx::query(
+            "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
+             FROM journal_entries je
+             INNER JOIN users u ON je.user_id = u.id
+             WHERE je.book_id = ?
+             ORDER BY je.created_at DESC",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_journals: Vec<BookJournal> = journals
+            .into_iter()
+            .map(|row| BookJournal {
+                id: row.get("id"),
+                title: row.get("title"),
+                content: row.get("content"),
+                user: crate::models::books::JournalUser {
+                    id: row.get("user_id"),
+                    name: row.get("user_name"),
+                    avatar_color: row.get("avatar_color"),
+                },
+                created_at: row.get("created_at"),
+            })
+            .collect();
+
+        let book_with_details = BookWithDetails {
+            id: book.id,
+            user_id: book.user_id,
+            cover_image: book.cover_image,
+            title: book.title,
+            author: book.author,
+            genre: book.genre,
+            rating: book.rating,
+            created_at: book.created_at,
+            updated_at: book.updated_at,
+            tags: book_tags,
+            journals: book_journals,
+        };
+
+        books_with_details.push(book_with_details);
+    }
+
+    debug!(
+        "Successfully built {} books with details",
+        books_with_details.len()
+    );
+    Ok(books_with_details)
+}
+
+pub async fn search_books_with_details_query(
+    pool: &Pool<Sqlite>,
+    search_term: &str,
+) -> Result<Vec<BookWithDetails>, sqlx::Error> {
+    debug!(
+        "Searching for books with details using term: {}",
+        search_term
+    );
+
+    let search_pattern = format!("%{}%", search_term);
+
+    // First get matching books
+    let books = sqlx::query_as!(
+        Book,
+        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at 
+         FROM books 
+         WHERE title LIKE ? OR author LIKE ?
+         ORDER BY updated_at DESC",
+        search_pattern,
+        search_pattern
+    )
+    .fetch_all(pool)
+    .await?;
+
+    info!(
+        "Found {} books matching search term '{}'",
+        books.len(),
+        search_term
+    );
+
+    let mut books_with_details = Vec::new();
+
+    for book in books {
+        // Get tags for each book
+        let tags = sqlx::query(
+            "SELECT t.id, t.name, t.color 
+             FROM tags t 
+             INNER JOIN book_tags bt ON t.id = bt.tag_id 
+             WHERE bt.book_id = ?
+             ORDER BY t.name",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_tags: Vec<BookTag> = tags
+            .into_iter()
+            .map(|row| BookTag {
+                id: row.get("id"),
+                name: row.get("name"),
+                color: row.get("color"),
+            })
+            .collect();
+
+        // Get journals for the book with user information
+        let journals = sqlx::query(
+            "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
+             FROM journal_entries je
+             INNER JOIN users u ON je.user_id = u.id
+             WHERE je.book_id = ?
+             ORDER BY je.created_at DESC",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_journals: Vec<BookJournal> = journals
+            .into_iter()
+            .map(|row| BookJournal {
+                id: row.get("id"),
+                title: row.get("title"),
+                content: row.get("content"),
+                user: crate::models::books::JournalUser {
+                    id: row.get("user_id"),
+                    name: row.get("user_name"),
+                    avatar_color: row.get("avatar_color"),
+                },
+                created_at: row.get("created_at"),
+            })
+            .collect();
+
+        let book_with_details = BookWithDetails {
+            id: book.id,
+            user_id: book.user_id,
+            cover_image: book.cover_image,
+            title: book.title,
+            author: book.author,
+            genre: book.genre,
+            rating: book.rating,
+            created_at: book.created_at,
+            updated_at: book.updated_at,
+            tags: book_tags,
+            journals: book_journals,
+        };
+
+        books_with_details.push(book_with_details);
+    }
+
+    debug!(
+        "Successfully built {} books with details from search",
+        books_with_details.len()
+    );
+    Ok(books_with_details)
+}

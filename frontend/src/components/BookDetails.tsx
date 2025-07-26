@@ -10,7 +10,7 @@ import { TagSearch } from './TagSearch'
 interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
-export function BookDetails({}: BookDetailsProps) {
+export function BookDetails({ }: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 

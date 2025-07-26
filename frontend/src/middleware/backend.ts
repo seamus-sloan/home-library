@@ -24,7 +24,7 @@ export const api = createApi({
   tagTypes: ['Book', 'JournalEntry', 'Tag', 'User'],
   endpoints: (builder) => ({
     // #region Book Endpoints
-    getBooks: builder.query<Book[], { search?: string } | void>({
+    getBooks: builder.query<BookWithDetails[], { search?: string } | void>({
       query: (params) => {
         const search = params && typeof params === 'object' && 'search' in params ? params.search : undefined
         return search ? `/books?search=${encodeURIComponent(search)}` : '/books'

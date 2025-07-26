@@ -1,7 +1,8 @@
 import { BookIcon } from 'lucide-react'
-import type { Book } from '../types'
+import type { Book, BookWithDetails } from '../types'
+
 interface BookCardProps {
-  book: Book
+  book: Book | BookWithDetails
   onClick: () => void
 }
 export function BookCard({ book, onClick }: BookCardProps) {
