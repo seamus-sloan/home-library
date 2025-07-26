@@ -16,42 +16,7 @@ const DEFAULT_COVER_PATH: &str = "path/to/default/cover.jpg";
 const BOOK_COVER_API_URL: &str = "https://bookcover.longitood.com/bookcover";
 
 // Book queries
-pub async fn create_book(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
-    debug!(
-        "Attempting to create book: '{}' for user: {}",
-        book.title, book.user_id
-    );
-    debug!(
-        "Book details - Author: '{}', Genre: '{}', Rating: {:?}",
-        book.author, book.genre, book.rating
-    );
-
-    let result = sqlx::query!(
-        "INSERT INTO books (user_id, cover_image, title, author, genre, rating) VALUES (?, ?, ?, ?, ?, ?)",
-        book.user_id,
-        book.cover_image,
-        book.title,
-        book.author,
-        book.genre,
-        book.rating
-    )
-    .execute(pool)
-    .await?;
-
-    book.id = result.last_insert_rowid();
-    info!(
-        "Successfully created book '{}' with ID: {} for user: {}",
-        book.title, book.id, book.user_id
-    );
-    debug!(
-        "New book record: ID={}, User ID={}, Title='{}', Author='{}'",
-        book.id, book.user_id, book.title, book.author
-    );
-
-    Ok(book)
-}
-
-pub async fn set_default_book_cover(
+pub async fn default_book_cover_query(
     pool: &Pool<Sqlite>,
     book: &Book,
 ) -> Result<String, Box<dyn Error>> {
@@ -108,7 +73,7 @@ pub async fn set_default_book_cover(
     Ok(body.url)
 }
 
-pub async fn get_all_books(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error> {
+pub async fn get_all_books_query(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error> {
     debug!("Querying database for all books");
 
     let books = sqlx::query_as!(
@@ -130,8 +95,76 @@ pub async fn get_all_books(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error
 
     Ok(books)
 }
+pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
+    debug!(
+        "Attempting to create book: '{}' for user: {}",
+        book.title, book.user_id
+    );
+    debug!(
+        "Book details - Author: '{}', Genre: '{}', Rating: {:?}",
+        book.author, book.genre, book.rating
+    );
 
-pub async fn get_book_by_id(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Book>, sqlx::Error> {
+    let result = sqlx::query!(
+        "INSERT INTO books (user_id, cover_image, title, author, genre, rating) VALUES (?, ?, ?, ?, ?, ?)",
+        book.user_id,
+        book.cover_image,
+        book.title,
+        book.author,
+        book.genre,
+        book.rating
+    )
+    .execute(pool)
+    .await?;
+
+    book.id = result.last_insert_rowid();
+    info!(
+        "Successfully created book '{}' with ID: {} for user: {}",
+        book.title, book.id, book.user_id
+    );
+    debug!(
+        "New book record: ID={}, User ID={}, Title='{}', Author='{}'",
+        book.id, book.user_id, book.title, book.author
+    );
+
+    Ok(book)
+}
+pub async fn update_book_query(
+    pool: &Pool<Sqlite>,
+    id: i64,
+    book: Book,
+) -> Result<Book, sqlx::Error> {
+    let updated_book = sqlx::query_as!(
+        Book,
+        "UPDATE books SET cover_image = ?, title = ?, author = ?, genre = ?, rating = ? WHERE id = ? RETURNING id, user_id, cover_image, title, author, genre, rating, created_at, updated_at",
+        book.cover_image,
+        book.title,
+        book.author,
+        book.genre,
+        book.rating,
+        id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(updated_book)
+}
+pub async fn delete_book_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), sqlx::Error> {
+    let result = sqlx::query!("DELETE FROM books WHERE id = ?", id)
+        .execute(pool)
+        .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(sqlx::Error::RowNotFound);
+    }
+
+    Ok(())
+}
+
+pub async fn get_book_by_id_query(
+    pool: &Pool<Sqlite>,
+    id: i64,
+) -> Result<Option<Book>, sqlx::Error> {
     debug!("Querying database for book with ID: {}", id);
 
     let book = sqlx::query_as!(

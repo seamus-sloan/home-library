@@ -7,7 +7,7 @@ use tracing::{debug, error, info, warn};
 use crate::db::{get_all_journals, get_journal_by_id};
 use crate::models::JournalEntry;
 
-pub async fn get_journals(
+pub async fn get_journal_entries_query(
     State(pool): State<Pool<Sqlite>>,
 ) -> Result<Json<Vec<JournalEntry>>, StatusCode> {
     debug!("Fetching all journal entries from database");
@@ -29,7 +29,7 @@ pub async fn get_journals(
     }
 }
 
-pub async fn get_single_journal(
+pub async fn get_journal_entry_by_id_query(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
 ) -> Result<Json<Option<JournalEntry>>, StatusCode> {

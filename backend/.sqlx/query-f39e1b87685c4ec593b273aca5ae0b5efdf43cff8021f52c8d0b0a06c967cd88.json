@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE books SET cover_image = ?, title = ?, author = ?, genre = ?, rating = ? WHERE id = ? RETURNING id, user_id, cover_image, title, author, genre, rating, created_at, updated_at",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "user_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "cover_image",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "title",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "author",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "genre",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "rating",
+        "ordinal": 6,
+        "type_info": "Float"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "f39e1b87685c4ec593b273aca5ae0b5efdf43cff8021f52c8d0b0a06c967cd88"
+}

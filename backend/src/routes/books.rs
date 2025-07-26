@@ -1,16 +1,36 @@
 use axum::Json;
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
 use crate::db::{
-    create_book as db_create_book, create_journal_entry, get_all_books, get_book_by_id,
-    get_journals_by_book_id, set_default_book_cover,
+    create_book_query, create_journal_entry, default_book_cover_query, delete_book_query,
+    get_all_books_query, get_book_by_id_query, get_journals_by_book_id, update_book_query,
 };
 use crate::models::Book;
 use crate::utils::extract_user_id_from_headers;
+
+pub async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book>>, StatusCode> {
+    debug!("Fetching all books from database");
+
+    match get_all_books_query(&pool).await {
+        Ok(books) => {
+            info!("Successfully retrieved {} books", books.len());
+            debug!(
+                "Books retrieved: {:?}",
+                books.iter().map(|b| &b.title).collect::<Vec<_>>()
+            );
+            Ok(Json(books))
+        }
+        Err(e) => {
+            error!("Failed to fetch books: {}", e);
+            warn!("Returning empty book list due to database error");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
 
 pub async fn create_book(
     State(pool): State<Pool<Sqlite>>,
@@ -36,7 +56,7 @@ pub async fn create_book(
         book.author, book.genre, book.rating
     );
 
-    match db_create_book(&pool, book).await {
+    match create_book_query(&pool, book).await {
         Ok(created_book) => {
             info!("Successfully created book with ID: {}", created_book.id);
 
@@ -46,7 +66,7 @@ pub async fn create_book(
                 }
                 _ => {
                     debug!("No cover image provided for book");
-                    if let Err(e) = set_default_book_cover(&pool, &created_book).await {
+                    if let Err(e) = default_book_cover_query(&pool, &created_book).await {
                         warn!("Failed to set default book cover: {}", e);
                         // Continue without failing the entire request
                     }
@@ -63,33 +83,13 @@ pub async fn create_book(
     }
 }
 
-pub async fn get_books(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<Book>>, StatusCode> {
-    debug!("Fetching all books from database");
-
-    match get_all_books(&pool).await {
-        Ok(books) => {
-            info!("Successfully retrieved {} books", books.len());
-            debug!(
-                "Books retrieved: {:?}",
-                books.iter().map(|b| &b.title).collect::<Vec<_>>()
-            );
-            Ok(Json(books))
-        }
-        Err(e) => {
-            error!("Failed to fetch books: {}", e);
-            warn!("Returning empty book list due to database error");
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
-        }
-    }
-}
-
-pub async fn get_single_book(
+pub async fn get_book_by_id(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
 ) -> Result<Json<Option<Book>>, StatusCode> {
     debug!("Fetching book with ID: {}", id);
 
-    match get_book_by_id(&pool, id).await {
+    match get_book_by_id_query(&pool, id).await {
         Ok(Some(book)) => {
             info!("Found book with ID {}: '{}'", id, book.title);
             Ok(Json(Some(book)))
@@ -100,6 +100,51 @@ pub async fn get_single_book(
         }
         Err(e) => {
             error!("Failed to fetch book by ID {}: {}", id, e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+pub async fn update_book(
+    State(pool): State<Pool<Sqlite>>,
+    Path(id): Path<i64>,
+    headers: HeaderMap,
+    Json(mut book): Json<Book>,
+) -> Result<Json<Book>, StatusCode> {
+    // Extract user_id from headers
+    let user_id = extract_user_id_from_headers(&headers)?;
+
+    book.user_id = user_id;
+
+    match update_book_query(&pool, id, book).await {
+        Ok(updated_book) => {
+            info!("Successfully updated book with ID: {}", updated_book.id);
+            Ok(Json(updated_book))
+        }
+        Err(e) => {
+            error!("Failed to update book: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+pub async fn delete_book(
+    State(pool): State<Pool<Sqlite>>,
+    axum::extract::Path(id): axum::extract::Path<i64>,
+) -> Result<StatusCode, StatusCode> {
+    if id <= 0 {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    info!("Deleting book with ID: {}", id);
+
+    match delete_book_query(&pool, id).await {
+        Ok(_) => {
+            info!("Successfully deleted book with ID: {}", id);
+            Ok(StatusCode::NO_CONTENT)
+        }
+        Err(e) => {
+            error!("Failed to delete book: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
