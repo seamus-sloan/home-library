@@ -39,6 +39,12 @@ export function StarRating({
 
     return (
         <div className="flex items-center gap-2">
+            {readonly && rating === null && (
+                <span className="ml-2 text-sm text-zinc-500">
+                    No rating
+                </span>
+            )}
+
             {/* Clear rating button */}
             {!readonly && rating !== null && rating > 0 && (
                 <button
