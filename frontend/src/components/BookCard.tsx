@@ -1,4 +1,5 @@
 import { BookIcon } from 'lucide-react'
+import { useParallaxScroll } from '../hooks/useParallaxScroll'
 import type { Book, BookWithDetails } from '../types'
 
 interface BookCardProps {
@@ -6,17 +7,25 @@ interface BookCardProps {
   onClick: () => void
 }
 export function BookCard({ book, onClick }: BookCardProps) {
+  const { offset, elementRef } = useParallaxScroll(1) // Increased for more noticeable effect
+
   return (
     <div
       className="bg-zinc-900/80 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border border-zinc-800/50 hover:border-amber-600/30 hover:bg-zinc-900/90 backdrop-blur-sm group"
       onClick={onClick}
+      ref={elementRef}
     >
-      <div className="h-48 bg-zinc-800/50 flex items-center justify-center relative overflow-hidden">
+      <div className="h-48 bg-zinc-800/50 relative overflow-hidden">
         {book.cover_image ? (
           <img
             src={book.cover_image}
             alt={`${book.title} cover`}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="absolute inset-0 w-full object-cover group-hover:scale-105 transition-all duration-300 ease-out"
+            style={{
+              height: 'calc(100% + 60px)', // Extra height for parallax movement
+              transform: `translateY(${offset - 30}px)`, // Center the extra space
+              transition: 'transform 0.1s ease-out'
+            }}
             onError={e => {
               const target = e.target as HTMLImageElement
               target.onerror = null
@@ -25,7 +34,14 @@ export function BookCard({ book, onClick }: BookCardProps) {
             }}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-amber-600">
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center text-amber-600 transition-all duration-300 ease-out"
+            style={{
+              height: 'calc(100% + 60px)', // Extra height for parallax movement
+              transform: `translateY(${offset - 30}px)`, // Center the extra space
+              transition: 'transform 0.1s ease-out'
+            }}
+          >
             <BookIcon size={48} />
             <span className="mt-2 text-sm font-medium">No cover image</span>
           </div>

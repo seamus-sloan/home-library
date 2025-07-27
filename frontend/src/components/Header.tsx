@@ -10,7 +10,7 @@ export function Header({ onAddClick }: HeaderProps) {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
   if (!currentUser) return null
   return (
-    <header className="bg-zinc-900 shadow-lg border-b border-zinc-800 backdrop-blur-sm">
+    <header className="bg-zinc-900 shadow-lg border-b border-zinc-800 backdrop-blur-sm relative z-40">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <Link
           to="/"

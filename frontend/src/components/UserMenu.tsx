@@ -28,7 +28,7 @@ export function UserMenu() {
     }
     if (!currentUser) return null
     return (
-        <div className="relative" ref={menuRef}>
+        <div className="relative z-50" ref={menuRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -39,7 +39,7 @@ export function UserMenu() {
                 </span>
             </button>
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-zinc-900/95 rounded-lg shadow-xl py-1 z-10 border border-zinc-800/50 backdrop-blur-sm">
+                <div className="absolute right-0 mt-2 w-48 bg-zinc-900/95 rounded-lg shadow-xl py-1 z-[9999] border border-zinc-800/50 backdrop-blur-sm">
                     <div className="px-4 py-2 border-b border-zinc-800/50">
                         <p className="text-sm text-amber-300">Signed in as</p>
                         <p className="font-medium text-amber-50">{currentUser.name}</p>
