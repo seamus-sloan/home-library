@@ -417,6 +417,37 @@ export function BookDetails({ }: BookDetailsProps) {
           </div>
         </div>
       )}
+
+      {/* Find it Online Section */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+          {/* Search on Goodreads */}
+          <a
+            href={`https://www.goodreads.com/search?q=${encodeURIComponent(bookWithDetails.title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center px-6 py-5 hover:bg-amber-100 hover:text-black transition-colors duration-200 rounded-lg border border-zinc-800 shadow-lg"
+            title="Search on Goodreads"
+            style={{ fontFamily: 'Tomorrow, sans-serif', fontWeight: 400 }}
+          >
+            <span>goodreads</span>
+          </a>
+
+          {/* Search on Storygraph */}
+          <a
+            href={`https://app.thestorygraph.com/browse?search_term=${encodeURIComponent(bookWithDetails.title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center px-6 py-5 hover:bg-amber-100 hover:text-black transition-colors duration-200 rounded-lg border border-zinc-800 shadow-lg"
+            title="Search on StoryGraph"
+            style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 500 }}
+          >
+            <span>The StoryGraph</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Reading Journal Section */}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-amber-50">Reading Journal</h3>

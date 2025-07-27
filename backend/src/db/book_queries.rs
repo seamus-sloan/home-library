@@ -311,13 +311,36 @@ pub async fn update_book_query(
     Ok(updated_book)
 }
 pub async fn delete_book_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), sqlx::Error> {
+    // Start a transaction to ensure all deletes succeed or fail together
+    let mut tx = pool.begin().await?;
+
+    // Delete associated book_tags first
+    sqlx::query!("DELETE FROM book_tags WHERE book_id = ?", id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Delete associated book_genres
+    sqlx::query!("DELETE FROM book_genres WHERE book_id = ?", id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Delete associated journal entries (these cascade due to foreign key constraint)
+    sqlx::query!("DELETE FROM journal_entries WHERE book_id = ?", id)
+        .execute(&mut *tx)
+        .await?;
+
+    // Finally delete the book itself
     let result = sqlx::query!("DELETE FROM books WHERE id = ?", id)
-        .execute(pool)
+        .execute(&mut *tx)
         .await?;
 
     if result.rows_affected() == 0 {
+        tx.rollback().await?;
         return Err(sqlx::Error::RowNotFound);
     }
+
+    // Commit the transaction
+    tx.commit().await?;
 
     Ok(())
 }

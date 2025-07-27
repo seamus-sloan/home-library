@@ -285,6 +285,10 @@ pub async fn delete_book(
             info!("Successfully deleted book with ID: {}", id);
             Ok(StatusCode::NO_CONTENT)
         }
+        Err(sqlx::Error::RowNotFound) => {
+            warn!("Attempted to delete non-existent book with ID: {}", id);
+            Err(StatusCode::NOT_FOUND)
+        }
         Err(e) => {
             error!("Failed to delete book: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
@@ -298,14 +302,31 @@ pub async fn get_book_journals(
 ) -> Result<Json<Vec<crate::models::JournalEntry>>, StatusCode> {
     debug!("Fetching journals for book with ID: {}", id);
 
-    match get_journals_by_book_id(&pool, id).await {
-        Ok(journals) => {
-            info!("Found {} journals for book ID {}", journals.len(), id);
-            Ok(Json(journals))
+    // First check if the book exists
+    let book_exists = sqlx::query!("SELECT id FROM books WHERE id = ?", id)
+        .fetch_optional(&pool)
+        .await;
+
+    match book_exists {
+        Ok(Some(_)) => {
+            // Book exists, now get its journals
+            match get_journals_by_book_id(&pool, id).await {
+                Ok(journals) => {
+                    info!("Found {} journals for book ID {}", journals.len(), id);
+                    Ok(Json(journals))
+                }
+                Err(e) => {
+                    error!("Failed to fetch journals for book ID {}: {}", id, e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
+        Ok(None) => {
+            warn!("Book with ID {} not found when fetching journals", id);
+            Err(StatusCode::NOT_FOUND)
         }
         Err(e) => {
-            error!("Failed to fetch journals for book ID {}: {}", id, e);
-            warn!("Returning empty journal list due to database error");
+            error!("Failed to check if book exists for ID {}: {}", id, e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

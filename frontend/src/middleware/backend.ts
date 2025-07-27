@@ -62,6 +62,18 @@ export const api = createApi({
         'Book'
       ],
     }),
+
+    deleteBook: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/books/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Book', id: id.toString() },
+        { type: 'Book', id: 'all' },
+        'Book'
+      ],
+    }),
     //#endregion
 
     //#region Journal Endpoints
@@ -210,6 +222,7 @@ export const {
   useGetBookQuery,
   useAddBookMutation,
   useUpdateBookMutation,
+  useDeleteBookMutation,
   useGetBookJournalsQuery,
   useGetJournalsQuery,
   useGetJournalQuery,

@@ -598,3 +598,335 @@ async fn test_create_book_bad_request_missing_content_type() {
         StatusCode::BAD_REQUEST | StatusCode::UNSUPPORTED_MEDIA_TYPE
     ));
 }
+
+#[tokio::test]
+async fn test_delete_book_basic() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Create a book
+    let book_id = test_app
+        .create_test_book(user_id, "Book to Delete", "Author")
+        .await;
+
+    // Delete the book
+    let (status, _body) = make_request(
+        &test_app,
+        "DELETE",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Verify the book is gone
+    let (status, _body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn test_delete_book_with_tags_and_genres() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Create a book with tags and genres
+    let book_id = test_app
+        .create_test_book(user_id, "Book with Tags", "Author")
+        .await;
+
+    let tag_id = test_app
+        .create_test_tag(user_id, "Fiction", "#ff0000")
+        .await;
+    let genre_id = test_app
+        .create_test_genre(user_id, "Mystery", "#00ff00")
+        .await;
+
+    test_app.add_tag_to_book(book_id, tag_id).await;
+    test_app.add_genre_to_book(book_id, genre_id).await;
+
+    // Verify the book has tags and genres
+    let (status, body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["tags"].as_array().unwrap().len(), 1);
+    assert_eq!(body["genres"].as_array().unwrap().len(), 1);
+
+    // Delete the book
+    let (status, _body) = make_request(
+        &test_app,
+        "DELETE",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Verify the book is gone
+    let (status, _body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    // Verify tags and genres still exist (they should not be deleted)
+    let (status, body) = make_request(&test_app, "GET", "/tags", user_id, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let tags = body.as_array().unwrap();
+    assert!(tags.iter().any(|t| t["id"] == tag_id));
+
+    let (status, body) = make_request(&test_app, "GET", "/genres", user_id, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let genres = body.as_array().unwrap();
+    assert!(genres.iter().any(|g| g["id"] == genre_id));
+}
+
+#[tokio::test]
+async fn test_delete_book_with_journals() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Create a book
+    let book_id = test_app
+        .create_test_book(user_id, "Book with Journals", "Author")
+        .await;
+
+    // Add journal entries to the book
+    let journal_data1 = json!({
+        "title": "First Journal Entry",
+        "content": "This is my first journal entry about this book.",
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z"
+    });
+
+    let journal_data2 = json!({
+        "title": "Second Journal Entry",
+        "content": "This is my second journal entry about this book.",
+        "created_at": "2025-01-02T00:00:00Z",
+        "updated_at": "2025-01-02T00:00:00Z"
+    });
+
+    let (status, _body) = make_request(
+        &test_app,
+        "POST",
+        &format!("/books/{}/journals", book_id),
+        user_id,
+        Some(journal_data1),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let (status, _body) = make_request(
+        &test_app,
+        "POST",
+        &format!("/books/{}/journals", book_id),
+        user_id,
+        Some(journal_data2),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    // Verify the book has journals
+    let (status, body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["journals"].as_array().unwrap().len(), 2);
+
+    // Delete the book
+    let (status, _body) = make_request(
+        &test_app,
+        "DELETE",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Verify the book is gone
+    let (status, _body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    // Verify journals are also deleted (cascade delete)
+    let (status, body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}/journals", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    // Should return 404 since the book doesn't exist
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn test_delete_book_complex_scenario() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Create a book with everything: tags, genres, and journals
+    let book_id = test_app
+        .create_test_book(user_id, "Complex Book", "Complex Author")
+        .await;
+
+    // Add multiple tags
+    let tag1_id = test_app
+        .create_test_tag(user_id, "Fiction", "#ff0000")
+        .await;
+    let tag2_id = test_app
+        .create_test_tag(user_id, "Award Winner", "#ffff00")
+        .await;
+
+    // Add multiple genres
+    let genre1_id = test_app
+        .create_test_genre(user_id, "Science Fiction", "#00ff00")
+        .await;
+    let genre2_id = test_app
+        .create_test_genre(user_id, "Dystopian", "#0000ff")
+        .await;
+
+    test_app.add_tag_to_book(book_id, tag1_id).await;
+    test_app.add_tag_to_book(book_id, tag2_id).await;
+    test_app.add_genre_to_book(book_id, genre1_id).await;
+    test_app.add_genre_to_book(book_id, genre2_id).await;
+
+    // Add journal entries
+    let journal_data = json!({
+        "title": "Reading Progress",
+        "content": "Started reading this amazing book today. The world-building is incredible!",
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z"
+    });
+
+    let (status, _body) = make_request(
+        &test_app,
+        "POST",
+        &format!("/books/{}/journals", book_id),
+        user_id,
+        Some(journal_data),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    // Verify the book has everything
+    let (status, body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["tags"].as_array().unwrap().len(), 2);
+    assert_eq!(body["genres"].as_array().unwrap().len(), 2);
+    assert_eq!(body["journals"].as_array().unwrap().len(), 1);
+
+    // Delete the book
+    let (status, _body) = make_request(
+        &test_app,
+        "DELETE",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NO_CONTENT);
+
+    // Verify the book is completely gone
+    let (status, _body) = make_request(
+        &test_app,
+        "GET",
+        &format!("/books/{}", book_id),
+        user_id,
+        None,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    // Verify tags and genres still exist (should not be cascade deleted)
+    let (status, body) = make_request(&test_app, "GET", "/tags", user_id, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let tags = body.as_array().unwrap();
+    assert!(tags.iter().any(|t| t["id"] == tag1_id));
+    assert!(tags.iter().any(|t| t["id"] == tag2_id));
+
+    let (status, body) = make_request(&test_app, "GET", "/genres", user_id, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let genres = body.as_array().unwrap();
+    assert!(genres.iter().any(|g| g["id"] == genre1_id));
+    assert!(genres.iter().any(|g| g["id"] == genre2_id));
+
+    // Verify the book no longer appears in the books list
+    let (status, body) = make_request(&test_app, "GET", "/books", user_id, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let books = body.as_array().unwrap();
+    assert!(!books.iter().any(|b| b["id"] == book_id));
+}
+
+#[tokio::test]
+async fn test_delete_book_not_found() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Try to delete a non-existent book
+    let (status, _body) = make_request(&test_app, "DELETE", "/books/99999", user_id, None).await;
+
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn test_delete_book_invalid_id() {
+    let test_app = TestApp::new().await;
+    let user_id = test_app.create_test_user().await;
+
+    // Try to delete with invalid book ID
+    let (status, _body) =
+        make_request(&test_app, "DELETE", "/books/not_a_number", user_id, None).await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+}
