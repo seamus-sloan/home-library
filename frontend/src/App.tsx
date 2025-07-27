@@ -88,6 +88,13 @@ function AppContent() {
 }
 
 export function App() {
+  // Disable browser's automatic scroll restoration
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+  }, [])
+
   return (
     <BrowserRouter>
       <AppContent />

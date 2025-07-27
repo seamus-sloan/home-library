@@ -1,23 +1,36 @@
 import { BookOpenIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 import { useGetBooksQuery } from '../middleware/backend'
 import { BookCard } from './BookCard'
 import { BookFilter } from './BookFilter'
 import { BookSearch } from './BookSearch'
 
 export function BookList() {
-  const navigate = useNavigate()
+  console.log('BookList: Component mounting/re-rendering')
+  const { navigateWithScrollState } = useScrollRestoration()
   const [searchQuery, setSearchQuery] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedGenre, setSelectedGenre] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
   const [selectedTag, setSelectedTag] = useState<string>('')
 
+  useEffect(() => {
+    console.log('BookList: useEffect ran - component mounted')
+  }, [])
+
   // Use RTK Query to fetch books with search parameter
   const { data: books = [], isLoading: loading, error } = useGetBooksQuery(
     searchQuery.trim() ? { search: searchQuery.trim() } : undefined
   )
+
+  // Restore scroll position after books are loaded
+  useEffect(() => {
+    if (!loading && books.length > 0) {
+      console.log('BookList: Books loaded, checking for scroll restoration')
+      // This will be handled by the useScrollRestoration hook, but we wait for content
+    }
+  }, [loading, books.length])
 
   // Get unique genres from books
   const genres = useMemo(() => {
@@ -69,7 +82,7 @@ export function BookList() {
   }, [books, selectedGenre, selectedRating, selectedTag])
 
   const handleBookClick = (bookId: number) => {
-    navigate(`/book/${bookId}`)
+    navigateWithScrollState(`/book/${bookId}`)
   }
 
   const clearFilters = () => {

@@ -1,14 +1,24 @@
 import { BookOpenIcon, PlusCircleIcon } from 'lucide-react'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { RootState } from '../store/store'
 import { UserMenu } from './UserMenu'
+
 interface HeaderProps {
   onAddClick: () => void
 }
+
 export function Header({ onAddClick }: HeaderProps) {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
+  const navigate = useNavigate()
+
   if (!currentUser) return null
+
+  const handleAddClick = () => {
+    onAddClick()
+    navigate('/')
+  }
+
   return (
     <header className="bg-zinc-900 shadow-lg border-b border-zinc-800 backdrop-blur-sm relative z-40">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
@@ -23,7 +33,7 @@ export function Header({ onAddClick }: HeaderProps) {
         </Link>
         <div className="flex items-center gap-4">
           <button
-            onClick={onAddClick}
+            onClick={handleAddClick}
             className="flex items-center gap-2 bg-amber-900/40 hover:bg-amber-800/50 text-amber-100 px-4 py-2 rounded-lg border border-amber-700/30 hover:border-amber-600/50 transition-all duration-200 font-medium"
           >
             <PlusCircleIcon size={18} />

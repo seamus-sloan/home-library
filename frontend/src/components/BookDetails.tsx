@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
 import type { Book, Genre, JournalEntry, Tag } from '../types'
 import { AddJournalForm } from './AddJournalForm'
@@ -28,6 +28,7 @@ const isLightColor = (color: string): boolean => {
 export function BookDetails({ }: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // Use RTK Query to fetch book data (now includes tags and journals)
   const { data: bookWithDetails, isLoading: loading, error } = useGetBookQuery(id || '', {
@@ -87,6 +88,21 @@ export function BookDetails({ }: BookDetailsProps) {
     }
   }, [bookWithDetails])
 
+  // Function to navigate back with scroll position restoration
+  const handleBackNavigation = () => {
+    console.log('BookDetails: handleBackNavigation called, location.state =', location.state)
+    if (location.state?.scrollPosition !== undefined) {
+      console.log('BookDetails: Navigating back with scroll position:', location.state.scrollPosition)
+      // Navigate back and restore scroll position
+      navigate('/', {
+        state: { scrollPosition: location.state.scrollPosition }
+      })
+    } else {
+      console.log('BookDetails: No scroll position to restore, navigating normally')
+      navigate('/')
+    }
+  }
+
   if (loading) {
     return (
       <div className="text-center py-10">
@@ -102,7 +118,7 @@ export function BookDetails({ }: BookDetailsProps) {
           {error ? 'Error loading book' : 'Book not found'}
         </h2>
         <button
-          onClick={() => navigate('/')}
+          onClick={handleBackNavigation}
           className="text-amber-400 hover:text-amber-300 flex items-center gap-2 mx-auto"
         >
           <ArrowLeftIcon size={18} />
@@ -185,7 +201,7 @@ export function BookDetails({ }: BookDetailsProps) {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
         <button
-          onClick={() => navigate('/')}
+          onClick={handleBackNavigation}
           className="mr-4 text-amber-400 hover:text-amber-200"
           aria-label="Go back"
         >
