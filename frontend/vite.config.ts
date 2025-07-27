@@ -9,6 +9,7 @@ export default defineConfig({
       '/books': 'http://localhost:3000',
       '/journals': 'http://localhost:3000',
       '/tags': 'http://localhost:3000',
+      '/genres': 'http://localhost:3000',
     },
   },
   plugins: [react()],

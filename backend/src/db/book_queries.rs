@@ -198,6 +198,40 @@ pub async fn create_book_tags(
     Ok(())
 }
 
+pub async fn create_book_genres(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    genre_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    debug!(
+        "Creating book_genres relationships for book {} with {} genres",
+        book_id,
+        genre_ids.len()
+    );
+
+    for &genre_id in genre_ids {
+        sqlx::query!(
+            "INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)",
+            book_id,
+            genre_id
+        )
+        .execute(pool)
+        .await?;
+
+        debug!(
+            "Created book_genre relationship: book_id={}, genre_id={}",
+            book_id, genre_id
+        );
+    }
+
+    info!(
+        "Successfully created {} book_genre relationships for book {}",
+        genre_ids.len(),
+        book_id
+    );
+    Ok(())
+}
+
 pub async fn update_book_query(
     pool: &Pool<Sqlite>,
     id: i64,
@@ -359,6 +393,25 @@ pub async fn delete_book_tags(pool: &Pool<Sqlite>, book_id: i64) -> Result<(), s
     Ok(())
 }
 
+pub async fn delete_book_genres(pool: &Pool<Sqlite>, book_id: i64) -> Result<(), sqlx::Error> {
+    debug!(
+        "Deleting all book_genres relationships for book {}",
+        book_id
+    );
+
+    let result = sqlx::query("DELETE FROM book_genres WHERE book_id = ?")
+        .bind(book_id)
+        .execute(pool)
+        .await?;
+
+    info!(
+        "Deleted {} book_genre relationships for book {}",
+        result.rows_affected(),
+        book_id
+    );
+    Ok(())
+}
+
 pub async fn update_book_tags(
     pool: &Pool<Sqlite>,
     book_id: i64,
@@ -379,6 +432,29 @@ pub async fn update_book_tags(
     }
 
     info!("Successfully updated book_tags for book {}", book_id);
+    Ok(())
+}
+
+pub async fn update_book_genres(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    genre_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    debug!(
+        "Updating book_genres relationships for book {} with {} genres",
+        book_id,
+        genre_ids.len()
+    );
+
+    // First, delete all existing genres for this book
+    delete_book_genres(pool, book_id).await?;
+
+    // Then add the new genres if any
+    if !genre_ids.is_empty() {
+        create_book_genres(pool, book_id, genre_ids).await?;
+    }
+
+    info!("Successfully updated book_genres for book {}", book_id);
     Ok(())
 }
 

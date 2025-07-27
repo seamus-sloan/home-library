@@ -4,7 +4,6 @@ export interface Book {
   cover_image: string | null
   title: string
   author: string
-  genre: string
   rating: number | null
   created_at: string
   updated_at: string
@@ -29,6 +28,15 @@ export interface Tag {
   updated_at: string
 }
 
+export interface Genre {
+  id: number
+  user_id: number | null
+  name: string
+  color: string
+  created_at: string
+  updated_at: string
+}
+
 export interface User {
   id: number,
   name: string,
@@ -44,6 +52,12 @@ export interface BookTag {
   color: string
 }
 
+export interface BookGenre {
+  id: number
+  name: string
+  color: string
+}
+
 export interface JournalUser {
   id: number
   name: string
@@ -53,30 +67,32 @@ export interface JournalUser {
 export interface BookJournal {
   id: number
   title: string
-  content: string
-  user: JournalUser
   created_at: string
 }
 
-export interface BookWithDetails {
-  id: number
-  user_id: number
+export interface BookWithDetails extends Book {
+  tags: BookTag[]
+  genres: BookGenre[]
+  journals: BookJournal[]
+}
+
+export interface CreateBookRequest {
+  user_id: number | null
   cover_image: string | null
   title: string
   author: string
-  genre: string
   rating: number | null
   created_at: string
   updated_at: string
-  tags: BookTag[]
-  journals: BookJournal[]
+  tags?: number[]
+  genres?: number[]
 }
 
 export interface UpdateBookRequest {
   cover_image?: string | null
   title?: string
   author?: string
-  genre?: string
   rating?: number | null
   tags?: number[]
+  genres?: number[]
 }

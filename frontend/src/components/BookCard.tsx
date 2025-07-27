@@ -37,10 +37,48 @@ export function BookCard({ book, onClick }: BookCardProps) {
           {book.title}
         </h3>
         <p className="text-amber-200 font-medium mb-3">by {book.author}</p>
-        <div className="mt-2">
-          <span className="inline-block bg-amber-900/40 text-amber-200 text-xs px-3 py-1.5 rounded-full border border-amber-700/30 font-medium">
-            {book.genre || 'Uncategorized'}
-          </span>
+        <div className="mt-2 space-y-2">
+          {/* Genres */}
+          {'genres' in book && book.genres && book.genres.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {book.genres.map(genre => (
+                <span
+                  key={genre.id}
+                  className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
+                  style={{
+                    backgroundColor: `${genre.color}20`,
+                    borderColor: `${genre.color}50`,
+                    color: genre.color
+                  }}
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="inline-block bg-amber-900/40 text-amber-200 text-xs px-3 py-1.5 rounded-full border border-amber-700/30 font-medium">
+              Uncategorized
+            </span>
+          )}
+
+          {/* Tags */}
+          {'tags' in book && book.tags && book.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {book.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
+                  style={{
+                    backgroundColor: `${tag.color}20`,
+                    borderColor: `${tag.color}50`,
+                    color: tag.color
+                  }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

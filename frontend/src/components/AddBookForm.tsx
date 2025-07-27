@@ -3,16 +3,17 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useAddBookMutation } from '../middleware/backend'
 import type { RootState } from '../store/store'
-import type { Tag } from '../types'
+import type { Genre, Tag } from '../types'
+import { GenreSearch } from './GenreSearch'
 import { TagSearch } from './TagSearch'
 
 interface AddBookFormProps {
   onSubmit: (book: {
     title: string
     author: string
-    genre: string
     cover_image: string
     tags?: Tag[]
+    genres?: Genre[]
   }) => void
   onCancel: () => void
 }
@@ -23,10 +24,10 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
   const [formData, setFormData] = useState({
     title: '',
     author: '',
-    genre: '',
     cover_image: '',
   })
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([])
   const [errors, setErrors] = useState({
     title: '',
     author: '',
@@ -67,19 +68,20 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
         user_id: currentUser?.id || null,
         title: formData.title,
         author: formData.author,
-        genre: formData.genre,
         cover_image: formData.cover_image || null,
-        rating: 0, // Default rating
+        rating: null, // Default rating
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        tags: selectedTags.map(tag => tag.id),
+        genres: selectedGenres.map(genre => genre.id),
       }).unwrap()
 
       onSubmit({
         title: newBook.title,
         author: newBook.author,
-        genre: newBook.genre,
         cover_image: newBook.cover_image || '',
-        tags: selectedTags
+        tags: selectedTags,
+        genres: selectedGenres
       })
     } catch (error) {
       console.error('Error adding book:', error)
@@ -146,31 +148,18 @@ export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
           )}
         </div>
         <div className="mb-4">
-          <label
-            htmlFor="genre"
-            className="block text-amber-200 font-medium mb-2"
-          >
-            Genre
+          <label className="block text-amber-200 font-medium mb-2">
+            Genres
           </label>
-          <select
-            id="genre"
-            name="genre"
-            value={formData.genre}
-            onChange={handleChange}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
-          >
-            <option value="">Select a genre</option>
-            <option value="Fiction">Fiction</option>
-            <option value="Non-fiction">Non-fiction</option>
-            <option value="Science Fiction">Science Fiction</option>
-            <option value="Fantasy">Fantasy</option>
-            <option value="Mystery">Mystery</option>
-            <option value="Thriller">Thriller</option>
-            <option value="Romance">Romance</option>
-            <option value="Biography">Biography</option>
-            <option value="History">History</option>
-            <option value="Self-Help">Self-Help</option>
-          </select>
+          <GenreSearch
+            selectedGenres={selectedGenres}
+            onGenresChange={setSelectedGenres}
+            placeholder="Search and select genres for this book..."
+            multiple={true}
+          />
+          <p className="text-amber-400 text-sm mt-1">
+            Add genres to help categorize and find this book later
+          </p>
         </div>
         <div className="mb-6">
           <label

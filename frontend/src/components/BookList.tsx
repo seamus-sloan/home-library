@@ -21,7 +21,9 @@ export function BookList() {
 
   // Get unique genres from books
   const genres = useMemo(() => {
-    const genreSet = new Set(books.map(book => book.genre).filter(Boolean))
+    const genreSet = new Set(books.flatMap(book =>
+      book.genres?.map(genre => genre.name) || []
+    ))
     return Array.from(genreSet).sort()
   }, [books])
 
@@ -42,8 +44,11 @@ export function BookList() {
   const filteredBooks = useMemo(() => {
     return books.filter(book => {
       // Genre filter
-      if (selectedGenre && book.genre !== selectedGenre) {
-        return false
+      if (selectedGenre) {
+        const bookGenreNames = book.genres?.map(genre => genre.name) || []
+        if (!bookGenreNames.includes(selectedGenre)) {
+          return false
+        }
       }
 
       // Rating filter
@@ -53,7 +58,7 @@ export function BookList() {
 
       // Tag filter
       if (selectedTag) {
-        const bookTagNames = book.tags.map(tag => tag.name)
+        const bookTagNames = book.tags?.map(tag => tag.name) || []
         if (!bookTagNames.includes(selectedTag)) {
           return false
         }

@@ -2,8 +2,9 @@ import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
-import type { Book, JournalEntry, Tag } from '../types'
+import type { Book, Genre, JournalEntry, Tag } from '../types'
 import { AddJournalForm } from './AddJournalForm'
+import { GenreSearch } from './GenreSearch'
 import { JournalList } from './JournalList'
 import { StarRating } from './StarRating'
 import { TagSearch } from './TagSearch'
@@ -27,6 +28,7 @@ export function BookDetails({ }: BookDetailsProps) {
   const [isAddingJournal, setIsAddingJournal] = useState(false)
   const [editFormData, setEditFormData] = useState<Book | null>(null)
   const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([])
   const [errors, setErrors] = useState({
     title: '',
     author: '',
@@ -42,12 +44,12 @@ export function BookDetails({ }: BookDetailsProps) {
         cover_image: bookWithDetails.cover_image,
         title: bookWithDetails.title,
         author: bookWithDetails.author,
-        genre: bookWithDetails.genre,
         rating: bookWithDetails.rating,
         created_at: bookWithDetails.created_at,
         updated_at: bookWithDetails.updated_at,
       }
       setEditFormData(bookForEditing)
+
       // Convert BookTag to Tag format for the tag selector
       const tagsForEditing: Tag[] = (bookWithDetails.tags || []).map(bookTag => ({
         id: bookTag.id,
@@ -58,6 +60,17 @@ export function BookDetails({ }: BookDetailsProps) {
         updated_at: new Date().toISOString(), // We don't have this from BookTag
       }))
       setSelectedTags(tagsForEditing)
+
+      // Convert BookGenre to Genre format for the genre selector
+      const genresForEditing: Genre[] = (bookWithDetails.genres || []).map(bookGenre => ({
+        id: bookGenre.id,
+        user_id: bookWithDetails.user_id,
+        name: bookGenre.name,
+        color: bookGenre.color,
+        created_at: new Date().toISOString(), // We don't have this from BookGenre
+        updated_at: new Date().toISOString(), // We don't have this from BookGenre
+      }))
+      setSelectedGenres(genresForEditing)
     }
   }, [bookWithDetails])
 
@@ -131,10 +144,10 @@ export function BookDetails({ }: BookDetailsProps) {
         book: {
           title: editFormData.title,
           author: editFormData.author,
-          genre: editFormData.genre,
           cover_image: editFormData.cover_image,
           rating: editFormData.rating,
           tags: selectedTags.map(tag => tag.id), // Include selected tag IDs
+          genres: selectedGenres.map(genre => genre.id), // Include selected genre IDs
         }
       }).unwrap()
       setIsEditing(false)
@@ -224,31 +237,18 @@ export function BookDetails({ }: BookDetailsProps) {
             )}
           </div>
           <div className="mb-4">
-            <label
-              htmlFor="genre"
-              className="block text-amber-200 font-medium mb-2"
-            >
-              Genre
+            <label className="block text-amber-200 font-medium mb-2">
+              Genres
             </label>
-            <select
-              id="genre"
-              name="genre"
-              value={editFormData.genre}
-              onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
-            >
-              <option value="">Select a genre</option>
-              <option value="Fiction">Fiction</option>
-              <option value="Non-fiction">Non-fiction</option>
-              <option value="Science Fiction">Science Fiction</option>
-              <option value="Fantasy">Fantasy</option>
-              <option value="Mystery">Mystery</option>
-              <option value="Thriller">Thriller</option>
-              <option value="Romance">Romance</option>
-              <option value="Biography">Biography</option>
-              <option value="History">History</option>
-              <option value="Self-Help">Self-Help</option>
-            </select>
+            <GenreSearch
+              selectedGenres={selectedGenres}
+              onGenresChange={setSelectedGenres}
+              placeholder="Search and select genres for this book..."
+              multiple={true}
+            />
+            <p className="text-amber-400 text-sm mt-1">
+              Add genres to help categorize and find this book later
+            </p>
           </div>
           <div className="mb-6">
             <label
@@ -355,11 +355,26 @@ export function BookDetails({ }: BookDetailsProps) {
             <div className="flex-grow">
               <h1 className="text-3xl font-bold text-amber-50 mb-2">{bookWithDetails.title}</h1>
               <p className="text-xl text-amber-200 mb-4">by {bookWithDetails.author}</p>
-              {bookWithDetails.genre && (
+
+              {/* Display genres */}
+              {bookWithDetails.genres && bookWithDetails.genres.length > 0 && (
                 <div className="mb-4">
-                  <span className="inline-block bg-amber-900/40 text-amber-200 px-3 py-1 rounded-full border border-amber-700/30">
-                    {bookWithDetails.genre}
-                  </span>
+                  <h4 className="text-sm font-medium text-amber-200 mb-2">Genres:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {bookWithDetails.genres.map((genre) => (
+                      <span
+                        key={genre.id}
+                        className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
+                        style={{
+                          backgroundColor: `${genre.color}20`,
+                          borderColor: `${genre.color}50`,
+                          color: genre.color
+                        }}
+                      >
+                        {genre.name}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
               {/* Display rating */}

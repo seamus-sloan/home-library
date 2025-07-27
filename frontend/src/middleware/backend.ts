@@ -2,7 +2,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { User } from "../contexts/UserContext"
 import type { RootState } from '../store/store'
-import type { Book, BookWithDetails, JournalEntry, Tag, UpdateBookRequest } from "../types"
+import type { Book, BookWithDetails, CreateBookRequest, Genre, JournalEntry, Tag, UpdateBookRequest } from "../types"
 
 // Define our API slice
 export const api = createApi({
@@ -21,7 +21,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['Book', 'JournalEntry', 'Tag', 'User'],
+  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User'],
   endpoints: (builder) => ({
     // #region Book Endpoints
     getBooks: builder.query<BookWithDetails[], { search?: string } | void>({
@@ -41,7 +41,7 @@ export const api = createApi({
       providesTags: (_result, _error, id) => [{ type: 'Book', id }],
     }),
     
-    addBook: builder.mutation<Book, Omit<Book, 'id'>>({
+    addBook: builder.mutation<Book, CreateBookRequest>({
       query: (book) => ({
         url: '/books',
         method: 'POST',
@@ -142,6 +142,50 @@ export const api = createApi({
     }),
     //#endregion
 
+    //#region Genre Endpoints
+    getGenres: builder.query<Genre[], { name?: string } | void>({
+      query: (params) => {
+        const name = params && typeof params === 'object' && 'name' in params ? params.name : undefined
+        return name ? `/genres?name=${encodeURIComponent(name)}` : '/genres'
+      },
+      providesTags: ['Genre'],
+    }),
+
+    getGenre: builder.query<Genre, number>({
+      query: (id) => `/genres/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Genre', id }],
+    }),
+
+    addGenre: builder.mutation<Genre, { name: string; color: string }>({
+      query: (genre) => ({
+        url: '/genres',
+        method: 'POST',
+        body: genre,
+      }),
+      invalidatesTags: ['Genre'],
+    }),
+
+    updateGenre: builder.mutation<Genre, { 
+      id: number; 
+      genre: { name: string; color: string }; 
+    }>({
+      query: ({ id, genre }) => ({
+        url: `/genres/${id}`,
+        method: 'PUT',
+        body: genre,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Genre', id }, 'Genre'],
+    }),
+
+    deleteGenre: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/genres/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, id) => [{ type: 'Genre', id }, 'Genre'],
+    }),
+    //#endregion
+
     //#region User Endpoints
     getUsers: builder.query<User[], void>({
       query: () => '/users',
@@ -175,6 +219,11 @@ export const {
   useAddTagMutation,
   useUpdateTagMutation,
   useDeleteTagMutation,
+  useGetGenresQuery,
+  useGetGenreQuery,
+  useAddGenreMutation,
+  useUpdateGenreMutation,
+  useDeleteGenreMutation,
   useGetUsersQuery,
   useSelectUserMutation,
 } = api
