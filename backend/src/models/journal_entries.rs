@@ -11,3 +11,9 @@ pub struct JournalEntry {
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
 }
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct UpdateJournalRequest {
+    pub title: Option<String>,
+    pub content: Option<String>,
+}

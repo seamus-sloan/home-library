@@ -82,7 +82,7 @@ pub async fn update_genre_query(
     
     let updated_genre = sqlx::query_as!(
         Genre,
-        "UPDATE genres SET name = ?, color = ? WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
+        "UPDATE genres SET name = ?, color = ?, updated_at = datetime('now') WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
         genre.name,
         genre.color,
         id

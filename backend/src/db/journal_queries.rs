@@ -17,27 +17,37 @@ pub async fn create_journal_entry(
         journal.title, journal.content
     );
 
-    let result = sqlx::query!(
-        "INSERT INTO journal_entries (book_id, user_id, title, content) VALUES (?, ?, ?, ?)",
+    let row = sqlx::query!(
+        "INSERT INTO journal_entries (book_id, user_id, title, content) VALUES (?, ?, ?, ?) 
+         RETURNING id, book_id, user_id, title, content, created_at, updated_at",
         journal.book_id,
         journal.user_id,
         journal.title,
         journal.content
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await?;
 
-    journal.id = result.last_insert_rowid();
+    let created_journal = JournalEntry {
+        id: row.id.unwrap(),
+        book_id: row.book_id,
+        user_id: row.user_id,
+        title: row.title,
+        content: row.content,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+    };
+
     info!(
         "Successfully created journal entry '{}' with ID: {} for user: {}",
-        journal.title, journal.id, journal.user_id
+        created_journal.title, created_journal.id, created_journal.user_id
     );
     debug!(
         "New journal entry record: ID={}, Book ID={}, User ID={}, Title='{}'",
-        journal.id, journal.book_id, journal.user_id, journal.title
+        created_journal.id, created_journal.book_id, created_journal.user_id, created_journal.title
     );
 
-    Ok(journal)
+    Ok(created_journal)
 }
 
 pub async fn get_all_journals(pool: &Pool<Sqlite>) -> Result<Vec<JournalEntry>, sqlx::Error> {
@@ -122,4 +132,51 @@ pub async fn get_journals_by_book_id(
     }
 
     Ok(journals)
+}
+
+pub async fn update_journal_entry(
+    pool: &Pool<Sqlite>,
+    journal_id: i64,
+    title: Option<String>,
+    content: Option<String>,
+) -> Result<JournalEntry, sqlx::Error> {
+    debug!("Updating journal entry with ID: {}", journal_id);
+
+    // Get current journal data to fill in missing fields
+    let current_journal = sqlx::query_as!(
+        JournalEntry,
+        "SELECT id, book_id, user_id, title, content, created_at, updated_at FROM journal_entries WHERE id = ?",
+        journal_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    let final_title = title.unwrap_or(current_journal.title);
+    let final_content = content.unwrap_or(current_journal.content);
+
+    let row = sqlx::query!(
+        "UPDATE journal_entries SET title = ?, content = ?, updated_at = datetime('now') WHERE id = ? 
+         RETURNING id, book_id, user_id, title, content, created_at, updated_at",
+        final_title,
+        final_content,
+        journal_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    let updated_journal = JournalEntry {
+        id: row.id,
+        book_id: row.book_id,
+        user_id: row.user_id,
+        title: row.title,
+        content: row.content,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+    };
+
+    info!(
+        "Updated journal entry with ID {}: title='{}', content length={}",
+        updated_journal.id, updated_journal.title, updated_journal.content.len()
+    );
+    Ok(updated_journal)
 }

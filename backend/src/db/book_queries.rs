@@ -225,7 +225,7 @@ pub async fn default_book_cover_query(
     Ok(body.url)
 }
 
-pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
+pub async fn create_book_query(pool: &Pool<Sqlite>, book: Book) -> Result<Book, sqlx::Error> {
     debug!(
         "Attempting to create book: '{}' for user: {}",
         book.title, book.user_id
@@ -235,28 +235,39 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Bo
         book.author, book.rating
     );
 
-    let result = sqlx::query!(
-        "INSERT INTO books (user_id, cover_image, title, author, rating) VALUES (?, ?, ?, ?, ?)",
+    let row = sqlx::query!(
+        "INSERT INTO books (user_id, cover_image, title, author, rating) VALUES (?, ?, ?, ?, ?) 
+         RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
         book.user_id,
         book.cover_image,
         book.title,
         book.author,
         book.rating
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await?;
 
-    book.id = result.last_insert_rowid();
+    let created_book = Book {
+        id: row.id.unwrap(),
+        user_id: row.user_id,
+        cover_image: row.cover_image,
+        title: row.title,
+        author: row.author,
+        rating: row.rating,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+    };
+
     info!(
         "Successfully created book '{}' with ID: {} for user: {}",
-        book.title, book.id, book.user_id
+        created_book.title, created_book.id, created_book.user_id
     );
     debug!(
         "New book record: ID={}, User ID={}, Title='{}', Author='{}'",
-        book.id, book.user_id, book.title, book.author
+        created_book.id, created_book.user_id, created_book.title, created_book.author
     );
 
-    Ok(book)
+    Ok(created_book)
 }
 
 pub async fn create_book_tags(
@@ -298,7 +309,7 @@ pub async fn update_book_query(
 ) -> Result<Book, sqlx::Error> {
     let updated_book = sqlx::query_as!(
         Book,
-        "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ? WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
+        "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
         book.cover_image,
         book.title,
         book.author,

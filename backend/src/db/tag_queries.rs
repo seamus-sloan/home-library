@@ -46,7 +46,7 @@ pub async fn create_tag_query(pool: &Pool<Sqlite>, tag: Tag) -> Result<Tag, sqlx
 pub async fn update_tag_query(pool: &Pool<Sqlite>, id: i64, tag: Tag) -> Result<Tag, sqlx::Error> {
     let updated_tag = sqlx::query_as!(
         Tag,
-        "UPDATE tags SET name = ?, color = ? WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
+        "UPDATE tags SET name = ?, color = ?, updated_at = datetime('now') WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
         tag.name,
         tag.color,
         id
