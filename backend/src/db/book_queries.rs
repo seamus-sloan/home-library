@@ -5,6 +5,7 @@ use std::error::Error;
 use tracing::{debug, info, warn};
 use url::form_urlencoded;
 
+use crate::models::books::BookGenre;
 use crate::models::{Book, BookJournal, BookTag, BookWithDetails};
 
 #[derive(Deserialize)]
@@ -78,7 +79,7 @@ pub async fn get_all_books_query(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx:
 
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
+        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at FROM books"
     )
     .fetch_all(pool)
     .await?;
@@ -106,7 +107,7 @@ pub async fn search_books_query(
 
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at 
+        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at 
          FROM books 
          WHERE title LIKE ? OR author LIKE ?
          ORDER BY title",
@@ -135,17 +136,16 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Bo
         book.title, book.user_id
     );
     debug!(
-        "Book details - Author: '{}', Genre: '{}', Rating: {:?}",
-        book.author, book.genre, book.rating
+        "Book details - Author: '{}', Rating: {:?}",
+        book.author, book.rating
     );
 
     let result = sqlx::query!(
-        "INSERT INTO books (user_id, cover_image, title, author, genre, rating) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO books (user_id, cover_image, title, author, rating) VALUES (?, ?, ?, ?, ?)",
         book.user_id,
         book.cover_image,
         book.title,
         book.author,
-        book.genre,
         book.rating
     )
     .execute(pool)
@@ -205,11 +205,10 @@ pub async fn update_book_query(
 ) -> Result<Book, sqlx::Error> {
     let updated_book = sqlx::query_as!(
         Book,
-        "UPDATE books SET cover_image = ?, title = ?, author = ?, genre = ?, rating = ? WHERE id = ? RETURNING id, user_id, cover_image, title, author, genre, rating, created_at, updated_at",
+        "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ? WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
         book.cover_image,
         book.title,
         book.author,
-        book.genre,
         book.rating,
         id
     )
@@ -239,7 +238,7 @@ pub async fn get_book_details_query(
     // First get the book
     let book = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books WHERE id = ?",
+        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at FROM books WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -274,6 +273,29 @@ pub async fn get_book_details_query(
         .collect();
 
     debug!("Found {} tags for book {}", book_tags.len(), id);
+
+    // Get genres for the book
+    let genres = sqlx::query(
+        "SELECT g.id, g.name, g.color 
+         FROM genres g 
+         INNER JOIN book_genres bg ON g.id = bg.genre_id 
+         WHERE bg.book_id = ?
+         ORDER BY g.name",
+    )
+    .bind(id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_genres: Vec<BookGenre> = genres
+        .into_iter()
+        .map(|row| BookGenre {
+            id: row.get("id"),
+            name: row.get("name"),
+            color: row.get("color"),
+        })
+        .collect();
+
+    debug!("Found {} genres for book {}", book_genres.len(), id);
 
     // Get journals for the book with user information
     let journals = sqlx::query(
@@ -310,11 +332,11 @@ pub async fn get_book_details_query(
         cover_image: book.cover_image,
         title: book.title,
         author: book.author,
-        genre: book.genre,
         rating: book.rating,
         created_at: book.created_at,
         updated_at: book.updated_at,
         tags: book_tags,
+        genres: book_genres,
         journals: book_journals,
     };
 
@@ -368,7 +390,7 @@ pub async fn get_all_books_with_details_query(
     // First get all books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at FROM books"
+        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at FROM books"
     )
     .fetch_all(pool)
     .await?;
@@ -393,6 +415,27 @@ pub async fn get_all_books_with_details_query(
         let book_tags: Vec<BookTag> = tags
             .into_iter()
             .map(|row| BookTag {
+                id: row.get("id"),
+                name: row.get("name"),
+                color: row.get("color"),
+            })
+            .collect();
+
+        // Get genres for each book
+        let genres = sqlx::query(
+            "SELECT g.id, g.name, g.color 
+             FROM genres g 
+             INNER JOIN book_genres bg ON g.id = bg.genre_id 
+             WHERE bg.book_id = ?
+             ORDER BY g.name",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_genres: Vec<BookGenre> = genres
+            .into_iter()
+            .map(|row| BookGenre {
                 id: row.get("id"),
                 name: row.get("name"),
                 color: row.get("color"),
@@ -432,11 +475,11 @@ pub async fn get_all_books_with_details_query(
             cover_image: book.cover_image,
             title: book.title,
             author: book.author,
-            genre: book.genre,
             rating: book.rating,
             created_at: book.created_at,
             updated_at: book.updated_at,
             tags: book_tags,
+            genres: book_genres,
             journals: book_journals,
         };
 
@@ -464,7 +507,7 @@ pub async fn search_books_with_details_query(
     // First get matching books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, genre, rating, created_at, updated_at 
+        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at 
          FROM books 
          WHERE title LIKE ? OR author LIKE ?
          ORDER BY updated_at DESC",
@@ -504,6 +547,27 @@ pub async fn search_books_with_details_query(
             })
             .collect();
 
+        // Get genres for each book
+        let genres = sqlx::query(
+            "SELECT g.id, g.name, g.color 
+             FROM genres g 
+             INNER JOIN book_genres bg ON g.id = bg.genre_id 
+             WHERE bg.book_id = ?
+             ORDER BY g.name",
+        )
+        .bind(book.id)
+        .fetch_all(pool)
+        .await?;
+
+        let book_genres: Vec<BookGenre> = genres
+            .into_iter()
+            .map(|row| BookGenre {
+                id: row.get("id"),
+                name: row.get("name"),
+                color: row.get("color"),
+            })
+            .collect();
+
         // Get journals for the book with user information
         let journals = sqlx::query(
             "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
@@ -537,11 +601,11 @@ pub async fn search_books_with_details_query(
             cover_image: book.cover_image,
             title: book.title,
             author: book.author,
-            genre: book.genre,
             rating: book.rating,
             created_at: book.created_at,
             updated_at: book.updated_at,
             tags: book_tags,
+            genres: book_genres,
             journals: book_journals,
         };
 

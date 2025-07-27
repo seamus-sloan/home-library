@@ -26,5 +26,10 @@ pub async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/tags/{id}", get(get_tag_by_id))
         .route("/tags/{id}", put(update_tag))
         .route("/tags/{id}", delete(delete_tag))
+        .route("/genres", get(get_genres))
+        .route("/genres", post(create_genre))
+        .route("/genres/{id}", get(get_genre_by_id))
+        .route("/genres/{id}", put(update_genre))
+        .route("/genres/{id}", delete(delete_genre))
         .with_state(pool)
 }

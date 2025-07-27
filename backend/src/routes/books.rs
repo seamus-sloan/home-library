@@ -77,7 +77,6 @@ pub async fn create_book(
         cover_image: request.cover_image,
         title: request.title,
         author: request.author,
-        genre: request.genre,
         rating: request.rating,
         created_at: None,
         updated_at: None,
@@ -85,8 +84,8 @@ pub async fn create_book(
 
     info!("Creating new book: {} for user: {}", book.title, user_id);
     debug!(
-        "Book details - Author: {}, Genre: {}, Rating: {:?}",
-        book.author, book.genre, book.rating
+        "Book details - Author: {}, Rating: {:?}",
+        book.author, book.rating
     );
 
     match create_book_query(&pool, book).await {
@@ -104,6 +103,32 @@ pub async fn create_book(
                         error!("Failed to create book_tags relationships: {}", e);
                         // Continue without failing the entire request
                         warn!("Book created successfully but tags were not associated");
+                    }
+                }
+            }
+
+            // Handle genres if provided
+            if let Some(genre_ids) = request.genres {
+                if !genre_ids.is_empty() {
+                    debug!(
+                        "Creating book_genres relationships for {} genres",
+                        genre_ids.len()
+                    );
+                    for genre_id in genre_ids {
+                        if let Err(e) = crate::db::genre_queries::add_genre_to_book_query(
+                            &pool,
+                            created_book.id,
+                            genre_id,
+                        )
+                        .await
+                        {
+                            error!(
+                                "Failed to create book_genres relationship for genre_id {}: {}",
+                                genre_id, e
+                            );
+                            // Continue without failing the entire request
+                            warn!("Book created successfully but some genres were not associated");
+                        }
                     }
                 }
             }
@@ -182,7 +207,6 @@ pub async fn update_book(
         cover_image: request.cover_image.or(current_book.cover_image),
         title: request.title.unwrap_or(current_book.title),
         author: request.author.unwrap_or(current_book.author),
-        genre: request.genre.unwrap_or(current_book.genre),
         rating: match request.rating {
             Some(rating_option) => rating_option, // This handles both Some(Some(value)) and Some(None)
             None => current_book.rating,          // No rating field provided, keep current

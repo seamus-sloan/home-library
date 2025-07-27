@@ -18,7 +18,6 @@ pub struct Book {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub genre: String,
     pub rating: Option<f64>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
@@ -29,9 +28,9 @@ pub struct CreateBookRequest {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub genre: String,
     pub rating: Option<f64>,
     pub tags: Option<Vec<i64>>,
+    pub genres: Option<Vec<i64>>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
@@ -39,14 +38,21 @@ pub struct UpdateBookRequest {
     pub cover_image: Option<String>,
     pub title: Option<String>,
     pub author: Option<String>,
-    pub genre: Option<String>,
     #[serde(default, deserialize_with = "deserialize_double_option")]
     pub rating: Option<Option<f64>>, // Option<Option<f64>> to handle explicit null values
     pub tags: Option<Vec<i64>>,
+    pub genres: Option<Vec<i64>>,
 }
 
 #[derive(serde_derive::Serialize)]
 pub struct BookTag {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct BookGenre {
     pub id: i64,
     pub name: String,
     pub color: String,
@@ -75,10 +81,32 @@ pub struct BookWithDetails {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub genre: String,
     pub rating: Option<f64>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     pub tags: Vec<BookTag>,
+    pub genres: Vec<BookGenre>,
     pub journals: Vec<BookJournal>,
+}
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct Genre {
+    pub id: i64,
+    pub user_id: i64,
+    pub name: String,
+    pub color: String,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+}
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct CreateGenreRequest {
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct UpdateGenreRequest {
+    pub name: Option<String>,
+    pub color: Option<String>,
 }
