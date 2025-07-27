@@ -9,7 +9,7 @@ pub async fn get_all_users(pool: &Pool<Sqlite>) -> Result<Vec<User>, sqlx::Error
 
     let users = sqlx::query_as!(
         User,
-        "SELECT id, name, avatar_color, created_at, updated_at, last_login FROM users"
+        "SELECT id, name, color, created_at, updated_at, last_login FROM users"
     )
     .fetch_all(pool)
     .await?;
@@ -34,7 +34,7 @@ pub async fn select_user(pool: &Pool<Sqlite>, user_id: i64) -> Result<User, sqlx
     let user = sqlx::query_as!(
         User,
         "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ? 
-         RETURNING id, name, avatar_color, created_at, updated_at, last_login",
+         RETURNING id, name, color, created_at, updated_at, last_login",
         user_id
     )
     .fetch_one(pool)

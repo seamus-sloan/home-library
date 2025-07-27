@@ -8,6 +8,157 @@ use url::form_urlencoded;
 use crate::models::books::BookGenre;
 use crate::models::{Book, BookJournal, BookTag, BookWithDetails};
 
+// Generic relationshpub async fn update_book_query(ment
+async fn manage_book_relationships(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    item_ids: &[i64],
+    table_name: &str,
+    foreign_key_name: &str,
+    item_type: &str,
+) -> Result<(), sqlx::Error> {
+    debug!(
+        "Managing {} relationships for book {} with {} items",
+        item_type,
+        book_id,
+        item_ids.len()
+    );
+
+    // Delete existing relationships
+    let delete_query = format!("DELETE FROM {} WHERE book_id = ?", table_name);
+    let result = sqlx::query(&delete_query)
+        .bind(book_id)
+        .execute(pool)
+        .await?;
+
+    info!(
+        "Deleted {} existing {} relationships for book {}",
+        result.rows_affected(),
+        item_type,
+        book_id
+    );
+
+    // Insert new relationships
+    if !item_ids.is_empty() {
+        let insert_query = format!(
+            "INSERT INTO {} (book_id, {}) VALUES (?, ?)",
+            table_name, foreign_key_name
+        );
+
+        for &item_id in item_ids {
+            sqlx::query(&insert_query)
+                .bind(book_id)
+                .bind(item_id)
+                .execute(pool)
+                .await?;
+
+            debug!(
+                "Created {} relationship: book_id={}, {}={}",
+                item_type, book_id, foreign_key_name, item_id
+            );
+        }
+    }
+
+    info!(
+        "Successfully managed {} {} relationships for book {}",
+        item_ids.len(),
+        item_type,
+        book_id
+    );
+    Ok(())
+}
+
+// Helper function to fetch book details (tags, genres, journals)
+async fn fetch_book_details(
+    pool: &Pool<Sqlite>,
+    book: Book,
+) -> Result<BookWithDetails, sqlx::Error> {
+    let book_id = book.id;
+
+    // Get tags for the book
+    let tags = sqlx::query(
+        "SELECT t.id, t.name, t.color 
+         FROM tags t 
+         INNER JOIN book_tags bt ON t.id = bt.tag_id 
+         WHERE bt.book_id = ?
+         ORDER BY t.name",
+    )
+    .bind(book_id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_tags: Vec<BookTag> = tags
+        .into_iter()
+        .map(|row| BookTag {
+            id: row.get("id"),
+            name: row.get("name"),
+            color: row.get("color"),
+        })
+        .collect();
+
+    // Get genres for the book
+    let genres = sqlx::query(
+        "SELECT g.id, g.name, g.color 
+         FROM genres g 
+         INNER JOIN book_genres bg ON g.id = bg.genre_id 
+         WHERE bg.book_id = ?
+         ORDER BY g.name",
+    )
+    .bind(book_id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_genres: Vec<BookGenre> = genres
+        .into_iter()
+        .map(|row| BookGenre {
+            id: row.get("id"),
+            name: row.get("name"),
+            color: row.get("color"),
+        })
+        .collect();
+
+    // Get journals for the book with user information
+    let journals = sqlx::query(
+        "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.color
+         FROM journal_entries je
+         INNER JOIN users u ON je.user_id = u.id
+         WHERE je.book_id = ?
+         ORDER BY je.created_at DESC",
+    )
+    .bind(book_id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_journals: Vec<BookJournal> = journals
+        .into_iter()
+        .map(|row| BookJournal {
+            id: row.get("id"),
+            title: row.get("title"),
+            content: row.get("content"),
+            created_at: row.get("created_at"),
+            user: crate::models::books::JournalUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                color: row.get("color"),
+            },
+        })
+        .collect();
+
+    Ok(BookWithDetails {
+        id: book.id,
+        user_id: book.user_id,
+        cover_image: book.cover_image,
+        title: book.title,
+        author: book.author,
+        rating: book.rating,
+        created_at: book.created_at,
+        updated_at: book.updated_at,
+        tags: book_tags,
+        genres: book_genres,
+        journals: book_journals,
+    })
+}
+
 #[derive(Deserialize)]
 struct CoverResponse {
     url: String,
@@ -74,62 +225,6 @@ pub async fn default_book_cover_query(
     Ok(body.url)
 }
 
-pub async fn get_all_books_query(pool: &Pool<Sqlite>) -> Result<Vec<Book>, sqlx::Error> {
-    debug!("Querying database for all books");
-
-    let books = sqlx::query_as!(
-        Book,
-        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at FROM books"
-    )
-    .fetch_all(pool)
-    .await?;
-
-    info!("Retrieved {} books from database", books.len());
-    if books.is_empty() {
-        debug!("No books found in database");
-    } else {
-        debug!(
-            "Book titles: {:?}",
-            books.iter().map(|b| &b.title).collect::<Vec<_>>()
-        );
-    }
-
-    Ok(books)
-}
-
-pub async fn search_books_query(
-    pool: &Pool<Sqlite>,
-    search_term: &str,
-) -> Result<Vec<Book>, sqlx::Error> {
-    debug!("Searching books with term: '{}'", search_term);
-
-    let search_pattern = format!("%{}%", search_term);
-
-    let books = sqlx::query_as!(
-        Book,
-        "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at 
-         FROM books 
-         WHERE title LIKE ? OR author LIKE ?
-         ORDER BY title",
-        search_pattern,
-        search_pattern
-    )
-    .fetch_all(pool)
-    .await?;
-
-    info!("Found {} books matching '{}'", books.len(), search_term);
-    if books.is_empty() {
-        debug!("No books found matching search term: '{}'", search_term);
-    } else {
-        debug!(
-            "Matching book titles: {:?}",
-            books.iter().map(|b| &b.title).collect::<Vec<_>>()
-        );
-    }
-
-    Ok(books)
-}
-
 pub async fn create_book_query(pool: &Pool<Sqlite>, mut book: Book) -> Result<Book, sqlx::Error> {
     debug!(
         "Attempting to create book: '{}' for user: {}",
@@ -169,33 +264,7 @@ pub async fn create_book_tags(
     book_id: i64,
     tag_ids: &[i64],
 ) -> Result<(), sqlx::Error> {
-    debug!(
-        "Creating book_tags relationships for book {} with {} tags",
-        book_id,
-        tag_ids.len()
-    );
-
-    for &tag_id in tag_ids {
-        sqlx::query!(
-            "INSERT INTO book_tags (book_id, tag_id) VALUES (?, ?)",
-            book_id,
-            tag_id
-        )
-        .execute(pool)
-        .await?;
-
-        debug!(
-            "Created book_tag relationship: book_id={}, tag_id={}",
-            book_id, tag_id
-        );
-    }
-
-    info!(
-        "Successfully created {} book_tag relationships for book {}",
-        tag_ids.len(),
-        book_id
-    );
-    Ok(())
+    manage_book_relationships(pool, book_id, tag_ids, "book_tags", "tag_id", "tag").await
 }
 
 pub async fn create_book_genres(
@@ -203,33 +272,23 @@ pub async fn create_book_genres(
     book_id: i64,
     genre_ids: &[i64],
 ) -> Result<(), sqlx::Error> {
-    debug!(
-        "Creating book_genres relationships for book {} with {} genres",
-        book_id,
-        genre_ids.len()
-    );
+    manage_book_relationships(pool, book_id, genre_ids, "book_genres", "genre_id", "genre").await
+}
 
-    for &genre_id in genre_ids {
-        sqlx::query!(
-            "INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)",
-            book_id,
-            genre_id
-        )
-        .execute(pool)
-        .await?;
+pub async fn update_book_tags(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    tag_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    manage_book_relationships(pool, book_id, tag_ids, "book_tags", "tag_id", "tag").await
+}
 
-        debug!(
-            "Created book_genre relationship: book_id={}, genre_id={}",
-            book_id, genre_id
-        );
-    }
-
-    info!(
-        "Successfully created {} book_genre relationships for book {}",
-        genre_ids.len(),
-        book_id
-    );
-    Ok(())
+pub async fn update_book_genres(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    genre_ids: &[i64],
+) -> Result<(), sqlx::Error> {
+    manage_book_relationships(pool, book_id, genre_ids, "book_genres", "genre_id", "genre").await
 }
 
 pub async fn update_book_query(
@@ -285,177 +344,9 @@ pub async fn get_book_details_query(
 
     info!("Found book with ID {}: '{}'", id, book.title);
 
-    // Get tags for the book
-    let tags = sqlx::query(
-        "SELECT t.id, t.name, t.color 
-         FROM tags t 
-         INNER JOIN book_tags bt ON t.id = bt.tag_id 
-         WHERE bt.book_id = ?
-         ORDER BY t.name",
-    )
-    .bind(id)
-    .fetch_all(pool)
-    .await?;
-
-    let book_tags: Vec<BookTag> = tags
-        .into_iter()
-        .map(|row| BookTag {
-            id: row.get("id"),
-            name: row.get("name"),
-            color: row.get("color"),
-        })
-        .collect();
-
-    debug!("Found {} tags for book {}", book_tags.len(), id);
-
-    // Get genres for the book
-    let genres = sqlx::query(
-        "SELECT g.id, g.name, g.color 
-         FROM genres g 
-         INNER JOIN book_genres bg ON g.id = bg.genre_id 
-         WHERE bg.book_id = ?
-         ORDER BY g.name",
-    )
-    .bind(id)
-    .fetch_all(pool)
-    .await?;
-
-    let book_genres: Vec<BookGenre> = genres
-        .into_iter()
-        .map(|row| BookGenre {
-            id: row.get("id"),
-            name: row.get("name"),
-            color: row.get("color"),
-        })
-        .collect();
-
-    debug!("Found {} genres for book {}", book_genres.len(), id);
-
-    // Get journals for the book with user information
-    let journals = sqlx::query(
-        "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
-         FROM journal_entries je
-         INNER JOIN users u ON je.user_id = u.id
-         WHERE je.book_id = ?
-         ORDER BY je.created_at DESC",
-    )
-    .bind(id)
-    .fetch_all(pool)
-    .await?;
-
-    let book_journals: Vec<BookJournal> = journals
-        .into_iter()
-        .map(|row| BookJournal {
-            id: row.get("id"),
-            title: row.get("title"),
-            content: row.get("content"),
-            created_at: row.get("created_at"),
-            user: crate::models::books::JournalUser {
-                id: row.get("user_id"),
-                name: row.get("user_name"),
-                avatar_color: row.get("avatar_color"),
-            },
-        })
-        .collect();
-
-    debug!("Found {} journals for book {}", book_journals.len(), id);
-
-    let book_with_details = BookWithDetails {
-        id: book.id,
-        user_id: book.user_id,
-        cover_image: book.cover_image,
-        title: book.title,
-        author: book.author,
-        rating: book.rating,
-        created_at: book.created_at,
-        updated_at: book.updated_at,
-        tags: book_tags,
-        genres: book_genres,
-        journals: book_journals,
-    };
-
+    // Use helper function to fetch all details
+    let book_with_details = fetch_book_details(pool, book).await?;
     Ok(Some(book_with_details))
-}
-
-pub async fn delete_book_tags(pool: &Pool<Sqlite>, book_id: i64) -> Result<(), sqlx::Error> {
-    debug!("Deleting all book_tags relationships for book {}", book_id);
-
-    let result = sqlx::query("DELETE FROM book_tags WHERE book_id = ?")
-        .bind(book_id)
-        .execute(pool)
-        .await?;
-
-    info!(
-        "Deleted {} book_tag relationships for book {}",
-        result.rows_affected(),
-        book_id
-    );
-    Ok(())
-}
-
-pub async fn delete_book_genres(pool: &Pool<Sqlite>, book_id: i64) -> Result<(), sqlx::Error> {
-    debug!(
-        "Deleting all book_genres relationships for book {}",
-        book_id
-    );
-
-    let result = sqlx::query("DELETE FROM book_genres WHERE book_id = ?")
-        .bind(book_id)
-        .execute(pool)
-        .await?;
-
-    info!(
-        "Deleted {} book_genre relationships for book {}",
-        result.rows_affected(),
-        book_id
-    );
-    Ok(())
-}
-
-pub async fn update_book_tags(
-    pool: &Pool<Sqlite>,
-    book_id: i64,
-    tag_ids: &[i64],
-) -> Result<(), sqlx::Error> {
-    debug!(
-        "Updating book_tags relationships for book {} with {} tags",
-        book_id,
-        tag_ids.len()
-    );
-
-    // First, delete all existing tags for this book
-    delete_book_tags(pool, book_id).await?;
-
-    // Then add the new tags if any
-    if !tag_ids.is_empty() {
-        create_book_tags(pool, book_id, tag_ids).await?;
-    }
-
-    info!("Successfully updated book_tags for book {}", book_id);
-    Ok(())
-}
-
-pub async fn update_book_genres(
-    pool: &Pool<Sqlite>,
-    book_id: i64,
-    genre_ids: &[i64],
-) -> Result<(), sqlx::Error> {
-    debug!(
-        "Updating book_genres relationships for book {} with {} genres",
-        book_id,
-        genre_ids.len()
-    );
-
-    // First, delete all existing genres for this book
-    delete_book_genres(pool, book_id).await?;
-
-    // Then add the new genres if any
-    if !genre_ids.is_empty() {
-        create_book_genres(pool, book_id, genre_ids).await?;
-    }
-
-    info!("Successfully updated book_genres for book {}", book_id);
-    Ok(())
 }
 
 pub async fn get_all_books_with_details_query(
@@ -473,92 +364,10 @@ pub async fn get_all_books_with_details_query(
 
     info!("Found {} books", books.len());
 
+    // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
-
     for book in books {
-        // Get tags for each book
-        let tags = sqlx::query(
-            "SELECT t.id, t.name, t.color 
-             FROM tags t 
-             INNER JOIN book_tags bt ON t.id = bt.tag_id 
-             WHERE bt.book_id = ?
-             ORDER BY t.name",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_tags: Vec<BookTag> = tags
-            .into_iter()
-            .map(|row| BookTag {
-                id: row.get("id"),
-                name: row.get("name"),
-                color: row.get("color"),
-            })
-            .collect();
-
-        // Get genres for each book
-        let genres = sqlx::query(
-            "SELECT g.id, g.name, g.color 
-             FROM genres g 
-             INNER JOIN book_genres bg ON g.id = bg.genre_id 
-             WHERE bg.book_id = ?
-             ORDER BY g.name",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_genres: Vec<BookGenre> = genres
-            .into_iter()
-            .map(|row| BookGenre {
-                id: row.get("id"),
-                name: row.get("name"),
-                color: row.get("color"),
-            })
-            .collect();
-
-        // Get journals for the book with user information
-        let journals = sqlx::query(
-            "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
-             FROM journal_entries je
-             INNER JOIN users u ON je.user_id = u.id
-             WHERE je.book_id = ?
-             ORDER BY je.created_at DESC",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_journals: Vec<BookJournal> = journals
-            .into_iter()
-            .map(|row| BookJournal {
-                id: row.get("id"),
-                title: row.get("title"),
-                content: row.get("content"),
-                user: crate::models::books::JournalUser {
-                    id: row.get("user_id"),
-                    name: row.get("user_name"),
-                    avatar_color: row.get("avatar_color"),
-                },
-                created_at: row.get("created_at"),
-            })
-            .collect();
-
-        let book_with_details = BookWithDetails {
-            id: book.id,
-            user_id: book.user_id,
-            cover_image: book.cover_image,
-            title: book.title,
-            author: book.author,
-            rating: book.rating,
-            created_at: book.created_at,
-            updated_at: book.updated_at,
-            tags: book_tags,
-            genres: book_genres,
-            journals: book_journals,
-        };
-
+        let book_with_details = fetch_book_details(pool, book).await?;
         books_with_details.push(book_with_details);
     }
 
@@ -599,92 +408,10 @@ pub async fn search_books_with_details_query(
         search_term
     );
 
+    // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
-
     for book in books {
-        // Get tags for each book
-        let tags = sqlx::query(
-            "SELECT t.id, t.name, t.color 
-             FROM tags t 
-             INNER JOIN book_tags bt ON t.id = bt.tag_id 
-             WHERE bt.book_id = ?
-             ORDER BY t.name",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_tags: Vec<BookTag> = tags
-            .into_iter()
-            .map(|row| BookTag {
-                id: row.get("id"),
-                name: row.get("name"),
-                color: row.get("color"),
-            })
-            .collect();
-
-        // Get genres for each book
-        let genres = sqlx::query(
-            "SELECT g.id, g.name, g.color 
-             FROM genres g 
-             INNER JOIN book_genres bg ON g.id = bg.genre_id 
-             WHERE bg.book_id = ?
-             ORDER BY g.name",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_genres: Vec<BookGenre> = genres
-            .into_iter()
-            .map(|row| BookGenre {
-                id: row.get("id"),
-                name: row.get("name"),
-                color: row.get("color"),
-            })
-            .collect();
-
-        // Get journals for the book with user information
-        let journals = sqlx::query(
-            "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.avatar_color
-             FROM journal_entries je
-             INNER JOIN users u ON je.user_id = u.id
-             WHERE je.book_id = ?
-             ORDER BY je.created_at DESC",
-        )
-        .bind(book.id)
-        .fetch_all(pool)
-        .await?;
-
-        let book_journals: Vec<BookJournal> = journals
-            .into_iter()
-            .map(|row| BookJournal {
-                id: row.get("id"),
-                title: row.get("title"),
-                content: row.get("content"),
-                user: crate::models::books::JournalUser {
-                    id: row.get("user_id"),
-                    name: row.get("user_name"),
-                    avatar_color: row.get("avatar_color"),
-                },
-                created_at: row.get("created_at"),
-            })
-            .collect();
-
-        let book_with_details = BookWithDetails {
-            id: book.id,
-            user_id: book.user_id,
-            cover_image: book.cover_image,
-            title: book.title,
-            author: book.author,
-            rating: book.rating,
-            created_at: book.created_at,
-            updated_at: book.updated_at,
-            tags: book_tags,
-            genres: book_genres,
-            journals: book_journals,
-        };
-
+        let book_with_details = fetch_book_details(pool, book).await?;
         books_with_details.push(book_with_details);
     }
 

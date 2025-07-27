@@ -104,6 +104,10 @@ pub async fn update_tag(
 
     match update_tag_query(&pool, id, tag).await {
         Ok(tag) => Ok(Json(tag)),
+        Err(sqlx::Error::RowNotFound) => {
+            warn!("No tag found with id: {}", id);
+            Err(StatusCode::NOT_FOUND)
+        }
         Err(e) => {
             error!("Failed to update tag with id {}: {}", id, e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)

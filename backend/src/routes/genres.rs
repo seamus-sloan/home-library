@@ -98,6 +98,10 @@ pub async fn update_genre(
 
     match update_genre_query(&pool, id, &genre).await {
         Ok(genre) => Ok(Json(genre)),
+        Err(sqlx::Error::RowNotFound) => {
+            warn!("No genre found with id: {}", id);
+            Err(StatusCode::NOT_FOUND)
+        }
         Err(e) => {
             error!("Failed to update genre with id {}: {}", id, e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)

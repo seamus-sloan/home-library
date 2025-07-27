@@ -6,9 +6,9 @@ use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
 use crate::db::book_queries::{
-    create_book_genres, create_book_query, create_book_tags, default_book_cover_query,
-    delete_book_query, get_all_books_with_details_query, get_book_details_query,
-    search_books_with_details_query, update_book_genres, update_book_query, update_book_tags,
+    create_book_query, create_book_tags, default_book_cover_query, delete_book_query,
+    get_all_books_with_details_query, get_book_details_query, search_books_with_details_query,
+    update_book_genres, update_book_query, update_book_tags,
 };
 use crate::db::journal_queries::{create_journal_entry, get_journals_by_book_id};
 use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
@@ -159,17 +159,17 @@ pub async fn create_book(
 pub async fn get_book_details(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
-) -> Result<Json<Option<BookWithDetails>>, StatusCode> {
+) -> Result<Json<BookWithDetails>, StatusCode> {
     debug!("Fetching book with details for ID: {}", id);
 
     match get_book_details_query(&pool, id).await {
         Ok(Some(book)) => {
             info!("Found book with ID {}: '{}'", id, book.title);
-            Ok(Json(Some(book)))
+            Ok(Json(book))
         }
         Ok(None) => {
             warn!("No book found with ID: {}", id);
-            Ok(Json(None))
+            Err(StatusCode::NOT_FOUND)
         }
         Err(e) => {
             error!("Failed to fetch book by ID {}: {}", id, e);

@@ -67,7 +67,7 @@ export function LoginPage() {
                         className="flex flex-col items-center cursor-pointer group"
                     >
                         <div
-                            className={`w-32 h-32 ${user.avatar_color} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-amber-400 transition-all`}
+                            className={`w-32 h-32 ${user.color} rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-amber-400 transition-all`}
                         >
                             {user.name.charAt(0)}
                         </div>

@@ -12,7 +12,7 @@ export function UserAvatar({ user, size = 'md' }: UserAvatarProps) {
   }
   return (
     <div
-      className={`${user.avatar_color} ${sizeClasses[size]} rounded-full flex items-center justify-center text-white font-bold`}
+      className={`${user.color} ${sizeClasses[size]} rounded-full flex items-center justify-center text-white font-bold`}
       title={user.name}
     >
       {user.name.charAt(0)}

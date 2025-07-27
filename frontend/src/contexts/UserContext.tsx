@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 export interface User {
   id: number
   name: string
-  avatar_color: string
+  color: string
 }
 
 interface UserContextType {

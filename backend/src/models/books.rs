@@ -62,7 +62,7 @@ pub struct BookGenre {
 pub struct JournalUser {
     pub id: i64,
     pub name: String,
-    pub avatar_color: String,
+    pub color: String,
 }
 
 #[derive(serde_derive::Serialize)]

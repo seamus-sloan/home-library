@@ -31,7 +31,7 @@ export function JournalList({ journals }: JournalListProps) {
                 user={{
                   id: journal.user.id,
                   name: journal.user.name,
-                  avatar_color: journal.user.avatar_color,
+                  color: journal.user.color,
                 }}
                 size="sm"
               />

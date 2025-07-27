@@ -40,7 +40,7 @@ export interface Genre {
 export interface User {
   id: number,
   name: string,
-  avatar_color: string,
+  color: string,
   created_at: string,
   updated_at: string,
 }
@@ -61,7 +61,7 @@ export interface BookGenre {
 export interface JournalUser {
   id: number
   name: string
-  avatar_color: string
+  color: string
 }
 
 export interface BookJournal {

@@ -6,7 +6,6 @@ pub mod tag_queries;
 pub mod user_queries;
 
 // Re-export commonly used functions
-pub use book_queries::*;
 pub use genre_queries::*;
 pub use journal_queries::*;
 pub use pool::init_db;
