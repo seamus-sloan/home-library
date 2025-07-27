@@ -12,6 +12,19 @@ import { TagSearch } from './TagSearch'
 interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
+// Helper function to determine if a color is light or dark
+const isLightColor = (color: string): boolean => {
+  // Convert hex to RGB
+  const hex = color.replace('#', '')
+  const r = parseInt(hex.substr(0, 2), 16)
+  const g = parseInt(hex.substr(2, 2), 16)
+  const b = parseInt(hex.substr(4, 2), 16)
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.5
+}
+
 export function BookDetails({ }: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -395,7 +408,8 @@ export function BookDetails({ }: BookDetailsProps) {
                     {bookWithDetails.tags.map((tag) => (
                       <span
                         key={tag.id}
-                        className="inline-block px-2 py-1 rounded-full text-xs font-medium text-white"
+                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${isLightColor(tag.color) ? 'text-black' : 'text-white'
+                          }`}
                         style={{ backgroundColor: tag.color }}
                       >
                         {tag.name}
