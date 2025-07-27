@@ -5,7 +5,7 @@ export interface Book {
   title: string
   author: string
   genre: string
-  rating: number
+  rating: number | null
   created_at: string
   updated_at: string
 }

@@ -183,7 +183,10 @@ pub async fn update_book(
         title: request.title.unwrap_or(current_book.title),
         author: request.author.unwrap_or(current_book.author),
         genre: request.genre.unwrap_or(current_book.genre),
-        rating: request.rating.unwrap_or(current_book.rating),
+        rating: match request.rating {
+            Some(rating_option) => rating_option, // This handles both Some(Some(value)) and Some(None)
+            None => current_book.rating,          // No rating field provided, keep current
+        },
         created_at: current_book.created_at,
         updated_at: current_book.updated_at,
     };

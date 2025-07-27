@@ -5,6 +5,7 @@ import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
 import type { Book, JournalEntry, Tag } from '../types'
 import { AddJournalForm } from './AddJournalForm'
 import { JournalList } from './JournalList'
+import { StarRating } from './StarRating'
 import { TagSearch } from './TagSearch'
 
 interface BookDetailsProps {
@@ -42,7 +43,7 @@ export function BookDetails({ }: BookDetailsProps) {
         title: bookWithDetails.title,
         author: bookWithDetails.author,
         genre: bookWithDetails.genre,
-        rating: bookWithDetails.rating || 0,
+        rating: bookWithDetails.rating,
         created_at: bookWithDetails.created_at,
         updated_at: bookWithDetails.updated_at,
       }
@@ -101,6 +102,13 @@ export function BookDetails({ }: BookDetailsProps) {
       })
     }
   }
+
+  const handleRatingChange = (newRating: number | null) => {
+    if (editFormData) {
+      setEditFormData({ ...editFormData, rating: newRating })
+    }
+  }
+
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editFormData || !id) return
@@ -264,6 +272,17 @@ export function BookDetails({ }: BookDetailsProps) {
           </div>
           <div className="mb-6">
             <label className="block text-amber-200 font-medium mb-2">
+              Rating
+            </label>
+            <StarRating
+              rating={editFormData.rating}
+              onRatingChange={handleRatingChange}
+              readonly={false}
+              size="large"
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-amber-200 font-medium mb-2">
               Tags
             </label>
             <TagSearch
@@ -343,6 +362,16 @@ export function BookDetails({ }: BookDetailsProps) {
                   </span>
                 </div>
               )}
+              {/* Display rating */}
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-amber-200 mb-2">Rating:</h4>
+                <StarRating
+                  rating={bookWithDetails.rating}
+                  onRatingChange={() => { }} // No-op for display view
+                  readonly={true}
+                  size="medium"
+                />
+              </div>
               {/* Display tags */}
               {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
                 <div className="mb-4">

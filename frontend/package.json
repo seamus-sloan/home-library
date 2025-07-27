@@ -13,6 +13,10 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@tanstack/react-table": "^8.21.3",
     "lucide-react": "^0.525.0",
