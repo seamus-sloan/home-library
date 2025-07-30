@@ -212,6 +212,18 @@ export const api = createApi({
       }),
       invalidatesTags: ['User'],
     }),
+
+    updateUser: builder.mutation<User, { 
+      id: number; 
+      user: { name: string; color: string }; 
+    }>({
+      query: ({ id, user }) => ({
+        url: `/users/${id}`,
+        method: 'PUT',
+        body: user,
+      }),
+      invalidatesTags: ['User'],
+    }),
     //#endregion
   }),
 })
@@ -239,4 +251,5 @@ export const {
   useDeleteGenreMutation,
   useGetUsersQuery,
   useSelectUserMutation,
+  useUpdateUserMutation,
 } = api

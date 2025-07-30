@@ -90,15 +90,12 @@ export function BookDetails({ }: BookDetailsProps) {
 
   // Function to navigate back with scroll position restoration
   const handleBackNavigation = () => {
-    console.log('BookDetails: handleBackNavigation called, location.state =', location.state)
     if (location.state?.scrollPosition !== undefined) {
-      console.log('BookDetails: Navigating back with scroll position:', location.state.scrollPosition)
       // Navigate back and restore scroll position
       navigate('/', {
         state: { scrollPosition: location.state.scrollPosition }
       })
     } else {
-      console.log('BookDetails: No scroll position to restore, navigating normally')
       navigate('/')
     }
   }

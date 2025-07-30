@@ -7,17 +7,12 @@ import { BookFilter } from './BookFilter'
 import { BookSearch } from './BookSearch'
 
 export function BookList() {
-  console.log('BookList: Component mounting/re-rendering')
   const { navigateWithScrollState } = useScrollRestoration()
   const [searchQuery, setSearchQuery] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedGenre, setSelectedGenre] = useState<string>('')
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
   const [selectedTag, setSelectedTag] = useState<string>('')
-
-  useEffect(() => {
-    console.log('BookList: useEffect ran - component mounted')
-  }, [])
 
   // Use RTK Query to fetch books with search parameter
   const { data: books = [], isLoading: loading, error } = useGetBooksQuery(
@@ -27,7 +22,6 @@ export function BookList() {
   // Restore scroll position after books are loaded
   useEffect(() => {
     if (!loading && books.length > 0) {
-      console.log('BookList: Books loaded, checking for scroll restoration')
       // This will be handled by the useScrollRestoration hook, but we wait for content
     }
   }, [loading, books.length])

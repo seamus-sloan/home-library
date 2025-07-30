@@ -1,14 +1,17 @@
-import { LogOutIcon } from 'lucide-react'
+import { EditIcon, LogOutIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import type { User } from '../contexts/UserContext'
 import type { RootState } from '../store/store'
-import { logout } from '../store/userSlice'
+import { logout, setCurrentUser } from '../store/userSlice'
+import { EditUserModal } from './EditUserModal'
 import { UserAvatar } from './UserAvatar'
 export function UserMenu() {
     const dispatch = useDispatch()
     const currentUser = useSelector((state: RootState) => state.user.currentUser)
     const [isOpen, setIsOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     useEffect(() => {
@@ -25,6 +28,16 @@ export function UserMenu() {
     const handleLogout = () => {
         dispatch(logout())
         navigate('/login')
+    }
+
+    const handleEditUser = () => {
+        setIsEditModalOpen(true)
+        setIsOpen(false) // Close the menu
+    }
+
+    const handleUserUpdateSuccess = (updatedUser: User) => {
+        // Update the current user in the store
+        dispatch(setCurrentUser(updatedUser))
     }
     if (!currentUser) return null
     return (
@@ -45,6 +58,13 @@ export function UserMenu() {
                         <p className="font-medium text-amber-50">{currentUser.name}</p>
                     </div>
                     <button
+                        onClick={handleEditUser}
+                        className="w-full text-left px-4 py-2 text-amber-200 hover:bg-zinc-800/50 flex items-center gap-2 transition-colors"
+                    >
+                        <EditIcon size={16} />
+                        <span>Edit Profile</span>
+                    </button>
+                    <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-amber-200 hover:bg-zinc-800/50 flex items-center gap-2 transition-colors"
                     >
@@ -53,6 +73,13 @@ export function UserMenu() {
                     </button>
                 </div>
             )}
+
+            <EditUserModal
+                user={currentUser}
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSuccess={handleUserUpdateSuccess}
+            />
         </div>
     )
 }
