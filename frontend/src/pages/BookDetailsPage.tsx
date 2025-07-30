@@ -1,13 +1,13 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { StarRating } from '../components/common/StarRating'
+import { AddJournalForm } from '../components/forms/AddJournalForm'
+import { JournalList } from '../components/journal/JournalList'
+import { GenreSearch } from '../components/search/GenreSearch'
+import { TagSearch } from '../components/search/TagSearch'
 import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
 import type { Book, Genre, JournalEntry, Tag } from '../types'
-import { AddJournalForm } from './AddJournalForm'
-import { GenreSearch } from './GenreSearch'
-import { JournalList } from './JournalList'
-import { StarRating } from './StarRating'
-import { TagSearch } from './TagSearch'
 
 interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
