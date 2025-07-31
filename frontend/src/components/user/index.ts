@@ -1,3 +1,3 @@
-export { EditUserModal } from './EditUserModal'
+export { EditUserModal } from '../forms/EditUserModal'
 export { UserMenu } from './UserMenu'
 

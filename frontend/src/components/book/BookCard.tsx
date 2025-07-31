@@ -1,11 +1,11 @@
 import { BookIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useParallaxScroll } from '../hooks/useParallaxScroll'
-import { useDeleteBookMutation } from '../middleware/backend'
-import type { Book, BookWithDetails } from '../types'
+import { useParallaxScroll } from '../../hooks/useParallaxScroll'
+import { useDeleteBookMutation } from '../../middleware/backend'
+import type { Book, BookWithDetails } from '../../types'
+import { ConfirmDialog } from '../common/ConfirmDialog'
+import { EditBookModal } from '../forms/EditBookModal'
 import { BookContextMenu } from './BookContextMenu'
-import { ConfirmDialog } from './ConfirmDialog'
-import { EditBookModal } from './EditBookModal'
 
 interface BookCardProps {
   book: Book | BookWithDetails

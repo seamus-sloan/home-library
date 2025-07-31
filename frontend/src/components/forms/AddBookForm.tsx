@@ -1,11 +1,11 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useAddBookMutation } from '../middleware/backend'
-import type { RootState } from '../store/store'
-import type { Genre, Tag } from '../types'
-import { GenreSearch } from './GenreSearch'
-import { TagSearch } from './TagSearch'
+import { useAddBookMutation } from '../../middleware/backend'
+import type { RootState } from '../../store/store'
+import type { Genre, Tag } from '../../types'
+import { GenreSearch } from '../search/GenreSearch'
+import { TagSearch } from '../search/TagSearch'
 
 interface AddBookFormProps {
   onSubmit: (book: {

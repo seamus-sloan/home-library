@@ -1,8 +1,8 @@
 import { XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { User } from '../contexts/UserContext'
-import { useUpdateUserMutation } from '../middleware/backend'
+import type { User } from '../../contexts/UserContext'
+import { useUpdateUserMutation } from '../../middleware/backend'
 
 interface EditUserModalProps {
     user: User

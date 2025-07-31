@@ -1,8 +1,8 @@
 import { BookOpenIcon, PlusCircleIcon } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-import type { RootState } from '../store/store'
-import { UserMenu } from './UserMenu'
+import type { RootState } from '../../store/store'
+import { UserMenu } from '../user/UserMenu'
 
 interface HeaderProps {
   onAddClick: () => void

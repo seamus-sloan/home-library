@@ -105,6 +105,7 @@ export const api = createApi({
       }),
       invalidatesTags: (_result, _error, { bookId }) => [
         { type: 'JournalEntry', id: `book-${bookId}` },
+        { type: 'Book', id: bookId.toString() },
         'JournalEntry',
       ],
     }),

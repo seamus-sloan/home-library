@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAddTagMutation, useGetTagsQuery, useUpdateTagMutation } from '../middleware/backend'
-import type { Tag } from '../types'
+import { useAddTagMutation, useGetTagsQuery, useUpdateTagMutation } from '../../middleware/backend'
+import type { Tag } from '../../types'
 import { CategorySearch } from './CategorySearch'
 
 interface TagSearchProps {

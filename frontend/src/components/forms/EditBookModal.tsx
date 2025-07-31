@@ -1,9 +1,9 @@
 import { XIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { useUpdateBookMutation } from '../middleware/backend'
-import type { Book, BookWithDetails, Genre, Tag } from '../types'
-import { GenreSearch } from './GenreSearch'
-import { TagSearch } from './TagSearch'
+import { useUpdateBookMutation } from '../../middleware/backend'
+import type { Book, BookWithDetails, Genre, Tag } from '../../types'
+import { GenreSearch } from '../search/GenreSearch'
+import { TagSearch } from '../search/TagSearch'
 
 interface EditBookModalProps {
     book: Book | BookWithDetails

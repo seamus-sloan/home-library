@@ -1,10 +1,10 @@
 import { BookOpenIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useScrollRestoration } from '../hooks/useScrollRestoration'
-import { useGetBooksQuery } from '../middleware/backend'
+import { useScrollRestoration } from '../../hooks/useScrollRestoration'
+import { useGetBooksQuery } from '../../middleware/backend'
+import { BookSearch } from '../search/BookSearch'
 import { BookCard } from './BookCard'
 import { BookFilter } from './BookFilter'
-import { BookSearch } from './BookSearch'
 
 export function BookList() {
   const { navigateWithScrollState } = useScrollRestoration()

@@ -1,7 +1,7 @@
 import { BookmarkIcon, ChevronDownIcon, PlusIcon, TagIcon, XIcon } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
-import type { Genre, Tag } from '../types'
-import { EditCategoryModal } from './EditCategoryModal'
+import type { Genre, Tag } from '../../types'
+import { EditCategoryModal } from '../forms/EditCategoryModal'
 
 type CategoryItem = Tag | Genre
 

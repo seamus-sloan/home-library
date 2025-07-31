@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAddGenreMutation, useGetGenresQuery, useUpdateGenreMutation } from '../middleware/backend'
-import type { Genre } from '../types'
+import { useAddGenreMutation, useGetGenresQuery, useUpdateGenreMutation } from '../../middleware/backend'
+import type { Genre } from '../../types'
 import { CategorySearch } from './CategorySearch'
 
 interface GenreSearchProps {

@@ -2,11 +2,11 @@ import { EditIcon, LogOutIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import type { User } from '../contexts/UserContext'
-import type { RootState } from '../store/store'
-import { logout, setCurrentUser } from '../store/userSlice'
-import { EditUserModal } from './EditUserModal'
-import { UserAvatar } from './UserAvatar'
+import type { User } from '../../contexts/UserContext'
+import type { RootState } from '../../store/store'
+import { logout, setCurrentUser } from '../../store/userSlice'
+import { UserAvatar } from '../common/UserAvatar'
+import { EditUserModal } from '../forms/EditUserModal'
 export function UserMenu() {
     const dispatch = useDispatch()
     const currentUser = useSelector((state: RootState) => state.user.currentUser)

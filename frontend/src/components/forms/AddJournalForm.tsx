@@ -1,9 +1,9 @@
 import { XIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useAddJournalEntryMutation } from '../middleware/backend'
-import type { RootState } from '../store/store'
-import { UserAvatar } from './UserAvatar'
+import { useAddJournalEntryMutation } from '../../middleware/backend'
+import type { RootState } from '../../store/store'
+import { UserAvatar } from '../common/UserAvatar'
 interface AddJournalFormProps {
   bookId: number,
   onSubmit: () => void

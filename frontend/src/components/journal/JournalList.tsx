@@ -1,6 +1,6 @@
 import { BookIcon } from 'lucide-react'
-import type { BookJournal } from '../types'
-import { UserAvatar } from './UserAvatar'
+import type { BookJournal } from '../../types'
+import { UserAvatar } from '../common/UserAvatar'
 
 interface JournalListProps {
   journals: BookJournal[]
