@@ -117,37 +117,54 @@ If you prefer using Docker for development:
 
 ### Option 2: Docker Deployment on Pi
 
-A much simpler approach using Docker:
+A much simpler approach using Docker (build locally, deploy to Pi):
 
-1. **Transfer project to Pi**
+1. **Build images locally for ARM64**
    ```bash
-   # Clone or transfer your project
-   scp -r /path/to/home-library pi@your-pi-ip:/home/pi/
+   # Build images (will automatically build for your current architecture)
+   docker build -t home-library-backend:latest ./backend
+   docker build -t home-library-frontend:latest ./frontend
+   
+   # Save images to files
+   docker save home-library-backend:latest | gzip > backend-arm64.tar.gz
+   docker save home-library-frontend:latest | gzip > frontend-arm64.tar.gz
    ```
 
-2. **Setup on Pi**
+2. **Transfer images and compose file to Pi**
+   ```bash
+   scp backend-arm64.tar.gz frontend-arm64.tar.gz docker-compose.pi.yml pi@your-pi-ip:/home/pi/
+   scp -r data pi@your-pi-ip:/home/pi/  # Optional: if you have existing data
+   ```
+
+3. **Setup on Pi**
    ```bash
    ssh pi@your-pi-ip
-   cd /home/pi/home-library
    
-   # Make sure Docker is installed and running
+   # Install Docker if not already installed
    sudo apt update
    sudo apt install docker.io docker-compose -y
    sudo systemctl enable docker
    sudo usermod -aG docker pi
-   # Log out and back in for group changes to take effect
+   # Log out (exit) and SSH back in for group changes to take effect
+   
+   # Load the images
+   gunzip -c backend-arm64.tar.gz | docker load
+   gunzip -c frontend-arm64.tar.gz | docker load
+   
+   # Create data directory if it doesn't exist
+   mkdir -p data
    ```
 
-3. **Deploy with Docker Compose**
+4. **Deploy with Docker Compose**
    ```bash
-   # Build and run the application
-   docker-compose up -d --build
+   # Start the application using the Pi-specific compose file
+   docker-compose -f docker-compose-pi.yml up -d
    
    # Check status
-   docker-compose ps
+   docker-compose -f docker-compose-pi.yml ps
    
    # View logs
-   docker-compose logs -f
+   docker-compose -f docker-compose-pi.yml logs -f
    ```
 
 4. **Access your application**
@@ -157,22 +174,40 @@ A much simpler approach using Docker:
 5. **Useful management commands**
    ```bash
    # Stop the application
-   docker-compose down
+   docker-compose -f docker-compose-pi.yml down
    
-   # Update and restart
-   git pull  # if using git
-   docker-compose up -d --build
+   # Update: rebuild images locally, transfer, and restart
+   # (on your local machine)
+   docker build -t home-library-backend:latest ./backend
+   docker save home-library-backend:latest | gzip > backend-arm64.tar.gz
+   scp backend-arm64.tar.gz pi@your-pi-ip:/home/pi/
+   
+   # (on the Pi)
+   docker-compose -f docker-compose-pi.yml down
+   gunzip -c backend-arm64.tar.gz | docker load
+   docker-compose -f docker-compose-pi.yml up -d
    
    # Backup your database
    cp data/library.db data/backups/backup-$(date +%Y%m%d-%H%M%S).db
    ```
 
-**Benefits of Docker deployment:**
-- Cross-platform compatibility (works on ARM64/ARM32)
-- Easier updates and rollbacks
-- Isolated environment
-- Automatic container restarts
-- No need to manage system dependencies
+**Benefits of this Docker approach:**
+- **Much faster**: No compilation on the Pi
+- **Cross-platform**: Build ARM64 images on your fast x86 machine
+- **Reliable**: Pre-built images reduce deployment issues
+- **Efficient**: Pi only needs to run containers, not build them
+- **Easy updates**: Just rebuild and transfer new images
+
+**Alternative: Docker Registry**
+For frequent updates, consider pushing to Docker Hub or a registry:
+```bash
+# Push to registry (one-time setup)
+docker tag home-library-backend:latest yourusername/home-library-backend:latest
+docker push yourusername/home-library-backend:latest
+
+# On Pi, just pull and run
+docker-compose pull && docker-compose up -d
+```
 
 ## 🧪 Testing
 
