@@ -5,6 +5,7 @@ export interface Book {
   title: string
   author: string
   rating: number | null
+  series: string | null
   created_at: string
   updated_at: string
 }
@@ -91,6 +92,7 @@ export interface CreateBookRequest {
   title: string
   author: string
   rating: number | null
+  series?: string | null
   created_at: string
   updated_at: string
   tags?: number[]
@@ -102,6 +104,7 @@ export interface UpdateBookRequest {
   title?: string
   author?: string
   rating?: number | null
+  series?: string | null
   tags?: number[]
   genres?: number[]
 }

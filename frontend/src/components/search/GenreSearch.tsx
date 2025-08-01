@@ -42,6 +42,12 @@ export function GenreSearch({
 
     const handleEditGenre = async (id: number, name: string, color: string): Promise<void> => {
         await updateGenre({ id, genre: { name, color } }).unwrap()
+
+        // Update the selected genres with the new data
+        const updatedGenres = selectedGenres.map(genre =>
+            genre.id === id ? { ...genre, name, color } : genre
+        )
+        onGenresChange(updatedGenres)
     }
 
     return (

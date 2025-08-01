@@ -1,6 +1,7 @@
-import { BookmarkIcon, ChevronDownIcon, PlusIcon, TagIcon, XIcon } from 'lucide-react'
+import { BookmarkIcon, ChevronDownIcon, PlusIcon, TagIcon } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import type { Genre, Tag } from '../../types'
+import { CategoryBadge } from '../common'
 import { EditCategoryModal } from '../forms/EditCategoryModal'
 
 type CategoryItem = Tag | Genre
@@ -122,46 +123,6 @@ export function CategorySearch<T extends CategoryItem>({
         setNewItemColor('#3b82f6')
     }
 
-    // Function to determine if we should use black or white text based on background color
-    const getContrastColor = (hexColor: string): string => {
-        // Remove # if present and ensure we have a valid hex color
-        let color = hexColor.replace('#', '')
-
-        // Handle 3-digit hex colors by expanding them
-        if (color.length === 3) {
-            color = color.split('').map(char => char + char).join('')
-        }
-
-        // Ensure we have exactly 6 characters
-        if (color.length !== 6) {
-            console.warn(`Invalid color format: ${hexColor}, defaulting to black text`)
-            return '#000000'
-        }
-
-        // Convert to RGB
-        const r = parseInt(color.substring(0, 2), 16)
-        const g = parseInt(color.substring(2, 4), 16)
-        const b = parseInt(color.substring(4, 6), 16)
-
-        // Check if parsing was successful
-        if (isNaN(r) || isNaN(g) || isNaN(b)) {
-            console.warn(`Failed to parse color: ${hexColor}, defaulting to black text`)
-            return '#000000'
-        }
-
-        // Calculate relative luminance using the W3C formula
-        // https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html
-        const toLinear = (colorValue: number) => {
-            const c = colorValue / 255
-            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-        }
-
-        const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
-
-        // Return black for light colors (luminance > 0.5), white for dark colors
-        return luminance > 0.5 ? '#000000' : '#ffffff'
-    }
-
     const filteredItems = availableItems.filter(item =>
         !selectedItems.some(selected => selected.id === item.id)
     )
@@ -199,40 +160,17 @@ export function CategorySearch<T extends CategoryItem>({
                 {multiple && selectedItems.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
                         {selectedItems.map(item => {
-                            const textColor = getContrastColor(item.color)
-                            const displayStyle = categoryType === 'tag'
-                                ? {
-                                    backgroundColor: item.color,
-                                    color: textColor,
-                                    borderColor: item.color
-                                }
-                                : {
-                                    backgroundColor: `${item.color}20`,
-                                    borderColor: `${item.color}50`,
-                                    color: item.color
-                                }
-
                             return (
-                                <span
+                                <CategoryBadge
                                     key={item.id}
-                                    className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border shadow-sm cursor-pointer hover:opacity-80"
-                                    style={displayStyle}
+                                    item={item}
+                                    type={categoryType}
+                                    size="md"
+                                    clickable
                                     onClick={() => setEditingItem(item)}
-                                >
-                                    <CategoryIcon size={12} className="mr-1.5" />
-                                    {item.name}
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleItemRemove(item)
-                                        }}
-                                        className="ml-1.5 hover:bg-black hover:bg-opacity-20 rounded-full p-0.5 transition-colors"
-                                        style={{ color: categoryType === 'tag' ? textColor : item.color }}
-                                    >
-                                        <XIcon size={12} />
-                                    </button>
-                                </span>
+                                    onRemove={() => handleItemRemove(item)}
+                                    icon={<CategoryIcon size={12} />}
+                                />
                             )
                         })}
                     </div>
@@ -243,39 +181,16 @@ export function CategorySearch<T extends CategoryItem>({
                     <div className="mb-2">
                         {(() => {
                             const item = selectedItems[0]
-                            const textColor = getContrastColor(item.color)
-                            const displayStyle = categoryType === 'tag'
-                                ? {
-                                    backgroundColor: item.color,
-                                    color: textColor,
-                                    borderColor: item.color
-                                }
-                                : {
-                                    backgroundColor: `${item.color}20`,
-                                    borderColor: `${item.color}50`,
-                                    color: item.color
-                                }
-
                             return (
-                                <span
-                                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border cursor-pointer hover:opacity-80"
-                                    style={displayStyle}
+                                <CategoryBadge
+                                    item={item}
+                                    type={categoryType}
+                                    size="md"
+                                    clickable
                                     onClick={() => setEditingItem(item)}
-                                >
-                                    <CategoryIcon size={14} className="mr-1" />
-                                    {item.name}
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onItemsChange([])
-                                        }}
-                                        className="ml-2 hover:opacity-70"
-                                        aria-label={`Remove ${item.name} ${categoryName}`}
-                                    >
-                                        <XIcon size={14} />
-                                    </button>
-                                </span>
+                                    onRemove={() => onItemsChange([])}
+                                    icon={<CategoryIcon size={14} />}
+                                />
                             )
                         })()}
                     </div>
@@ -335,16 +250,12 @@ export function CategorySearch<T extends CategoryItem>({
                                 </div>
                                 <div className="mb-3">
                                     <label className="block text-amber-200 text-xs mb-2">Preview:</label>
-                                    <span
-                                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                        style={{
-                                            backgroundColor: newItemColor,
-                                            color: getContrastColor(newItemColor)
-                                        }}
-                                    >
-                                        <CategoryIcon size={10} className="mr-1" />
-                                        {searchTerm}
-                                    </span>
+                                    <CategoryBadge
+                                        item={{ id: -1, name: searchTerm, color: newItemColor }}
+                                        type={categoryType}
+                                        size="md"
+                                        icon={<CategoryIcon size={12} />}
+                                    />
                                     <p className="text-xs text-amber-400 mt-1">Color: {newItemColor}</p>
                                 </div>
                             </div>
@@ -369,7 +280,6 @@ export function CategorySearch<T extends CategoryItem>({
                     ) : (
                         <>
                             {filteredItems.map(item => {
-                                const textColor = getContrastColor(item.color)
                                 return (
                                     <button
                                         key={item.id}
@@ -379,16 +289,13 @@ export function CategorySearch<T extends CategoryItem>({
                                     >
                                         <div className="flex items-center">
                                             {categoryType === 'tag' ? (
-                                                <span
-                                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-3"
-                                                    style={{
-                                                        backgroundColor: item.color,
-                                                        color: textColor
-                                                    }}
-                                                >
-                                                    <CategoryIcon size={10} className="mr-1" />
-                                                    {item.name}
-                                                </span>
+                                                <CategoryBadge
+                                                    item={item}
+                                                    type="tag"
+                                                    size="sm"
+                                                    icon={<CategoryIcon size={10} />}
+                                                    className="mr-3"
+                                                />
                                             ) : (
                                                 <>
                                                     <div

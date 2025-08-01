@@ -39,6 +39,12 @@ export function TagSearch({
 
     const handleEditTag = async (id: number, name: string, color: string): Promise<void> => {
         await updateTag({ id, tag: { name, color } }).unwrap()
+
+        // Update the selected tags with the new data
+        const updatedTags = selectedTags.map(tag =>
+            tag.id === id ? { ...tag, name, color } : tag
+        )
+        onTagsChange(updatedTags)
     }
 
     return (

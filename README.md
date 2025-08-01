@@ -132,7 +132,7 @@ A much simpler approach using Docker (build locally, deploy to Pi):
 
 2. **Transfer images and compose file to Pi**
    ```bash
-   scp backend-arm64.tar.gz frontend-arm64.tar.gz docker-compose.pi.yml pi@your-pi-ip:/home/pi/
+   scp backend-arm64.tar.gz frontend-arm64.tar.gz docker-compose-pi.yml pi@your-pi-ip:/home/pi/
    scp -r data pi@your-pi-ip:/home/pi/  # Optional: if you have existing data
    ```
 

@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { useParallaxScroll } from '../../hooks/useParallaxScroll'
 import { useDeleteBookMutation } from '../../middleware/backend'
 import type { Book, BookWithDetails } from '../../types'
-import { ConfirmDialog } from '../common/ConfirmDialog'
-import { EditBookModal } from '../forms/EditBookModal'
+import { CategoryBadge, ConfirmDialog } from '../common'
+import { BookFormModal } from '../forms'
 import { BookContextMenu } from './BookContextMenu'
 
 interface BookCardProps {
@@ -101,23 +101,21 @@ export function BookCard({ book, onClick }: BookCardProps) {
           <h3 className="font-bold text-lg text-amber-50 truncate mb-1 tracking-wide">
             {book.title}
           </h3>
-          <p className="text-amber-200 font-medium mb-3">by {book.author}</p>
+          <p className="text-amber-200 font-medium mb-1">by {book.author}</p>
+          {book.series && (
+            <p className="text-amber-300 text-sm mb-3 italic">{book.series}</p>
+          )}
           <div className="mt-2 space-y-2">
             {/* Genres */}
             {'genres' in book && book.genres && book.genres.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {book.genres.map(genre => (
-                  <span
+                  <CategoryBadge
                     key={genre.id}
-                    className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
-                    style={{
-                      backgroundColor: `${genre.color}20`,
-                      borderColor: `${genre.color}50`,
-                      color: genre.color
-                    }}
-                  >
-                    {genre.name}
-                  </span>
+                    item={genre}
+                    type="genre"
+                    size="sm"
+                  />
                 ))}
               </div>
             ) : (
@@ -130,17 +128,12 @@ export function BookCard({ book, onClick }: BookCardProps) {
             {'tags' in book && book.tags && book.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {book.tags.map(tag => (
-                  <span
+                  <CategoryBadge
                     key={tag.id}
-                    className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
-                    style={{
-                      backgroundColor: `${tag.color}20`,
-                      borderColor: `${tag.color}50`,
-                      color: tag.color
-                    }}
-                  >
-                    {tag.name}
-                  </span>
+                    item={tag}
+                    type="tag"
+                    size="sm"
+                  />
                 ))}
               </div>
             )}
@@ -149,7 +142,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
       </div>
 
       {/* Edit Modal */}
-      <EditBookModal
+      <BookFormModal
         book={book}
         isOpen={isEditModalOpen}
         onClose={handleCloseEditModal}

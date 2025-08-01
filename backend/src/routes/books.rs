@@ -78,6 +78,7 @@ pub async fn create_book(
         title: request.title,
         author: request.author,
         rating: request.rating,
+        series: request.series,
         created_at: None,
         updated_at: None,
     };
@@ -211,6 +212,7 @@ pub async fn update_book(
             Some(rating_option) => rating_option, // This handles both Some(Some(value)) and Some(None)
             None => current_book.rating,          // No rating field provided, keep current
         },
+        series: request.series.or(current_book.series),
         created_at: current_book.created_at,
         updated_at: current_book.updated_at,
     };

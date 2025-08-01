@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { BookList } from './components/book/BookList'
-import { AddBookForm } from './components/forms/AddBookForm'
+import { BookFormPage } from './components/forms'
 import { Header } from './components/layout/Header'
 import { BookDetails } from './pages/BookDetailsPage'
 import { LoginPage } from './pages/LoginPage'
@@ -57,7 +57,7 @@ function AppContent() {
             element={
               isAddingBook ? (
                 <ProtectedRoute>
-                  <AddBookForm
+                  <BookFormPage
                     onSubmit={() => {
                       setIsAddingBook(false)
                     }}

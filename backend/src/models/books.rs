@@ -19,6 +19,7 @@ pub struct Book {
     pub title: String,
     pub author: String,
     pub rating: Option<f64>,
+    pub series: Option<String>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
 }
@@ -31,6 +32,7 @@ pub struct CreateBookRequest {
     pub rating: Option<f64>,
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
+    pub series: Option<String>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
@@ -42,6 +44,7 @@ pub struct UpdateBookRequest {
     pub rating: Option<Option<f64>>, // Option<Option<f64>> to handle explicit null values
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
+    pub series: Option<String>,
 }
 
 #[derive(serde_derive::Serialize)]
@@ -86,6 +89,7 @@ pub struct BookWithDetails {
     pub updated_at: Option<String>,
     pub tags: Vec<BookTag>,
     pub genres: Vec<BookGenre>,
+    pub series: Option<String>,
     pub journals: Vec<BookJournal>,
 }
 

@@ -2,6 +2,7 @@ import { BookmarkIcon, TagIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Genre, Tag } from '../../types'
+import { isDarkColor } from '../../utils/colorUtils'
 
 type CategoryItem = Tag | Genre
 
@@ -30,6 +31,7 @@ export function EditCategoryModal<T extends CategoryItem>({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        e.stopPropagation()
 
         if (!name.trim()) {
             setError('Name is required')
@@ -49,6 +51,10 @@ export function EditCategoryModal<T extends CategoryItem>({
         setColor(item.color)
         setError('')
         onClose()
+    }
+
+    const handleModalClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
     }
 
     // Function to determine if we should use black or white text based on background color
@@ -108,8 +114,11 @@ export function EditCategoryModal<T extends CategoryItem>({
     const categoryName = categoryType === 'tag' ? 'tag' : 'genre'
 
     return createPortal(
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-zinc-800 rounded-lg p-6 w-full max-w-md mx-4 border border-zinc-700">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+            <div
+                className="bg-zinc-800 rounded-lg p-6 w-full max-w-md mx-4 border border-zinc-700"
+                onClick={handleModalClick}
+            >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-amber-50">
                         Edit {categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}
@@ -171,13 +180,19 @@ export function EditCategoryModal<T extends CategoryItem>({
                                     ? {
                                         backgroundColor: color,
                                         color: getContrastColor(color),
-                                        borderColor: color
+                                        borderColor: isDarkColor(color) ? '#ffffff' : color
                                     }
-                                    : {
-                                        backgroundColor: `${color}20`,
-                                        borderColor: `${color}50`,
-                                        color: color
-                                    }
+                                    : isDarkColor(color)
+                                        ? {
+                                            backgroundColor: color,
+                                            color: '#ffffff',
+                                            borderColor: '#ffffff'
+                                        }
+                                        : {
+                                            backgroundColor: `${color}20`,
+                                            borderColor: `${color}50`,
+                                            color: color
+                                        }
                                 }
                             >
                                 <CategoryIcon size={12} className="mr-1.5" />

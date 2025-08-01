@@ -1,30 +1,16 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { StarRating } from '../components/common/StarRating'
+import { CategoryBadge, StarRating } from '../components/common'
+import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
-import { GenreSearch } from '../components/search/GenreSearch'
-import { TagSearch } from '../components/search/TagSearch'
 import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
-import type { Book, Genre, JournalEntry, Tag } from '../types'
+import type { JournalEntry } from '../types'
 
 interface BookDetailsProps {
   addJournal: (journal: Omit<JournalEntry, 'id'>) => void
 }
-// Helper function to determine if a color is light or dark
-const isLightColor = (color: string): boolean => {
-  // Convert hex to RGB
-  const hex = color.replace('#', '')
-  const r = parseInt(hex.substr(0, 2), 16)
-  const g = parseInt(hex.substr(2, 2), 16)
-  const b = parseInt(hex.substr(4, 2), 16)
-
-  // Calculate luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5
-}
-
 export function BookDetails({ }: BookDetailsProps) {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -36,57 +22,33 @@ export function BookDetails({ }: BookDetailsProps) {
   })
 
   // Use mutation for updating books
-  const [updateBook, { isLoading: isUpdating }] = useUpdateBookMutation()
+  const [updateBook] = useUpdateBookMutation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
-  const [editFormData, setEditFormData] = useState<Book | null>(null)
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
-  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([])
-  const [errors, setErrors] = useState({
-    title: '',
-    author: '',
-  })
 
-  // Set edit form data when book data is loaded
-  useEffect(() => {
-    if (bookWithDetails) {
-      // Convert BookWithDetails to Book for editing
-      const bookForEditing: Book = {
-        id: bookWithDetails.id,
-        user_id: bookWithDetails.user_id,
-        cover_image: bookWithDetails.cover_image,
-        title: bookWithDetails.title,
-        author: bookWithDetails.author,
-        rating: bookWithDetails.rating,
-        created_at: bookWithDetails.created_at,
-        updated_at: bookWithDetails.updated_at,
-      }
-      setEditFormData(bookForEditing)
+  // Handle form submission
+  const handleBookFormSubmit = async (data: BookFormData) => {
+    if (!id) return
 
-      // Convert BookTag to Tag format for the tag selector
-      const tagsForEditing: Tag[] = (bookWithDetails.tags || []).map(bookTag => ({
-        id: bookTag.id,
-        user_id: bookWithDetails.user_id,
-        name: bookTag.name,
-        color: bookTag.color,
-        created_at: new Date().toISOString(), // We don't have this from BookTag
-        updated_at: new Date().toISOString(), // We don't have this from BookTag
-      }))
-      setSelectedTags(tagsForEditing)
-
-      // Convert BookGenre to Genre format for the genre selector
-      const genresForEditing: Genre[] = (bookWithDetails.genres || []).map(bookGenre => ({
-        id: bookGenre.id,
-        user_id: bookWithDetails.user_id,
-        name: bookGenre.name,
-        color: bookGenre.color,
-        created_at: new Date().toISOString(), // We don't have this from BookGenre
-        updated_at: new Date().toISOString(), // We don't have this from BookGenre
-      }))
-      setSelectedGenres(genresForEditing)
+    try {
+      await updateBook({
+        id: parseInt(id),
+        book: {
+          title: data.title,
+          author: data.author,
+          cover_image: data.cover_image || null,
+          rating: data.rating,
+          series: data.series || null,
+          tags: data.tags.map(tag => tag.id),
+          genres: data.genres.map(genre => genre.id),
+        }
+      }).unwrap()
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Error updating book:', error)
     }
-  }, [bookWithDetails])
+  }
 
   // Function to navigate back with scroll position restoration
   const handleBackNavigation = () => {
@@ -124,71 +86,7 @@ export function BookDetails({ }: BookDetailsProps) {
       </div>
     )
   }
-  const handleEditChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    if (!editFormData) return
-    const { name, value } = e.target
-    setEditFormData({
-      ...editFormData,
-      [name]: value,
-    })
-    // Clear error when user types
-    if (errors[name as keyof typeof errors]) {
-      setErrors({
-        ...errors,
-        [name]: '',
-      })
-    }
-  }
-
-  const handleRatingChange = (newRating: number | null) => {
-    if (editFormData) {
-      setEditFormData({ ...editFormData, rating: newRating })
-    }
-  }
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editFormData || !id) return
-
-    // Validate form
-    const newErrors = {
-      title: editFormData.title ? '' : 'Title is required',
-      author: editFormData.author ? '' : 'Author is required',
-    }
-    setErrors(newErrors)
-
-    // Do not submit if there are any errors
-    if (newErrors.title || newErrors.author) {
-      return
-    }
-
-    try {
-      await updateBook({
-        id: editFormData.id,
-        book: {
-          title: editFormData.title,
-          author: editFormData.author,
-          cover_image: editFormData.cover_image,
-          rating: editFormData.rating,
-          tags: selectedTags.map(tag => tag.id), // Include selected tag IDs
-          genres: selectedGenres.map(genre => genre.id), // Include selected genre IDs
-        }
-      }).unwrap()
-      setIsEditing(false)
-      // Clear any errors on successful save
-      setErrors({ title: '', author: '' })
-      // RTK Query will automatically refetch the book data due to cache invalidation
-    } catch (error) {
-      console.error('Error updating book:', error)
-      setErrors({
-        title: '',
-        author: error instanceof Error ? error.message : 'Failed to update book',
-      })
-    }
-  }
-
+  // Handle journal entry addition
   const handleAddJournal = async () => {
     // Close the form
     setIsAddingJournal(false)
@@ -217,142 +115,13 @@ export function BookDetails({ }: BookDetailsProps) {
           </button>
         )}
       </div>
-      {isEditing && editFormData ? (
-        <form
-          onSubmit={handleEditSubmit}
-          className="bg-zinc-900 p-6 rounded-lg shadow-md mb-8 border border-zinc-800"
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="title"
-              className="block text-amber-200 font-medium mb-2"
-            >
-              Book Title <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={editFormData.title}
-              onChange={handleEditChange}
-              className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
-              placeholder="Enter book title"
-            />
-            {errors.title && (
-              <p className="text-red-400 text-sm mt-1">{errors.title}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="author"
-              className="block text-amber-200 font-medium mb-2"
-            >
-              Author <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              id="author"
-              name="author"
-              value={editFormData.author}
-              onChange={handleEditChange}
-              className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 ${errors.author ? 'border-red-500' : 'border-zinc-700'}`}
-              placeholder="Enter author name"
-            />
-            {errors.author && (
-              <p className="text-red-400 text-sm mt-1">{errors.author}</p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-amber-200 font-medium mb-2">
-              Genres
-            </label>
-            <GenreSearch
-              selectedGenres={selectedGenres}
-              onGenresChange={setSelectedGenres}
-              placeholder="Search and select genres for this book..."
-              multiple={true}
-            />
-            <p className="text-amber-400 text-sm mt-1">
-              Add genres to help categorize and find this book later
-            </p>
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="cover_image"
-              className="block text-amber-200 font-medium mb-2"
-            >
-              Cover Image URL
-            </label>
-            <input
-              type="url"
-              id="cover_image"
-              name="cover_image"
-              value={editFormData.cover_image ? editFormData.cover_image : ''}
-              onChange={handleEditChange}
-              className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50"
-              placeholder="https://example.com/book-cover.jpg"
-            />
-            <p className="text-amber-400 text-sm mt-1">
-              Leave blank to use a default cover
-            </p>
-          </div>
-          <div className="mb-6">
-            <label className="block text-amber-200 font-medium mb-2">
-              Rating
-            </label>
-            <StarRating
-              rating={editFormData.rating}
-              onRatingChange={handleRatingChange}
-              readonly={false}
-              size="large"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-amber-200 font-medium mb-2">
-              Tags
-            </label>
-            <TagSearch
-              selectedTags={selectedTags}
-              onTagsChange={setSelectedTags}
-              placeholder="Search and select tags for this book..."
-              multiple={true}
-            />
-            <p className="text-amber-400 text-sm mt-1">
-              Add tags to help categorize and find this book later
-            </p>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false)
-                setErrors({ title: '', author: '' })
-                // Reset tags to original values
-                if (bookWithDetails) {
-                  const tagsForEditing: Tag[] = (bookWithDetails.tags || []).map(bookTag => ({
-                    id: bookTag.id,
-                    user_id: bookWithDetails.user_id,
-                    name: bookTag.name,
-                    color: bookTag.color,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  }))
-                  setSelectedTags(tagsForEditing)
-                }
-              }}
-              className="px-4 py-2 border border-zinc-700 rounded-md hover:bg-zinc-800 transition-colors text-amber-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isUpdating}
-              className="px-4 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isUpdating ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
+      {isEditing && bookWithDetails ? (
+        <BookForm
+          mode="edit"
+          book={bookWithDetails}
+          onSubmit={handleBookFormSubmit}
+          onCancel={() => setIsEditing(false)}
+        />
       ) : (
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <div className="w-full md:w-1/3">
@@ -380,7 +149,10 @@ export function BookDetails({ }: BookDetailsProps) {
           <div className="w-full md:w-2/3 bg-zinc-900 p-6 rounded-lg shadow-md border border-zinc-800 flex flex-col">
             <div className="flex-grow">
               <h1 className="text-3xl font-bold text-amber-50 mb-2">{bookWithDetails.title}</h1>
-              <p className="text-xl text-amber-200 mb-4">by {bookWithDetails.author}</p>
+              <p className="text-xl text-amber-200 mb-2">by {bookWithDetails.author}</p>
+              {bookWithDetails.series && (
+                <p className="text-lg text-amber-300 mb-4 italic">{bookWithDetails.series}</p>
+              )}
 
               {/* Display genres */}
               {bookWithDetails.genres && bookWithDetails.genres.length > 0 && (
@@ -388,17 +160,12 @@ export function BookDetails({ }: BookDetailsProps) {
                   <h4 className="text-sm font-medium text-amber-200 mb-2">Genres:</h4>
                   <div className="flex flex-wrap gap-2">
                     {bookWithDetails.genres.map((genre) => (
-                      <span
+                      <CategoryBadge
                         key={genre.id}
-                        className="inline-block text-xs px-2 py-1 rounded-full border font-medium"
-                        style={{
-                          backgroundColor: `${genre.color}20`,
-                          borderColor: `${genre.color}50`,
-                          color: genre.color
-                        }}
-                      >
-                        {genre.name}
-                      </span>
+                        item={genre}
+                        type="genre"
+                        size="sm"
+                      />
                     ))}
                   </div>
                 </div>
@@ -419,14 +186,12 @@ export function BookDetails({ }: BookDetailsProps) {
                   <h4 className="text-sm font-medium text-amber-200 mb-2">Tags:</h4>
                   <div className="flex flex-wrap gap-2">
                     {bookWithDetails.tags.map((tag) => (
-                      <span
+                      <CategoryBadge
                         key={tag.id}
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${isLightColor(tag.color) ? 'text-black' : 'text-white'
-                          }`}
-                        style={{ backgroundColor: tag.color }}
-                      >
-                        {tag.name}
-                      </span>
+                        item={tag}
+                        type="tag"
+                        size="sm"
+                      />
                     ))}
                   </div>
                 </div>
@@ -446,7 +211,7 @@ export function BookDetails({ }: BookDetailsProps) {
       )}
 
       {/* Find it Online Section */}
-      <div className="mb-8">
+      <div className="mt-4 mb-8">
         <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
           {/* Search on Goodreads */}
           <a
