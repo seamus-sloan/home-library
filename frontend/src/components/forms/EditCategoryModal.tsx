@@ -1,7 +1,7 @@
 import { BookmarkIcon, TagIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { Genre, Tag } from '../types'
+import type { Genre, Tag } from '../../types'
 
 type CategoryItem = Tag | Genre
 

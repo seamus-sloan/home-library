@@ -1,7 +1,7 @@
-import type { User } from "../contexts/UserContext"
+import type { UserProfile } from "../../types"
 
 interface UserAvatarProps {
-  user: User
+  user: UserProfile
   size?: 'sm' | 'md' | 'lg'
 }
 export function UserAvatar({ user, size = 'md' }: UserAvatarProps) {

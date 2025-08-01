@@ -45,6 +45,13 @@ export interface User {
   updated_at: string,
 }
 
+// Simplified user for avatars and display
+export interface UserProfile {
+  id: number
+  name: string
+  color: string
+}
+
 // New types for the enhanced API response
 export interface BookTag {
   id: number
@@ -67,7 +74,9 @@ export interface JournalUser {
 export interface BookJournal {
   id: number
   title: string
+  content: string
   created_at: string
+  user: JournalUser
 }
 
 export interface BookWithDetails extends Book {

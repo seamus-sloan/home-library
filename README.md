@@ -26,7 +26,7 @@ Home Library helps you:
    cd backend
    
    # Running will create a SQLite database for you... or you can use sqlx commands
-   export DATABASE_URL="sqlite:development.db"
+   export DATABASE_URL="sqlite:library.db"
 
    # Install dependencies and run migrations
    cargo build
@@ -50,6 +50,37 @@ Home Library helps you:
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:3000
 
+### Docker Development
+
+If you prefer using Docker for development:
+
+1. **Start with Docker Compose**
+   ```bash
+   # Build and run both frontend and backend
+   docker-compose up --build
+   ```
+
+2. **Access the application**
+   - Frontend: http://localhost (port 80)
+   - Backend API: http://localhost:3000
+
+3. **Useful Docker commands**
+   ```bash
+   # Stop all services
+   docker-compose down
+   
+   # Rebuild and restart
+   docker-compose up
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Clean up (removes containers, networks, and images)
+   docker-compose down --rmi all --volumes
+   ```
+
+**Note**: The Docker setup persists your SQLite database in the `./data` directory, so your data will survive container restarts.
+
 ## 🥧 Deploying to Raspberry Pi
 
 ### Option 1: Manual Deployment
@@ -69,7 +100,7 @@ Home Library helps you:
    ```bash
    scp -r frontend/dist pi@your-pi-ip:/home/pi/home-library/
    scp backend/target/release/backend pi@your-pi-ip:/home/pi/home-library/
-   scp backend/development.db pi@your-pi-ip:/home/pi/home-library/
+   scp backend/library.db pi@your-pi-ip:/home/pi/home-library/
    ```
 
 3. **Setup on Pi**
@@ -84,44 +115,64 @@ Home Library helps you:
    sudo nano /etc/systemd/system/home-library.service
    ```
 
-### Option 2: Docker Deployment
+### Option 2: Docker Deployment on Pi
 
-1. **Create Dockerfile** (in project root)
-   ```dockerfile
-   # Multi-stage build for Rust backend
-   FROM rust:1.70 as backend-builder
-   WORKDIR /app/backend
-   COPY backend/ .
-   RUN cargo build --release
-   
-   # Build frontend
-   FROM node:18 as frontend-builder
-   WORKDIR /app/frontend
-   COPY frontend/package*.json ./
-   RUN npm ci
-   COPY frontend/ .
-   RUN npm run build
-   
-   # Final runtime image
-   FROM debian:bullseye-slim
-   RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-   WORKDIR /app
-   
-   # Copy built applications
-   COPY --from=backend-builder /app/backend/target/release/backend .
-   COPY --from=frontend-builder /app/frontend/dist ./static
-   COPY backend/development.db .
-   
-   EXPOSE 3000
-   CMD ["./backend"]
-   ```
+A much simpler approach using Docker:
 
-2. **Deploy with Docker**
+1. **Transfer project to Pi**
    ```bash
-   # Build and run
-   docker build -t home-library .
-   docker run -d -p 3000:3000 -v $(pwd)/data:/app/data home-library
+   # Clone or transfer your project
+   scp -r /path/to/home-library pi@your-pi-ip:/home/pi/
    ```
+
+2. **Setup on Pi**
+   ```bash
+   ssh pi@your-pi-ip
+   cd /home/pi/home-library
+   
+   # Make sure Docker is installed and running
+   sudo apt update
+   sudo apt install docker.io docker-compose -y
+   sudo systemctl enable docker
+   sudo usermod -aG docker pi
+   # Log out and back in for group changes to take effect
+   ```
+
+3. **Deploy with Docker Compose**
+   ```bash
+   # Build and run the application
+   docker-compose up -d --build
+   
+   # Check status
+   docker-compose ps
+   
+   # View logs
+   docker-compose logs -f
+   ```
+
+4. **Access your application**
+   - Frontend: http://your-pi-ip (port 80)
+   - Backend API: http://your-pi-ip:3000
+
+5. **Useful management commands**
+   ```bash
+   # Stop the application
+   docker-compose down
+   
+   # Update and restart
+   git pull  # if using git
+   docker-compose up -d --build
+   
+   # Backup your database
+   cp data/library.db data/backups/backup-$(date +%Y%m%d-%H%M%S).db
+   ```
+
+**Benefits of Docker deployment:**
+- Cross-platform compatibility (works on ARM64/ARM32)
+- Easier updates and rollbacks
+- Isolated environment
+- Automatic container restarts
+- No need to manage system dependencies
 
 ## 🧪 Testing
 

@@ -17,7 +17,7 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     content: '',
   })
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
-  const [addJournalEntry, { isLoading: isSubmitting }] = useAddJournalEntryMutation()
+  const [addJournalEntry] = useAddJournalEntryMutation()
 
 
   const handleChange = (
@@ -77,7 +77,11 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 shadow-md">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
-          <UserAvatar user={currentUser} size="sm" />
+          <UserAvatar user={{
+            id: currentUser.id,
+            name: currentUser.name,
+            color: currentUser.color
+          }} size="sm" />
           <h4 className="text-lg font-medium text-amber-50">New Journal Entry</h4>
         </div>
         <button

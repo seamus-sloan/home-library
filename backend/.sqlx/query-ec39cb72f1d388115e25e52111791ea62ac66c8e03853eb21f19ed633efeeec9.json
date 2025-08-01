@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "UPDATE genres SET name = ?, color = ? WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
+  "query": "UPDATE genres SET name = ?, color = ?, updated_at = datetime('now') WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
   "describe": {
     "columns": [
       {
@@ -46,5 +46,5 @@
       true
     ]
   },
-  "hash": "8405795386d11c591045852e64050b2edc769e9ce8710cf992356a513b3c583b"
+  "hash": "ec39cb72f1d388115e25e52111791ea62ac66c8e03853eb21f19ed633efeeec9"
 }

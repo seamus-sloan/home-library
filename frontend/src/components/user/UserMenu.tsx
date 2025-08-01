@@ -46,7 +46,11 @@ export function UserMenu() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-                <UserAvatar user={currentUser} size="sm" />
+                <UserAvatar user={{
+                    id: currentUser.id,
+                    name: currentUser.name,
+                    color: currentUser.color
+                }} size="sm" />
                 <span className="text-amber-200 hidden sm:inline font-medium">
                     {currentUser.name}
                 </span>

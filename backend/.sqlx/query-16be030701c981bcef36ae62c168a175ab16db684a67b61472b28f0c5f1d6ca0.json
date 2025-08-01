@@ -1,50 +1,50 @@
 {
   "db_name": "SQLite",
-  "query": "UPDATE tags SET name = ?, color = ? WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
+  "query": "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ? \n         RETURNING id, name, color, created_at, updated_at, last_login",
   "describe": {
     "columns": [
       {
-        "name": "id!",
+        "name": "id",
         "ordinal": 0,
         "type_info": "Integer"
       },
       {
-        "name": "user_id!",
-        "ordinal": 1,
-        "type_info": "Integer"
-      },
-      {
         "name": "name",
-        "ordinal": 2,
+        "ordinal": 1,
         "type_info": "Text"
       },
       {
         "name": "color",
-        "ordinal": 3,
+        "ordinal": 2,
         "type_info": "Text"
       },
       {
         "name": "created_at",
-        "ordinal": 4,
+        "ordinal": 3,
         "type_info": "Text"
       },
       {
         "name": "updated_at",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_login",
         "ordinal": 5,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 1
     },
     "nullable": [
       false,
       false,
       false,
-      false,
+      true,
       true,
       true
     ]
   },
-  "hash": "ef71f6f7520587ebbe6d85bf6fd48b40eeccf45aa76dab5aaac337e38b173ffd"
+  "hash": "16be030701c981bcef36ae62c168a175ab16db684a67b61472b28f0c5f1d6ca0"
 }

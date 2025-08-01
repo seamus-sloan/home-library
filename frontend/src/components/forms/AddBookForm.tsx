@@ -19,7 +19,7 @@ interface AddBookFormProps {
 }
 export function AddBookForm({ onSubmit, onCancel }: AddBookFormProps) {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
-  const [addBook, { isLoading: isSubmitting }] = useAddBookMutation()
+  const [addBook] = useAddBookMutation()
 
   const [formData, setFormData] = useState({
     title: '',

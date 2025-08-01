@@ -1,0 +1,30 @@
+# Backend files to ignore
+target/
+Cargo.lock
+*.db
+*.db-*
+.env
+.env.local
+
+# Frontend files to ignore  
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+
+# Git and IDE files
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+README.md
+*.md
+
+# Test files
+tests/
+test/

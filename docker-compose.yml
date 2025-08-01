@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: home-library-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist SQLite database
+      - ./data:/app/data
+    environment:
+      - RUST_LOG=backend=info,sqlx=info
+      - DATABASE_FILE=/app/data/library.db
+    networks:
+      - home-library-network
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: home-library-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - home-library-network
+    restart: always
+
+networks:
+  home-library-network:
+    driver: bridge
+
+volumes:
+  home-library-data:
+    driver: local
