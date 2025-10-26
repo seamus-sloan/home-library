@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
+  "query": "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books WHERE id = ?",
   "describe": {
     "columns": [
       {
@@ -34,18 +34,23 @@
         "type_info": "Float"
       },
       {
-        "name": "created_at",
+        "name": "series",
         "ordinal": 6,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 5
+      "Right": 1
     },
     "nullable": [
       false,
@@ -55,8 +60,9 @@
       false,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "e6e8e792ccfbe023c5fba1e746ad08728e412c5911f917982ad40e9dcb61befe"
+  "hash": "777762178c6be1d09f65ede64fc432647a40b8767ad545db31f83530f23670d5"
 }

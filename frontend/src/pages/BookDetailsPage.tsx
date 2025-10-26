@@ -6,12 +6,8 @@ import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
 import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
-import type { JournalEntry } from '../types'
 
-interface BookDetailsProps {
-  addJournal: (journal: Omit<JournalEntry, 'id'>) => void
-}
-export function BookDetails({ }: BookDetailsProps) {
+export function BookDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()

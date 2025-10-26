@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, user_id, cover_image, title, author, rating, created_at, updated_at FROM books WHERE id = ?",
+  "query": "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY created_at DESC",
   "describe": {
     "columns": [
       {
@@ -34,18 +34,23 @@
         "type_info": "Float"
       },
       {
-        "name": "created_at",
+        "name": "series",
         "ordinal": 6,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 0
     },
     "nullable": [
       false,
@@ -55,8 +60,9 @@
       false,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "116b4fd21b3ada2a31fe05d64a039bc74d67e4c844cae0a90926071971536323"
+  "hash": "90d99e0ddeb80c5320e4e4a0e689e67d6f2b37dd0c3ef4877618f0088aa960f0"
 }

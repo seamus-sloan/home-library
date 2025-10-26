@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "INSERT INTO books (user_id, cover_image, title, author, rating) VALUES (?, ?, ?, ?, ?) \n         RETURNING id, user_id, cover_image, title, author, rating, created_at, updated_at",
+  "query": "INSERT INTO books (user_id, cover_image, title, author, rating, series) VALUES (?, ?, ?, ?, ?, ?) \n         RETURNING id, user_id, cover_image, title, author, rating, series, created_at, updated_at",
   "describe": {
     "columns": [
       {
@@ -34,18 +34,23 @@
         "type_info": "Float"
       },
       {
-        "name": "created_at",
+        "name": "series",
         "ordinal": 6,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 5
+      "Right": 6
     },
     "nullable": [
       true,
@@ -55,8 +60,9 @@
       false,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "7a7592b6486011245e25cb681c550165be25c8f58dee89205cb2d7a7bf9adfaa"
+  "hash": "3bd1276bdd47a00df233c8bb70e6545abfc62e57d8065179a9277cbc5d34a935"
 }

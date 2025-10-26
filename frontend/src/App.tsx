@@ -7,7 +7,6 @@ import { Header } from './components/layout/Header'
 import { BookDetails } from './pages/BookDetailsPage'
 import { LoginPage } from './pages/LoginPage'
 import type { RootState } from './store/store'
-import type { JournalEntry } from './types'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
@@ -23,28 +22,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
-  const [journals, setJournals] = useState<JournalEntry[]>([])
   const [isAddingBook, setIsAddingBook] = useState(false)
-
-  // Only keep journals in localStorage for now (until we implement journal backend)
-  useEffect(() => {
-    const savedJournals = localStorage.getItem('journals')
-    if (savedJournals) {
-      setJournals(JSON.parse(savedJournals))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('journals', JSON.stringify(journals))
-  }, [journals])
-
-  const addJournal = (journal: Omit<JournalEntry, 'id'>) => {
-    const newJournal = {
-      ...journal,
-      id: Date.now(),
-    }
-    setJournals([...journals, newJournal])
-  }
 
   return (
     <div className="min-h-screen bg-black text-amber-50">
@@ -75,7 +53,7 @@ function AppContent() {
             path="/book/:id"
             element={
               <ProtectedRoute>
-                <BookDetails addJournal={addJournal} />
+                <BookDetails />
               </ProtectedRoute>
             }
           />
