@@ -202,6 +202,15 @@ export function BookDetails() {
                 })}
               </span>
             </div>
+            <div className="flex justify-end">
+              <span className="text-amber-400 text-sm italic">
+                Last updated on {new Date(bookWithDetails.updated_at || 0).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </span>
+            </div>
           </div>
         </div>
       )}

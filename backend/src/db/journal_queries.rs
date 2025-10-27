@@ -38,6 +38,14 @@ pub async fn create_journal_entry(
         updated_at: row.updated_at,
     };
 
+    // Update the associated book's updated_at timestamp
+    sqlx::query!(
+        "UPDATE books SET updated_at = datetime('now') WHERE id = ?",
+        created_journal.book_id
+    )
+    .execute(pool)
+    .await?;
+
     info!(
         "Successfully created journal entry '{}' with ID: {} for user: {}",
         created_journal.title, created_journal.id, created_journal.user_id
@@ -46,6 +54,7 @@ pub async fn create_journal_entry(
         "New journal entry record: ID={}, Book ID={}, User ID={}, Title='{}'",
         created_journal.id, created_journal.book_id, created_journal.user_id, created_journal.title
     );
+    debug!("Updated book ID {} timestamp", created_journal.book_id);
 
     Ok(created_journal)
 }
@@ -176,7 +185,9 @@ pub async fn update_journal_entry(
 
     info!(
         "Updated journal entry with ID {}: title='{}', content length={}",
-        updated_journal.id, updated_journal.title, updated_journal.content.len()
+        updated_journal.id,
+        updated_journal.title,
+        updated_journal.content.len()
     );
     Ok(updated_journal)
 }

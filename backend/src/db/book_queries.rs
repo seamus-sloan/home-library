@@ -395,7 +395,7 @@ pub async fn get_all_books_with_details_query(
     // First get all books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY created_at DESC"
+        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY updated_at DESC"
     )
     .fetch_all(pool)
     .await?;

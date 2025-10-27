@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY created_at DESC",
+  "query": "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY updated_at DESC",
   "describe": {
     "columns": [
       {
@@ -64,5 +64,5 @@
       true
     ]
   },
-  "hash": "90d99e0ddeb80c5320e4e4a0e689e67d6f2b37dd0c3ef4877618f0088aa960f0"
+  "hash": "7795514ca28a048cd5ca875e362b47e250b5d01917e8c90acb76afd21c7253db"
 }
