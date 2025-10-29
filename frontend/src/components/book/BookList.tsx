@@ -164,7 +164,7 @@ export function BookList() {
 
       {/* Show books grid only if there are books */}
       {filteredBooks.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
           {filteredBooks.map(book => (
             <BookCard
               key={book.id}
