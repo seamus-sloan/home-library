@@ -18,7 +18,6 @@ pub struct Book {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub series: Option<String>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
@@ -29,7 +28,6 @@ pub struct CreateBookRequest {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
     pub series: Option<String>,
@@ -40,8 +38,6 @@ pub struct UpdateBookRequest {
     pub cover_image: Option<String>,
     pub title: Option<String>,
     pub author: Option<String>,
-    #[serde(default, deserialize_with = "deserialize_double_option")]
-    pub rating: Option<Option<f64>>, // Option<Option<f64>> to handle explicit null values
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
     pub series: Option<String>,
@@ -84,7 +80,6 @@ pub struct BookWithDetails {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     pub tags: Vec<BookTag>,

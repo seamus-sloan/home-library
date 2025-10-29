@@ -77,17 +77,13 @@ pub async fn create_book(
         cover_image: request.cover_image,
         title: request.title,
         author: request.author,
-        rating: request.rating,
         series: request.series,
         created_at: None,
         updated_at: None,
     };
 
     info!("Creating new book: {} for user: {}", book.title, user_id);
-    debug!(
-        "Book details - Author: {}, Rating: {:?}",
-        book.author, book.rating
-    );
+    debug!("Book details - Author: {}", book.author);
 
     match create_book_query(&pool, book).await {
         Ok(created_book) => {
@@ -208,10 +204,6 @@ pub async fn update_book(
         cover_image: request.cover_image.or(current_book.cover_image),
         title: request.title.unwrap_or(current_book.title),
         author: request.author.unwrap_or(current_book.author),
-        rating: match request.rating {
-            Some(rating_option) => rating_option, // This handles both Some(Some(value)) and Some(None)
-            None => current_book.rating,          // No rating field provided, keep current
-        },
         series: request.series.or(current_book.series),
         created_at: current_book.created_at,
         updated_at: current_book.updated_at,

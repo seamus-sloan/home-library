@@ -150,7 +150,6 @@ async fn fetch_book_details(
         cover_image: book.cover_image,
         title: book.title,
         author: book.author,
-        rating: book.rating,
         series: book.series,
         created_at: book.created_at,
         updated_at: book.updated_at,
@@ -231,19 +230,15 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, book: Book) -> Result<Book, 
         "Attempting to create book: '{}' for user: {}",
         book.title, book.user_id
     );
-    debug!(
-        "Book details - Author: '{}', Rating: {:?}",
-        book.author, book.rating
-    );
+    debug!("Book details - Author: '{}'", book.author);
 
     let row = sqlx::query!(
-        "INSERT INTO books (user_id, cover_image, title, author, rating, series) VALUES (?, ?, ?, ?, ?, ?) 
-         RETURNING id, user_id, cover_image, title, author, rating, series, created_at, updated_at",
+        "INSERT INTO books (user_id, cover_image, title, author, series) VALUES (?, ?, ?, ?, ?) 
+         RETURNING id, user_id, cover_image, title, author, series, created_at, updated_at",
         book.user_id,
         book.cover_image,
         book.title,
         book.author,
-        book.rating,
         book.series
     )
     .fetch_one(pool)
@@ -255,7 +250,6 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, book: Book) -> Result<Book, 
         cover_image: row.cover_image,
         title: row.title,
         author: row.author,
-        rating: row.rating,
         series: row.series,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -312,11 +306,10 @@ pub async fn update_book_query(
 ) -> Result<Book, sqlx::Error> {
     let updated_book = sqlx::query_as!(
         Book,
-        "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ?, series = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, series, created_at, updated_at",
+        "UPDATE books SET cover_image = ?, title = ?, author = ?, series = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, series, created_at, updated_at",
         book.cover_image,
         book.title,
         book.author,
-        book.rating,
         book.series,
         id
     )
@@ -369,7 +362,7 @@ pub async fn get_book_details_query(
     // First get the book
     let book = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books WHERE id = ?",
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at FROM books WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -395,7 +388,7 @@ pub async fn get_all_books_with_details_query(
     // First get all books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY updated_at DESC"
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at FROM books ORDER BY updated_at DESC"
     )
     .fetch_all(pool)
     .await?;
@@ -430,7 +423,7 @@ pub async fn search_books_with_details_query(
     // First get matching books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at 
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at 
          FROM books 
          WHERE title LIKE ? OR author LIKE ? OR series LIKE ?
          ORDER BY updated_at DESC",
