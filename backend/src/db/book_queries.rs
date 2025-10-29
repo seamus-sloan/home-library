@@ -5,7 +5,7 @@ use std::error::Error;
 use tracing::{debug, info, warn};
 use url::form_urlencoded;
 
-use crate::models::books::BookGenre;
+use crate::models::books::{BookGenre, BookRating};
 use crate::models::{Book, BookJournal, BookTag, BookWithDetails};
 
 // Generic relationshpub async fn update_book_query(ment
@@ -144,6 +144,35 @@ async fn fetch_book_details(
         })
         .collect();
 
+    // Get ratings for the book with user information
+    let ratings = sqlx::query(
+        "SELECT r.id, r.user_id, r.book_id, r.rating, r.created_at, r.updated_at, u.name as user_name, u.color as user_color
+         FROM ratings r
+         INNER JOIN users u ON r.user_id = u.id
+         WHERE r.book_id = ?
+         ORDER BY r.created_at DESC",
+    )
+    .bind(book_id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_ratings: Vec<BookRating> = ratings
+        .into_iter()
+        .map(|row| BookRating {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            book_id: row.get("book_id"),
+            rating: row.get("rating"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            user: crate::models::books::RatingUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                color: row.get("user_color"),
+            },
+        })
+        .collect();
+
     Ok(BookWithDetails {
         id: book.id,
         user_id: book.user_id,
@@ -156,6 +185,7 @@ async fn fetch_book_details(
         tags: book_tags,
         genres: book_genres,
         journals: book_journals,
+        ratings: book_ratings,
     })
 }
 

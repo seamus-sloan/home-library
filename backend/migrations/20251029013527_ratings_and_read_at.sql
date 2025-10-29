@@ -29,13 +29,7 @@ CREATE TABLE IF NOT EXISTS ratings (
 CREATE INDEX IF NOT EXISTS idx_ratings_user_id ON ratings(user_id);
 CREATE INDEX IF NOT EXISTS idx_ratings_book_id ON ratings(book_id);
 
--- 3. Migrate existing book ratings to ratings table (with user_id = 1)
-INSERT INTO ratings (user_id, book_id, rating)
-SELECT 1, id, rating
-FROM books
-WHERE rating IS NOT NULL;
-
--- 4. Create reading_status table
+-- 3. Create reading_status table
 CREATE TABLE IF NOT EXISTS reading_status (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -54,9 +48,14 @@ CREATE INDEX IF NOT EXISTS idx_reading_status_user_id ON reading_status(user_id)
 CREATE INDEX IF NOT EXISTS idx_reading_status_book_id ON reading_status(book_id);
 CREATE INDEX IF NOT EXISTS idx_reading_status_status_id ON reading_status(status_id);
 
--- 5. Remove rating column from books table (since it's now in ratings table)
+-- 4. Remove rating column from books table (since it's now in ratings table)
 -- SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
 PRAGMA foreign_keys = OFF;
+
+-- Store existing book data WITH ratings in a temporary table
+CREATE TEMPORARY TABLE temp_books AS 
+SELECT id, user_id, cover_image, title, author, description, series_name, series, rating, created_at, updated_at 
+FROM books;
 
 -- Store existing relationships temporarily
 CREATE TEMPORARY TABLE temp_book_tags AS SELECT * FROM book_tags;
@@ -88,13 +87,19 @@ CREATE TABLE books_new (
 -- Copy data from old table (excluding rating column)
 INSERT INTO books_new (id, user_id, cover_image, title, author, description, series_name, series, created_at, updated_at)
 SELECT id, user_id, cover_image, title, author, description, series_name, series, created_at, updated_at
-FROM books;
+FROM temp_books;
 
 -- Drop old table
 DROP TABLE books;
 
 -- Rename new table
 ALTER TABLE books_new RENAME TO books;
+
+-- 5. NOW migrate the ratings from temp_books to ratings table (with user_id = 1)
+INSERT INTO ratings (user_id, book_id, rating)
+SELECT 1, id, rating
+FROM temp_books
+WHERE rating IS NOT NULL;
 
 -- Recreate journal_entries table
 CREATE TABLE journal_entries (
@@ -170,9 +175,9 @@ FROM temp_journal_entry_tags;
 -- 6. Set default reading status for existing books
 -- Books with ratings -> READ (status_id = 1)
 INSERT INTO reading_status (user_id, book_id, status_id)
-SELECT 1, id, 1
-FROM books
-WHERE id IN (SELECT book_id FROM ratings WHERE user_id = 1);
+SELECT 1, book_id, 1
+FROM ratings
+WHERE user_id = 1;
 
 -- Books without ratings -> UNREAD (status_id = 0)
 INSERT INTO reading_status (user_id, book_id, status_id)

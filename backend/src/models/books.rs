@@ -74,6 +74,24 @@ pub struct BookJournal {
 }
 
 #[derive(serde_derive::Serialize)]
+pub struct RatingUser {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct BookRating {
+    pub id: i64,
+    pub user_id: i64,
+    pub book_id: i64,
+    pub rating: f64,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+    pub user: RatingUser,
+}
+
+#[derive(serde_derive::Serialize)]
 pub struct BookWithDetails {
     pub id: i64,
     pub user_id: i64,
@@ -86,6 +104,7 @@ pub struct BookWithDetails {
     pub genres: Vec<BookGenre>,
     pub series: Option<String>,
     pub journals: Vec<BookJournal>,
+    pub ratings: Vec<BookRating>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
