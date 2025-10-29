@@ -1,4 +1,3 @@
-import { BookIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useDeleteBookMutation } from '../../middleware/backend'
 import type { Book, BookWithDetails } from '../../types'
@@ -84,9 +83,9 @@ export function BookCard({ book, onClick }: BookCardProps) {
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-amber-600">
-              <BookIcon size={48} />
-              <span className="mt-2 text-sm font-medium">No cover image</span>
+            <div className="flex flex-col items-center justify-center text-center p-4">
+              <h3 className="font-bold text-amber-200 mb-2">{book.title}</h3>
+              <p className="italic text-amber-300 text-sm">{book.author}</p>
             </div>
           )}
         </div>
