@@ -1,9 +1,8 @@
 import { BookIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useParallaxScroll } from '../../hooks/useParallaxScroll'
 import { useDeleteBookMutation } from '../../middleware/backend'
 import type { Book, BookWithDetails } from '../../types'
-import { CategoryBadge, ConfirmDialog } from '../common'
+import { ConfirmDialog } from '../common'
 import { BookFormModal } from '../forms'
 import { BookContextMenu } from './BookContextMenu'
 
@@ -12,7 +11,6 @@ interface BookCardProps {
   onClick: () => void
 }
 export function BookCard({ book, onClick }: BookCardProps) {
-  const { offset, elementRef } = useParallaxScroll(1) // Increased for more noticeable effect
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation()
@@ -52,9 +50,8 @@ export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <>
       <div
-        className="bg-zinc-900/80 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border border-zinc-800/50 hover:border-amber-600/30 hover:bg-zinc-900/90 backdrop-blur-sm group relative"
+        className="cursor-pointer group relative bg-zinc-700/70 rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)]"
         onClick={onClick}
-        ref={elementRef}
       >
         {/* Context Menu */}
         <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -64,80 +61,34 @@ export function BookCard({ book, onClick }: BookCardProps) {
             onDeleteBook={handleDeleteBook}
           />
         </div>
-        <div className="h-48 bg-zinc-800/50 relative overflow-hidden">
+        {/* Container for shadow and book - using aspect ratio for book covers (2:3) */}
+        <div className="w-full aspect-[2/3] relative flex items-center justify-center">
           {book.cover_image ? (
-            <img
-              src={book.cover_image}
-              alt={`${book.title} cover`}
-              className="absolute inset-0 w-full object-cover group-hover:scale-105 transition-all duration-300 ease-out"
-              style={{
-                height: 'calc(100% + 60px)', // Extra height for parallax movement
-                transform: `translateY(${offset - 30}px)`, // Center the extra space
-                transition: 'transform 0.1s ease-out'
-              }}
-              onError={e => {
-                const target = e.target as HTMLImageElement
-                target.onerror = null
-                target.src =
-                  'https://placehold.co/400x600/18181b/71717a?text=No+Image'
-              }}
-            />
+            <div className="relative inline-block max-h-full max-w-full">
+              {/* Black shadow behind the book image */}
+              <div className="absolute inset-0 bg-black/90 rounded blur-xl transform scale-110 group-hover:scale-[1.155] transition-all duration-300 ease-out"></div>
+              {/* Book image */}
+              <img
+                src={book.cover_image}
+                alt={`${book.title} cover`}
+                className="relative max-h-full max-w-full h-auto w-auto object-contain group-hover:scale-105 transition-all duration-300 ease-out rounded"
+                style={{
+                  transition: 'transform 0.2s ease-out'
+                }}
+                onError={e => {
+                  const target = e.target as HTMLImageElement
+                  target.onerror = null
+                  target.src =
+                    'https://placehold.co/400x600/18181b/71717a?text=No+Image'
+                }}
+              />
+            </div>
           ) : (
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center text-amber-600 transition-all duration-300 ease-out"
-              style={{
-                height: 'calc(100% + 60px)', // Extra height for parallax movement
-                transform: `translateY(${offset - 30}px)`, // Center the extra space
-                transition: 'transform 0.1s ease-out'
-              }}
-            >
+            <div className="flex flex-col items-center justify-center text-amber-600">
               <BookIcon size={48} />
               <span className="mt-2 text-sm font-medium">No cover image</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-        <div className="p-5">
-          <h3 className="font-bold text-lg text-amber-50 truncate mb-1 tracking-wide">
-            {book.title}
-          </h3>
-          <p className="text-amber-200 font-medium mb-1">by {book.author}</p>
-          {book.series && (
-            <p className="text-amber-300 text-sm mb-3 italic">{book.series}</p>
-          )}
-          <div className="mt-2 space-y-2">
-            {/* Genres */}
-            {'genres' in book && book.genres && book.genres.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {book.genres.map(genre => (
-                  <CategoryBadge
-                    key={genre.id}
-                    item={genre}
-                    type="genre"
-                    size="sm"
-                  />
-                ))}
-              </div>
-            ) : (
-              <span className="inline-block bg-amber-900/40 text-amber-200 text-xs px-3 py-1.5 rounded-full border border-amber-700/30 font-medium">
-                Uncategorized
-              </span>
-            )}
-
-            {/* Tags */}
-            {'tags' in book && book.tags && book.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {book.tags.map(tag => (
-                  <CategoryBadge
-                    key={tag.id}
-                    item={tag}
-                    type="tag"
-                    size="sm"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
