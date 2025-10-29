@@ -52,8 +52,8 @@ export function BookCard({ book, onClick }: BookCardProps) {
         className="cursor-pointer group relative bg-zinc-700/70 rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)]"
         onClick={onClick}
       >
-        {/* Context Menu */}
-        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {/* Context Menu - hidden on touch devices */}
+        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden md:block pointer-events-none group-hover:pointer-events-auto">
           <BookContextMenu
             onViewBook={onClick}
             onEditBook={handleEditBook}
