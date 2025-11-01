@@ -96,11 +96,47 @@ export interface BookRating {
   user: RatingUser
 }
 
+export const ReadingStatus = {
+  UNREAD: 0,
+  READ: 1,
+  READING: 2,
+  TBR: 3,
+  DNF: 99,
+} as const
+
+export type ReadingStatusValue = typeof ReadingStatus[keyof typeof ReadingStatus]
+
+export const ReadingStatusLabels: Record<ReadingStatusValue, string> = {
+  [ReadingStatus.UNREAD]: 'Unread',
+  [ReadingStatus.READ]: 'Read',
+  [ReadingStatus.READING]: 'Reading',
+  [ReadingStatus.TBR]: 'To Be Read',
+  [ReadingStatus.DNF]: 'Did Not Finish',
+}
+
+export interface StatusUser {
+  id: number
+  name: string
+  color: string
+}
+
+export interface BookStatus {
+  id: number
+  user_id: number
+  book_id: number
+  status_id: number
+  status_name: string
+  created_at: string
+  updated_at: string
+  user: StatusUser
+}
+
 export interface BookWithDetails extends Book {
   tags: BookTag[]
   genres: BookGenre[]
   journals: BookJournal[]
   ratings: BookRating[]
+  statuses: BookStatus[]
 }
 
 export interface CreateBookRequest {

@@ -7,8 +7,11 @@ import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
 import { InteractiveRating, RatingsList } from '../components/rating'
-import { useDeleteRatingMutation, useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation } from '../middleware/backend'
+import StatusDropdown from '../components/status/StatusDropdown'
+import StatusList from '../components/status/StatusList'
+import { useDeleteRatingMutation, useDeleteStatusMutation, useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation, useUpsertStatusMutation } from '../middleware/backend'
 import type { RootState } from '../store/store'
+import type { ReadingStatusValue } from '../types'
 import { formatRelativeDate } from '../utils/dateUtils'
 
 export function BookDetails() {
@@ -26,6 +29,8 @@ export function BookDetails() {
   const [updateBook] = useUpdateBookMutation()
   const [upsertRating] = useUpsertRatingMutation()
   const [deleteRating] = useDeleteRatingMutation()
+  const [upsertStatus] = useUpsertStatusMutation()
+  const [deleteStatus] = useDeleteStatusMutation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
@@ -122,6 +127,33 @@ export function BookDetails() {
     }
   }
 
+  // Handle status change
+  const handleStatusChange = async (statusId: ReadingStatusValue) => {
+    if (!id || !currentUser) return
+
+    try {
+      await upsertStatus({
+        bookId: parseInt(id),
+        statusId: statusId,
+      }).unwrap()
+      console.log('Status updated successfully to:', statusId)
+    } catch (error) {
+      console.error('Error updating status:', error)
+    }
+  }
+
+  // Handle status deletion
+  const handleStatusDelete = async () => {
+    if (!id || !currentUser) return
+
+    try {
+      await deleteStatus(parseInt(id)).unwrap()
+      console.log('Status deleted successfully')
+    } catch (error) {
+      console.error('Error deleting status:', error)
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center mb-6">
@@ -202,12 +234,12 @@ export function BookDetails() {
               )}
 
               {/* Ratings Section */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-amber-200 mb-2">Ratings:</h4>
+              <div className="mb-6 md:mb-4">
+                <h4 className="text-sm font-medium text-amber-200 mb-3">Ratings:</h4>
 
                 {/* If user is logged in but hasn't rated yet, show the rating prompt */}
                 {currentUser && !bookWithDetails.ratings?.some(r => r.user_id === currentUser.id) && (
-                  <div className="mb-3 p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
                     <p className="text-xs text-amber-600 mb-3">Click the stars below to rate this book</p>
                     <InteractiveRating
                       ratings={bookWithDetails.ratings || []}
@@ -228,6 +260,36 @@ export function BookDetails() {
                 ) : (
                   <div className="text-amber-400 text-center py-4">
                     {currentUser ? 'No ratings yet. Be the first to rate!' : 'No ratings yet'}
+                  </div>
+                )}
+              </div>
+
+              {/* Reading Status Section */}
+              <div className="mb-6 md:mb-4">
+                <h4 className="text-sm font-medium text-amber-200 mb-3">Reading Status:</h4>
+
+                {/* If user is logged in but hasn't set status yet, show the status prompt */}
+                {currentUser && !bookWithDetails.statuses?.some(s => s.user_id === currentUser.id) && (
+                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                    <p className="text-xs text-amber-600 mb-3">Set your reading status for this book</p>
+                    <StatusDropdown
+                      value={null}
+                      onChange={handleStatusChange}
+                    />
+                  </div>
+                )}
+
+                {/* Show all statuses (your own will be editable) */}
+                {bookWithDetails.statuses && bookWithDetails.statuses.length > 0 ? (
+                  <StatusList
+                    statuses={bookWithDetails.statuses}
+                    currentUserId={currentUser?.id ?? null}
+                    onStatusChange={currentUser ? handleStatusChange : undefined}
+                    onStatusDelete={currentUser ? handleStatusDelete : undefined}
+                  />
+                ) : (
+                  <div className="text-amber-400 text-center py-4">
+                    {currentUser ? 'No status set yet. Select one above!' : 'No statuses yet'}
                   </div>
                 )}
               </div>

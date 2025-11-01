@@ -22,10 +22,8 @@ export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDe
         )
     }
 
-    // Sort ratings by created_at descending (newest first)
-    const sortedRatings = [...ratings].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )
+    // Sort ratings by user_id ascending (alphabetically by user)
+    const sortedRatings = [...ratings].sort((a, b) => a.user_id - b.user_id)
 
     const handleStarClick = (ratingId: number, starValue: number, event: React.MouseEvent<HTMLButtonElement>) => {
         if (onRatingChange && currentUserId) {
@@ -62,13 +60,13 @@ export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDe
                 return (
                     <div
                         key={rating.id}
-                        className={`bg-zinc-900 p-4 rounded-lg border shadow-sm ${isCurrentUser ? 'border-amber-700/50 bg-amber-950/20' : 'border-zinc-800'
+                        className={`bg-zinc-900 p-3 md:p-4 rounded-lg border shadow-sm ${isCurrentUser ? 'border-amber-700/50 bg-amber-950/20' : 'border-zinc-800'
                             }`}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-start md:items-center gap-3">
                             {/* User Avatar Circle */}
                             <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md"
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md flex-shrink-0"
                                 style={{ backgroundColor: rating.user.color }}
                                 title={rating.user.name}
                             >
@@ -76,14 +74,14 @@ export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDe
                             </div>
 
                             {/* Rating Content */}
-                            <div className="flex-grow">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-amber-200 font-medium">
+                            <div className="flex-grow min-w-0">
+                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                                    <span className="text-amber-200 font-medium truncate">
                                         {rating.user.name}
                                         {isCurrentUser && <span className="text-amber-600 text-xs ml-1">(You)</span>}
                                     </span>
-                                    <span className="text-amber-600">·</span>
-                                    <div className="flex items-center gap-1">
+                                    <span className="text-amber-600 hidden md:inline">·</span>
+                                    <div className="flex items-center gap-1 flex-wrap">
                                         {Array.from({ length: 5 }).map((_, index) => {
                                             const starValue = index + 1
                                             const isFullStar = displayRating >= starValue
@@ -152,7 +150,7 @@ export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDe
                                 <button
                                     type="button"
                                     onClick={onRatingDelete}
-                                    className="text-amber-600 hover:text-amber-400 transition-colors p-2 rounded hover:bg-amber-950/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    className="text-amber-600 hover:text-amber-400 transition-colors p-2 rounded hover:bg-amber-950/30 focus:outline-none focus:ring-2 focus:ring-amber-400 flex-shrink-0"
                                     aria-label="Delete rating"
                                     title="Delete your rating"
                                 >

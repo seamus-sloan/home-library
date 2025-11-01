@@ -21,7 +21,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User', 'Rating'],
+  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User', 'Rating', 'Status'],
   endpoints: (builder) => ({
     // #region Book Endpoints
     getBooks: builder.query<BookWithDetails[], { search?: string } | void>({
@@ -231,6 +231,38 @@ export const api = createApi({
     }),
     //#endregion
 
+    //#region Status Endpoints
+    upsertStatus: builder.mutation<void, { bookId: number; statusId: number }>({
+      query: ({ bookId, statusId }) => ({
+        url: `/books/${bookId}/status`,
+        method: 'POST',
+        body: { status_id: statusId },
+      }),
+      invalidatesTags: (_result, _error, { bookId }) => [
+        { type: 'Book', id: bookId.toString() },
+        { type: 'Status', id: `book-${bookId}` },
+      ],
+    }),
+
+    deleteStatus: builder.mutation<void, number>({
+      query: (bookId) => ({
+        url: `/books/${bookId}/status`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, bookId) => [
+        { type: 'Book', id: bookId.toString() },
+        { type: 'Status', id: `book-${bookId}` },
+      ],
+    }),
+
+    getUserStatus: builder.query<number | null, number>({
+      query: (bookId) => `/books/${bookId}/status`,
+      providesTags: (_result, _error, bookId) => [
+        { type: 'Status', id: `book-${bookId}` },
+      ],
+    }),
+    //#endregion
+
     //#region User Endpoints
     getUsers: builder.query<User[], void>({
       query: () => '/users',
@@ -288,4 +320,7 @@ export const {
   useUpsertRatingMutation,
   useDeleteRatingMutation,
   useGetUserRatingQuery,
+  useUpsertStatusMutation,
+  useDeleteStatusMutation,
+  useGetUserStatusQuery,
 } = api
