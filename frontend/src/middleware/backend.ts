@@ -2,7 +2,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { User } from "../contexts/UserContext"
 import type { RootState } from '../store/store'
-import type { Book, BookWithDetails, CreateBookRequest, Genre, JournalEntry, Tag, UpdateBookRequest } from "../types"
+import type { Book, BookWithDetails, CreateBookRequest, CreateListRequest, Genre, JournalEntry, ListWithBooks, Tag, UpdateBookRequest, UpdateListRequest } from "../types"
 
 // Define our API slice
 export const api = createApi({
@@ -21,7 +21,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User', 'Rating', 'Status'],
+  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User', 'Rating', 'Status', 'List'],
   endpoints: (builder) => ({
     // #region Book Endpoints
     getBooks: builder.query<BookWithDetails[], { search?: string } | void>({
@@ -308,6 +308,39 @@ export const api = createApi({
       invalidatesTags: ['User'],
     }),
     //#endregion
+
+    //#region List Endpoints
+    getLists: builder.query<ListWithBooks[], void>({
+      query: () => '/lists',
+      providesTags: ['List'],
+    }),
+
+    addList: builder.mutation<ListWithBooks, CreateListRequest>({
+      query: (list) => ({
+        url: '/lists',
+        method: 'POST',
+        body: list,
+      }),
+      invalidatesTags: ['List'],
+    }),
+
+    updateList: builder.mutation<ListWithBooks, { id: number; list: UpdateListRequest }>({
+      query: ({ id, list }) => ({
+        url: `/lists/${id}`,
+        method: 'PUT',
+        body: list,
+      }),
+      invalidatesTags: ['List'],
+    }),
+
+    deleteList: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/lists/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['List'],
+    }),
+    //#endregion
   }),
 })
 
@@ -342,4 +375,8 @@ export const {
   useUpsertStatusMutation,
   useDeleteStatusMutation,
   useGetUserStatusQuery,
+  useGetListsQuery,
+  useAddListMutation,
+  useUpdateListMutation,
+  useDeleteListMutation,
 } = api

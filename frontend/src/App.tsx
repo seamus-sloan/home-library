@@ -5,6 +5,7 @@ import { BookList } from './components/book/BookList'
 import { BookFormPage } from './components/forms'
 import { Header } from './components/layout/Header'
 import { BookDetails } from './pages/BookDetailsPage'
+import { ListsPage } from './pages/ListsPage'
 import { LoginPage } from './pages/LoginPage'
 import type { RootState } from './store/store'
 
@@ -54,6 +55,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <BookDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lists"
+            element={
+              <ProtectedRoute>
+                <ListsPage />
               </ProtectedRoute>
             }
           />
