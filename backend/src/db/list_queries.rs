@@ -2,12 +2,9 @@ use sqlx::{Pool, Sqlite};
 
 use crate::models::lists::{BookInList, CreateListRequest, List, ListWithBooks, UpdateListRequest};
 
-// Get all lists for the current user with their books
-pub async fn get_all_lists_query(
-    pool: &Pool<Sqlite>,
-    user_id: i64,
-) -> Result<Vec<ListWithBooks>, sqlx::Error> {
-    // First, get all lists for the user
+// Get all lists with their books
+pub async fn get_all_lists_query(pool: &Pool<Sqlite>) -> Result<Vec<ListWithBooks>, sqlx::Error> {
+    // First, get all lists
     let lists = sqlx::query_as!(
         List,
         r#"
@@ -19,18 +16,16 @@ pub async fn get_all_lists_query(
             created_at,
             updated_at
         FROM lists
-        WHERE user_id = ?
         ORDER BY created_at DESC
-        "#,
-        user_id
+        "#
     )
     .fetch_all(pool)
     .await?;
 
-    // For each list, get the books
+    // For each list, get the books (we'll get books for all users since we're not filtering by user)
     let mut lists_with_books = Vec::new();
     for list in lists {
-        let books = get_books_for_list(pool, list.id, user_id).await?;
+        let books = get_books_for_list(pool, list.id, list.user_id).await?;
         lists_with_books.push(ListWithBooks {
             id: list.id,
             user_id: list.user_id,
@@ -70,7 +65,7 @@ pub async fn get_list_by_id_query(
 
     match list {
         Some(list) => {
-            let books = get_books_for_list(pool, list.id, user_id).await?;
+            let books = get_books_for_list(pool, list.id, list.user_id).await?;
             Ok(Some(ListWithBooks {
                 id: list.id,
                 user_id: list.user_id,

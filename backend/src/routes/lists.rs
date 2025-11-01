@@ -9,27 +9,19 @@ use crate::db::{create_list_query, delete_list_query, get_all_lists_query, updat
 use crate::models::lists::{CreateListRequest, ListWithBooks, UpdateListRequest};
 use crate::utils::extract_user_id_from_headers;
 
-// GET /lists - Get all lists for the current user
+// GET /lists - Get all lists
 pub async fn get_lists(
     State(pool): State<Pool<Sqlite>>,
-    headers: HeaderMap,
 ) -> Result<Json<Vec<ListWithBooks>>, StatusCode> {
-    debug!("Fetching all lists for user");
+    debug!("Fetching all lists");
 
-    // Extract user_id from headers
-    let user_id = extract_user_id_from_headers(&headers)?;
-
-    match get_all_lists_query(&pool, user_id).await {
+    match get_all_lists_query(&pool).await {
         Ok(lists) => {
-            info!(
-                "Successfully fetched {} lists for user {}",
-                lists.len(),
-                user_id
-            );
+            info!("Successfully fetched {} lists", lists.len());
             Ok(Json(lists))
         }
         Err(e) => {
-            error!("Failed to fetch lists for user {}: {}", user_id, e);
+            error!("Failed to fetch lists: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

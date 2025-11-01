@@ -1,16 +1,7 @@
-import { useSelector } from 'react-redux'
 import { useGetListsQuery } from '../middleware/backend'
-import type { RootState } from '../store/store'
 
 export function ListsPage() {
-    const currentUser = useSelector((state: RootState) => state.user.currentUser)
-    const { data: lists, isLoading, error } = useGetListsQuery(undefined, {
-        skip: !currentUser, // Don't fetch if no user is selected
-    })
-
-    if (!currentUser) {
-        return <div>Please select a user first</div>
-    }
+    const { data: lists, isLoading, error } = useGetListsQuery()
 
     if (isLoading) {
         return <div>Loading lists...</div>
