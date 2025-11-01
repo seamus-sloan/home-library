@@ -80,10 +80,27 @@ export interface BookJournal {
   user: JournalUser
 }
 
+export interface RatingUser {
+  id: number
+  name: string
+  color: string
+}
+
+export interface BookRating {
+  id: number
+  user_id: number
+  book_id: number
+  rating: number
+  created_at: string
+  updated_at: string
+  user: RatingUser
+}
+
 export interface BookWithDetails extends Book {
   tags: BookTag[]
   genres: BookGenre[]
   journals: BookJournal[]
+  ratings: BookRating[]
 }
 
 export interface CreateBookRequest {

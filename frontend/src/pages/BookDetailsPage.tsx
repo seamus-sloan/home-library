@@ -1,16 +1,20 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { CategoryBadge, StarRating } from '../components/common'
+import { CategoryBadge } from '../components/common'
 import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
-import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
+import { InteractiveRating, RatingsList } from '../components/rating'
+import { useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation } from '../middleware/backend'
+import type { RootState } from '../store/store'
 
 export function BookDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
 
   // Use RTK Query to fetch book data (now includes tags and journals)
   const { data: bookWithDetails, isLoading: loading, error } = useGetBookQuery(id || '', {
@@ -19,6 +23,7 @@ export function BookDetails() {
 
   // Use mutation for updating books
   const [updateBook] = useUpdateBookMutation()
+  const [upsertRating] = useUpsertRatingMutation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
@@ -86,6 +91,21 @@ export function BookDetails() {
   const handleAddJournal = async () => {
     // Close the form
     setIsAddingJournal(false)
+  }
+
+  // Handle rating change
+  const handleRatingChange = async (rating: number) => {
+    if (!id || !currentUser) return
+
+    try {
+      await upsertRating({
+        bookId: parseInt(id),
+        rating: rating,
+      }).unwrap()
+      console.log('Rating updated successfully to:', rating)
+    } catch (error) {
+      console.error('Error updating rating:', error)
+    }
   }
 
   return (
@@ -166,16 +186,37 @@ export function BookDetails() {
                   </div>
                 </div>
               )}
-              {/* Display rating */}
+
+              {/* Ratings Section */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-amber-200 mb-2">Rating:</h4>
-                <StarRating
-                  rating={bookWithDetails.rating}
-                  onRatingChange={() => { }} // No-op for display view
-                  readonly={true}
-                  size="medium"
-                />
+                <h4 className="text-sm font-medium text-amber-200 mb-2">Ratings:</h4>
+
+                {/* If user is logged in but hasn't rated yet, show the rating prompt */}
+                {currentUser && !bookWithDetails.ratings?.some(r => r.user_id === currentUser.id) && (
+                  <div className="mb-3 p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                    <p className="text-xs text-amber-600 mb-3">Click the stars below to rate this book</p>
+                    <InteractiveRating
+                      ratings={bookWithDetails.ratings || []}
+                      currentUserId={currentUser.id}
+                      onRatingChange={handleRatingChange}
+                    />
+                  </div>
+                )}
+
+                {/* Show all ratings (your own will be clickable) */}
+                {bookWithDetails.ratings && bookWithDetails.ratings.length > 0 ? (
+                  <RatingsList
+                    ratings={bookWithDetails.ratings}
+                    currentUserId={currentUser?.id}
+                    onRatingChange={currentUser ? handleRatingChange : undefined}
+                  />
+                ) : (
+                  <div className="text-amber-400 text-center py-4">
+                    {currentUser ? 'No ratings yet. Be the first to rate!' : 'No ratings yet'}
+                  </div>
+                )}
               </div>
+
               {/* Display tags */}
               {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
                 <div className="mb-4">

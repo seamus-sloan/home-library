@@ -11,6 +11,7 @@ use crate::db::book_queries::{
     update_book_genres, update_book_query, update_book_tags,
 };
 use crate::db::journal_queries::{create_journal_entry, get_journals_by_book_id};
+use crate::db::rating_queries::{delete_rating_query, get_rating_query, upsert_rating_query};
 use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
 use crate::utils::extract_user_id_from_headers;
 
@@ -356,6 +357,114 @@ pub async fn create_book_journal_entry(
         }
         Err(e) => {
             error!("Failed to create journal: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct UpsertRatingRequest {
+    rating: f64,
+}
+
+/// Upsert (create or update) a rating for a book by the current user
+pub async fn upsert_rating(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+    Json(payload): Json<UpsertRatingRequest>,
+) -> Result<StatusCode, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!(
+        "Upserting rating for book {} by user {}: {}",
+        book_id, user_id, payload.rating
+    );
+
+    // Validate rating is between 0 and 5
+    if payload.rating < 0.0 || payload.rating > 5.0 {
+        warn!("Invalid rating value: {}", payload.rating);
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    match upsert_rating_query(&pool, user_id, book_id, payload.rating).await {
+        Ok(_) => {
+            info!(
+                "Successfully upserted rating for book {} by user {}",
+                book_id, user_id
+            );
+            Ok(StatusCode::OK)
+        }
+        Err(e) => {
+            error!("Failed to upsert rating: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Delete a rating for a book by the current user
+pub async fn delete_rating(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<StatusCode, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!("Deleting rating for book {} by user {}", book_id, user_id);
+
+    match delete_rating_query(&pool, user_id, book_id).await {
+        Ok(_) => {
+            info!(
+                "Successfully deleted rating for book {} by user {}",
+                book_id, user_id
+            );
+            Ok(StatusCode::NO_CONTENT)
+        }
+        Err(e) => {
+            error!("Failed to delete rating: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Get the current user's rating for a book
+pub async fn get_user_rating(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<Json<Option<f64>>, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!("Getting rating for book {} by user {}", book_id, user_id);
+
+    match get_rating_query(&pool, user_id, book_id).await {
+        Ok(rating) => {
+            info!(
+                "Successfully retrieved rating for book {} by user {}: {:?}",
+                book_id, user_id, rating
+            );
+            Ok(Json(rating))
+        }
+        Err(e) => {
+            error!("Failed to get rating: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

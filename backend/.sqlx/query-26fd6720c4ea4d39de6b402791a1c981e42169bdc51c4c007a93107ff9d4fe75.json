@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT rating FROM ratings WHERE user_id = ? AND book_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "rating",
+        "ordinal": 0,
+        "type_info": "Float"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "26fd6720c4ea4d39de6b402791a1c981e42169bdc51c4c007a93107ff9d4fe75"
+}

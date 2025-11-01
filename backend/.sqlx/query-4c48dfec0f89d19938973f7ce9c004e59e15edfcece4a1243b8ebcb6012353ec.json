@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO ratings (user_id, book_id, rating) VALUES (?, ?, ?)\n         ON CONFLICT(user_id, book_id) DO UPDATE SET rating = ?, updated_at = datetime('now')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "4c48dfec0f89d19938973f7ce9c004e59e15edfcece4a1243b8ebcb6012353ec"
+}
