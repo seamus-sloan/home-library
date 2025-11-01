@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS list_types (
 
 -- Insert default list types
 INSERT INTO list_types (id, name) VALUES 
-    (1, 'SEQUENCE'),
+    (1, 'SEQUENCED'),
     (2, 'UNORDERED');
 
 -- 2. Create lists table
