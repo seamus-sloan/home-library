@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../../store/store'
 import type { BookJournal } from '../../types'
+import { formatRelativeDate } from '../../utils/dateUtils'
 import { UserAvatar } from '../common/UserAvatar'
 import { JournalForm } from './JournalForm'
 
@@ -31,6 +32,7 @@ export function JournalList({ journals, bookId }: JournalListProps) {
       {journals.map((journal) => {
         const isEditing = editingJournalId === journal.id
         const canEdit = currentUser?.id === journal.user.id
+        const wasEdited = journal.created_at !== journal.updated_at
 
         if (isEditing) {
           return (
@@ -71,7 +73,12 @@ export function JournalList({ journals, bookId }: JournalListProps) {
                   <div className="text-sm font-medium text-amber-200">
                     {journal.user.name}
                   </div>
-                  <div className="text-xs text-amber-400">{journal.created_at}</div>
+                  <div className="text-xs text-amber-400">
+                    Created {formatRelativeDate(journal.created_at, true)}
+                    {wasEdited && (
+                      <> | Edited {formatRelativeDate(journal.updated_at, true)}</>
+                    )}
+                  </div>
                 </div>
               </div>
               {canEdit && (
