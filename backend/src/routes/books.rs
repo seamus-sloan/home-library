@@ -28,17 +28,21 @@ pub struct BookQueryParams {
 pub async fn get_books(
     State(pool): State<Pool<Sqlite>>,
     Query(params): Query<BookQueryParams>,
+    headers: HeaderMap,
 ) -> Result<Json<Vec<BookWithDetails>>, StatusCode> {
     debug!("Fetching books from database with params: {:?}", params);
+
+    // Extract user_id from headers (optional for this endpoint)
+    let current_user_id = extract_user_id_from_headers(&headers).ok();
 
     let books = match params.search {
         Some(search_term) => {
             debug!("Searching books with term: {}", search_term);
-            search_books_with_details_query(&pool, &search_term).await
+            search_books_with_details_query(&pool, &search_term, current_user_id).await
         }
         None => {
             debug!("Fetching all books");
-            get_all_books_with_details_query(&pool).await
+            get_all_books_with_details_query(&pool, current_user_id).await
         }
     };
 
@@ -160,10 +164,14 @@ pub async fn create_book(
 pub async fn get_book_details(
     State(pool): State<Pool<Sqlite>>,
     axum::extract::Path(id): axum::extract::Path<i64>,
+    headers: HeaderMap,
 ) -> Result<Json<BookWithDetails>, StatusCode> {
     debug!("Fetching book with details for ID: {}", id);
 
-    match get_book_details_query(&pool, id).await {
+    // Extract user_id from headers (optional for this endpoint)
+    let current_user_id = extract_user_id_from_headers(&headers).ok();
+
+    match get_book_details_query(&pool, id, current_user_id).await {
         Ok(Some(book)) => {
             info!("Found book with ID {}: '{}'", id, book.title);
             Ok(Json(book))
@@ -189,7 +197,7 @@ pub async fn update_book(
     let user_id = extract_user_id_from_headers(&headers)?;
 
     // First, get the current book to preserve fields that aren't being updated
-    let current_book = match get_book_details_query(&pool, id).await {
+    let current_book = match get_book_details_query(&pool, id, Some(user_id)).await {
         Ok(Some(book)) => book,
         Ok(None) => {
             warn!("No book found with ID: {}", id);
@@ -249,7 +257,7 @@ pub async fn update_book(
     }
 
     // Return the updated book with details
-    match get_book_details_query(&pool, id).await {
+    match get_book_details_query(&pool, id, Some(user_id)).await {
         Ok(Some(book_with_details)) => {
             info!(
                 "Successfully retrieved updated book with details for ID: {}",

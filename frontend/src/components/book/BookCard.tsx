@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useDeleteBookMutation } from '../../middleware/backend'
+import type { RootState } from '../../store/store'
 import type { Book, BookWithDetails } from '../../types'
 import { ConfirmDialog } from '../common'
 import { BookFormModal } from '../forms'
@@ -13,6 +15,11 @@ export function BookCard({ book, onClick }: BookCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
+
+  // Check if book has READ status
+  const isRead = 'current_user_status' in book && book.current_user_status === 1
+  const userColor = currentUser?.color || '#f59e0b' // Default to amber if no user
 
   const handleEditBook = () => {
     setIsEditModalOpen(true)
@@ -49,7 +56,12 @@ export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <>
       <div
-        className="cursor-pointer group relative bg-zinc-700/70 rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)]"
+        className={`cursor-pointer group relative rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)] transition-colors duration-300`}
+        style={{
+          backgroundColor: isRead
+            ? `color-mix(in srgb, ${userColor} 90%, rgb(63 63 70 / 0.7))`
+            : 'rgb(63 63 70 / 0.7)' // zinc-700/70 with user color mixed in
+        }}
         onClick={onClick}
       >
         {/* Context Menu - hidden on touch devices */}
@@ -64,8 +76,8 @@ export function BookCard({ book, onClick }: BookCardProps) {
         <div className="w-full aspect-[2/3] relative flex items-center justify-center">
           {book.cover_image ? (
             <div className="relative inline-block max-h-full max-w-full">
-              {/* Black shadow behind the book image */}
-              <div className="absolute inset-0 bg-black/90 rounded blur-xl transform scale-110 group-hover:scale-[1.155] transition-all duration-300 ease-out"></div>
+              {/* Shadow behind the book image */}
+              <div className="absolute inset-0 rounded blur-xl transform scale-110 group-hover:scale-[1.155] transition-all duration-300 ease-out bg-black/90"></div>
               {/* Book image */}
               <img
                 src={book.cover_image}

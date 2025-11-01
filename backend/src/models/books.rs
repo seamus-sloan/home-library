@@ -130,6 +130,7 @@ pub struct BookWithDetails {
     pub journals: Vec<BookJournal>,
     pub ratings: Vec<BookRating>,
     pub statuses: Vec<BookStatus>,
+    pub current_user_status: Option<i64>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]

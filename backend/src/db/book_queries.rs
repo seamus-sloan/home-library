@@ -72,6 +72,7 @@ async fn manage_book_relationships(
 async fn fetch_book_details(
     pool: &Pool<Sqlite>,
     book: Book,
+    current_user_id: Option<i64>,
 ) -> Result<BookWithDetails, sqlx::Error> {
     let book_id = book.id;
 
@@ -205,6 +206,20 @@ async fn fetch_book_details(
         })
         .collect();
 
+    // Get current user's reading status if user is provided
+    let current_user_status = if let Some(user_id) = current_user_id {
+        let status_result =
+            sqlx::query("SELECT status_id FROM reading_status WHERE user_id = ? AND book_id = ?")
+                .bind(user_id)
+                .bind(book_id)
+                .fetch_optional(pool)
+                .await?;
+
+        status_result.map(|row| row.get("status_id"))
+    } else {
+        None
+    };
+
     Ok(BookWithDetails {
         id: book.id,
         user_id: book.user_id,
@@ -219,6 +234,7 @@ async fn fetch_book_details(
         journals: book_journals,
         ratings: book_ratings,
         statuses: book_statuses,
+        current_user_status,
     })
 }
 
@@ -419,6 +435,7 @@ pub async fn delete_book_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), sqlx:
 pub async fn get_book_details_query(
     pool: &Pool<Sqlite>,
     id: i64,
+    current_user_id: Option<i64>,
 ) -> Result<Option<BookWithDetails>, sqlx::Error> {
     debug!("Querying database for book with details for ID: {}", id);
 
@@ -439,12 +456,13 @@ pub async fn get_book_details_query(
     info!("Found book with ID {}: '{}'", id, book.title);
 
     // Use helper function to fetch all details
-    let book_with_details = fetch_book_details(pool, book).await?;
+    let book_with_details = fetch_book_details(pool, book, current_user_id).await?;
     Ok(Some(book_with_details))
 }
 
 pub async fn get_all_books_with_details_query(
     pool: &Pool<Sqlite>,
+    current_user_id: Option<i64>,
 ) -> Result<Vec<BookWithDetails>, sqlx::Error> {
     debug!("Querying database for all books with details");
 
@@ -461,7 +479,7 @@ pub async fn get_all_books_with_details_query(
     // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
     for book in books {
-        let book_with_details = fetch_book_details(pool, book).await?;
+        let book_with_details = fetch_book_details(pool, book, current_user_id).await?;
         books_with_details.push(book_with_details);
     }
 
@@ -475,6 +493,7 @@ pub async fn get_all_books_with_details_query(
 pub async fn search_books_with_details_query(
     pool: &Pool<Sqlite>,
     search_term: &str,
+    current_user_id: Option<i64>,
 ) -> Result<Vec<BookWithDetails>, sqlx::Error> {
     debug!(
         "Searching for books with details using term: {}",
@@ -506,7 +525,7 @@ pub async fn search_books_with_details_query(
     // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
     for book in books {
-        let book_with_details = fetch_book_details(pool, book).await?;
+        let book_with_details = fetch_book_details(pool, book, current_user_id).await?;
         books_with_details.push(book_with_details);
     }
 

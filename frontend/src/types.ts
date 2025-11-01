@@ -137,6 +137,7 @@ export interface BookWithDetails extends Book {
   journals: BookJournal[]
   ratings: BookRating[]
   statuses: BookStatus[]
+  current_user_status: number | null
 }
 
 export interface CreateBookRequest {
