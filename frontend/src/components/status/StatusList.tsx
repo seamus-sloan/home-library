@@ -3,6 +3,7 @@ import React from 'react'
 import type { BookStatus } from '../../types'
 import { ReadingStatusLabels, type ReadingStatusValue } from '../../types'
 import { formatRelativeDate } from '../../utils/dateUtils'
+import { UserAvatar } from '../common/UserAvatar'
 import StatusDropdown from './StatusDropdown'
 
 interface StatusListProps {
@@ -40,12 +41,15 @@ const StatusList: React.FC<StatusListProps> = ({
                     >
                         <div className="flex items-start md:items-center gap-3 flex-1 min-w-0">
                             {/* User Avatar */}
-                            <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
-                                style={{ backgroundColor: status.user.color }}
-                            >
-                                {status.user.name.charAt(0).toUpperCase()}
-                            </div>
+                            <UserAvatar
+                                user={{
+                                    id: status.user.id,
+                                    name: status.user.name,
+                                    color: status.user.color,
+                                    avatar_image: status.user.avatar_image,
+                                }}
+                                size="sm"
+                            />
 
                             {/* Status and User Info */}
                             <div className="flex-1 min-w-0">

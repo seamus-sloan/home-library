@@ -2,6 +2,7 @@ import { StarIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { BookRating } from '../../types'
 import { formatRelativeDate } from '../../utils/dateUtils'
+import { UserAvatar } from '../common/UserAvatar'
 
 interface RatingsListProps {
     ratings: BookRating[]
@@ -64,14 +65,16 @@ export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDe
                             }`}
                     >
                         <div className="flex items-start md:items-center gap-3">
-                            {/* User Avatar Circle */}
-                            <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md flex-shrink-0"
-                                style={{ backgroundColor: rating.user.color }}
-                                title={rating.user.name}
-                            >
-                                {rating.user.name.charAt(0).toUpperCase()}
-                            </div>
+                            {/* User Avatar */}
+                            <UserAvatar
+                                user={{
+                                    id: rating.user.id,
+                                    name: rating.user.name,
+                                    color: rating.user.color,
+                                    avatar_image: rating.user.avatar_image,
+                                }}
+                                size="sm"
+                            />
 
                             {/* Rating Content */}
                             <div className="flex-grow min-w-0">

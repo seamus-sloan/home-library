@@ -72,6 +72,7 @@ export interface JournalUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookJournal {
@@ -87,6 +88,7 @@ export interface RatingUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookRating {
@@ -121,6 +123,7 @@ export interface StatusUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookStatus {

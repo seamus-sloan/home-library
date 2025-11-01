@@ -80,7 +80,7 @@ async fn fetch_ratings_for_books(
 
     let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let query = format!(
-        "SELECT r.id, r.user_id, r.book_id, r.rating, r.created_at, r.updated_at, u.name as user_name, u.color as user_color
+        "SELECT r.id, r.user_id, r.book_id, r.rating, r.created_at, r.updated_at, u.name as user_name, u.color as user_color, u.avatar_image as user_avatar_image
          FROM ratings r
          INNER JOIN users u ON r.user_id = u.id
          WHERE r.book_id IN ({})
@@ -109,6 +109,7 @@ async fn fetch_ratings_for_books(
                 id: row.get("user_id"),
                 name: row.get("user_name"),
                 color: row.get("user_color"),
+                avatar_image: row.get("user_avatar_image"),
             },
         };
         ratings_map
@@ -132,7 +133,7 @@ async fn fetch_statuses_for_books(
     let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let query = format!(
         "SELECT rs.id, rs.user_id, rs.book_id, rs.status_id, rs.created_at, rs.updated_at, 
-                s.name as status_name, u.name as user_name, u.color as user_color
+                s.name as status_name, u.name as user_name, u.color as user_color, u.avatar_image as user_avatar_image
          FROM reading_status rs
          INNER JOIN users u ON rs.user_id = u.id
          INNER JOIN status s ON rs.status_id = s.id
@@ -163,6 +164,7 @@ async fn fetch_statuses_for_books(
                 id: row.get("user_id"),
                 name: row.get("user_name"),
                 color: row.get("user_color"),
+                avatar_image: row.get("user_avatar_image"),
             },
         };
         statuses_map
@@ -261,7 +263,7 @@ async fn fetch_book_details(
 
     // Get journals for the book with user information
     let journals = sqlx::query(
-        "SELECT je.id, je.title, je.content, je.created_at, je.updated_at, u.id as user_id, u.name as user_name, u.color
+        "SELECT je.id, je.title, je.content, je.created_at, je.updated_at, u.id as user_id, u.name as user_name, u.color, u.avatar_image
          FROM journal_entries je
          INNER JOIN users u ON je.user_id = u.id
          WHERE je.book_id = ?
@@ -283,6 +285,7 @@ async fn fetch_book_details(
                 id: row.get("user_id"),
                 name: row.get("user_name"),
                 color: row.get("color"),
+                avatar_image: row.get("avatar_image"),
             },
         })
         .collect();
