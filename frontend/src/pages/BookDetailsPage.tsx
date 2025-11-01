@@ -109,7 +109,6 @@ export function BookDetails() {
         bookId: parseInt(id),
         rating: rating,
       }).unwrap()
-      console.log('Rating updated successfully to:', rating)
     } catch (error) {
       console.error('Error updating rating:', error)
     }
@@ -121,7 +120,6 @@ export function BookDetails() {
 
     try {
       await deleteRating(parseInt(id)).unwrap()
-      console.log('Rating deleted successfully')
     } catch (error) {
       console.error('Error deleting rating:', error)
     }
@@ -136,7 +134,6 @@ export function BookDetails() {
         bookId: parseInt(id),
         statusId: statusId,
       }).unwrap()
-      console.log('Status updated successfully to:', statusId)
     } catch (error) {
       console.error('Error updating status:', error)
     }
@@ -148,7 +145,6 @@ export function BookDetails() {
 
     try {
       await deleteStatus(parseInt(id)).unwrap()
-      console.log('Status deleted successfully')
     } catch (error) {
       console.error('Error deleting status:', error)
     }
