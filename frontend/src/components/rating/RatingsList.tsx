@@ -1,14 +1,16 @@
-import { StarIcon } from 'lucide-react'
+import { StarIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { BookRating } from '../../types'
+import { formatRelativeDate } from '../../utils/dateUtils'
 
 interface RatingsListProps {
     ratings: BookRating[]
     currentUserId?: number
     onRatingChange?: (rating: number) => void
+    onRatingDelete?: () => void
 }
 
-export function RatingsList({ ratings, currentUserId, onRatingChange }: RatingsListProps) {
+export function RatingsList({ ratings, currentUserId, onRatingChange, onRatingDelete }: RatingsListProps) {
     const [hoveredRatingId, setHoveredRatingId] = useState<number | null>(null)
     const [hoveredStarValue, setHoveredStarValue] = useState<number | null>(null)
 
@@ -141,15 +143,22 @@ export function RatingsList({ ratings, currentUserId, onRatingChange }: RatingsL
                                     </div>
                                 </div>
                                 <div className="text-xs text-amber-600 mt-1">
-                                    {new Date(rating.created_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
+                                    {formatRelativeDate(rating.created_at)}
                                 </div>
                             </div>
+
+                            {/* Delete Button - Only for current user */}
+                            {isCurrentUser && onRatingDelete && (
+                                <button
+                                    type="button"
+                                    onClick={onRatingDelete}
+                                    className="text-amber-600 hover:text-amber-400 transition-colors p-2 rounded hover:bg-amber-950/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    aria-label="Delete rating"
+                                    title="Delete your rating"
+                                >
+                                    <XIcon size={18} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )

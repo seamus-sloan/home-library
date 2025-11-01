@@ -1,0 +1,17 @@
+meta {
+  name: Select User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/users/select
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "user_id": {{USER_ID}}
+  }
+}

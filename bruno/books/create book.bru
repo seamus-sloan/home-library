@@ -1,0 +1,26 @@
+meta {
+  name: Create Book
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/books
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "cover_image": "https://example.com/hobbit.jpg",
+    "series": "Middle-earth",
+    "tags": [1, 2],
+    "genres": [1]
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Create Genre
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/genres
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "name": "Science Fiction",
+    "color": "#2ecc71"
+  }
+}

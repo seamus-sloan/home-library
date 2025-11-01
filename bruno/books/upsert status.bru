@@ -1,0 +1,30 @@
+meta {
+  name: Upsert Status
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/status
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "status_id": 1
+  }
+}
+
+docs {
+  Status IDs:
+  - 0: UNREAD
+  - 1: READ
+  - 2: READING
+  - 3: TBR (To Be Read)
+  - 99: DNF (Did Not Finish)
+}

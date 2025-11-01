@@ -1,0 +1,22 @@
+meta {
+  name: Create Tag
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/tags
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "name": "Fantasy",
+    "color": "#FF5733"
+  }
+}

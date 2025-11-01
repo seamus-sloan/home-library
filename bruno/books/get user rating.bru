@@ -1,0 +1,15 @@
+meta {
+  name: Get User Rating
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/ratings
+  body: none
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Delete Rating
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/ratings
+  body: none
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}

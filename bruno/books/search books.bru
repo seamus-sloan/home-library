@@ -1,0 +1,15 @@
+meta {
+  name: Search Books
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/books?search=tolkien
+  body: none
+  auth: none
+}
+
+params:query {
+  search: tolkien
+}

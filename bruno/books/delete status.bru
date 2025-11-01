@@ -1,0 +1,15 @@
+meta {
+  name: Delete Status
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/status
+  body: none
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}

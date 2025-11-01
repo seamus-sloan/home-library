@@ -1,0 +1,21 @@
+meta {
+  name: Upsert Rating
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/ratings
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "rating": 4.5
+  }
+}

@@ -7,8 +7,9 @@ import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
 import { InteractiveRating, RatingsList } from '../components/rating'
-import { useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation } from '../middleware/backend'
+import { useDeleteRatingMutation, useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation } from '../middleware/backend'
 import type { RootState } from '../store/store'
+import { formatRelativeDate } from '../utils/dateUtils'
 
 export function BookDetails() {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +25,7 @@ export function BookDetails() {
   // Use mutation for updating books
   const [updateBook] = useUpdateBookMutation()
   const [upsertRating] = useUpsertRatingMutation()
+  const [deleteRating] = useDeleteRatingMutation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
@@ -105,6 +107,18 @@ export function BookDetails() {
       console.log('Rating updated successfully to:', rating)
     } catch (error) {
       console.error('Error updating rating:', error)
+    }
+  }
+
+  // Handle rating deletion
+  const handleRatingDelete = async () => {
+    if (!id || !currentUser) return
+
+    try {
+      await deleteRating(parseInt(id)).unwrap()
+      console.log('Rating deleted successfully')
+    } catch (error) {
+      console.error('Error deleting rating:', error)
     }
   }
 
@@ -209,6 +223,7 @@ export function BookDetails() {
                     ratings={bookWithDetails.ratings}
                     currentUserId={currentUser?.id}
                     onRatingChange={currentUser ? handleRatingChange : undefined}
+                    onRatingDelete={currentUser ? handleRatingDelete : undefined}
                   />
                 ) : (
                   <div className="text-amber-400 text-center py-4">
@@ -236,20 +251,12 @@ export function BookDetails() {
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Added on {new Date(bookWithDetails.created_at || 0).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                Added {formatRelativeDate(bookWithDetails.created_at || new Date().toISOString(), true)}
               </span>
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Last updated on {new Date(bookWithDetails.updated_at || 0).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                Last updated {formatRelativeDate(bookWithDetails.updated_at || new Date().toISOString(), true)}
               </span>
             </div>
           </div>
