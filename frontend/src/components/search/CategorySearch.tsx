@@ -234,7 +234,6 @@ export function CategorySearch<T extends CategoryItem>({
                                                 key={color}
                                                 type="button"
                                                 onClick={() => {
-                                                    console.log('Setting color to:', color)
                                                     setNewItemColor(color)
                                                 }}
                                                 className={`w-8 h-8 rounded-full border-3 transition-all hover:scale-110 ${newItemColor === color

@@ -1,0 +1,22 @@
+meta {
+  name: Update Journal Entry
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}/journals/{{JOURNAL_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "title": "Updated journal title",
+    "content": "Updated content goes here..."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO reading_status (user_id, book_id, status_id)\n         VALUES (?, ?, ?)\n         ON CONFLICT(user_id, book_id) \n         DO UPDATE SET status_id = ?, updated_at = datetime('now')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "5d8844221ed1f9039876e20db6147149174fa39ef705edf5d16bd4bd933753a2"
+}

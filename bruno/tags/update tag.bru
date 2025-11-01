@@ -1,0 +1,22 @@
+meta {
+  name: Update Tag
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{BASE_URL}}/tags/{{TAG_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "name": "Updated Tag Name",
+    "color": "#3498db"
+  }
+}

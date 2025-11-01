@@ -1,0 +1,26 @@
+meta {
+  name: Update Book
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{BASE_URL}}/books/{{BOOK_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "title": "Updated Title",
+    "author": "Updated Author",
+    "cover_image": "https://example.com/updated.jpg",
+    "series": "Updated Series",
+    "tags": [1, 2, 3],
+    "genres": [1, 2]
+  }
+}

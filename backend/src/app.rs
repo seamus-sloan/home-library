@@ -41,6 +41,12 @@ pub async fn app(pool: Pool<Sqlite>) -> Router {
             "/books/{book_id}/journals/{journal_id}",
             put(update_journal_entry),
         )
+        .route("/books/{id}/ratings", post(upsert_rating))
+        .route("/books/{id}/ratings", get(get_user_rating))
+        .route("/books/{id}/ratings", delete(delete_rating))
+        .route("/books/{id}/status", post(upsert_status))
+        .route("/books/{id}/status", get(get_user_status))
+        .route("/books/{id}/status", delete(delete_status))
         .route("/journals", get(get_journal_entries_query))
         .route("/journals/{id}", get(get_journal_entry_by_id_query))
         .route("/tags", get(get_tags))

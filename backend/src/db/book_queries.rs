@@ -1,11 +1,12 @@
 use reqwest::Client;
 use serde::Deserialize;
 use sqlx::{Pool, Row, Sqlite};
+use std::collections::HashMap;
 use std::error::Error;
 use tracing::{debug, info, warn};
 use url::form_urlencoded;
 
-use crate::models::books::BookGenre;
+use crate::models::books::{BookGenre, BookRating};
 use crate::models::{Book, BookJournal, BookTag, BookWithDetails};
 
 // Generic relationshpub async fn update_book_query(ment
@@ -68,10 +69,151 @@ async fn manage_book_relationships(
     Ok(())
 }
 
-// Helper function to fetch book details (tags, genres, journals)
+// Helper function to batch load ratings for multiple books
+async fn fetch_ratings_for_books(
+    pool: &Pool<Sqlite>,
+    book_ids: &[i64],
+) -> Result<HashMap<i64, Vec<BookRating>>, sqlx::Error> {
+    if book_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+    let query = format!(
+        "SELECT r.id, r.user_id, r.book_id, r.rating, r.created_at, r.updated_at, u.name as user_name, u.color as user_color
+         FROM ratings r
+         INNER JOIN users u ON r.user_id = u.id
+         WHERE r.book_id IN ({})
+         ORDER BY r.created_at DESC",
+        placeholders
+    );
+
+    let mut query_builder = sqlx::query(&query);
+    for &book_id in book_ids {
+        query_builder = query_builder.bind(book_id);
+    }
+
+    let rows = query_builder.fetch_all(pool).await?;
+
+    let mut ratings_map: HashMap<i64, Vec<BookRating>> = HashMap::new();
+    for row in rows {
+        let book_id: i64 = row.get("book_id");
+        let rating = BookRating {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            book_id,
+            rating: row.get("rating"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            user: crate::models::books::RatingUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                color: row.get("user_color"),
+            },
+        };
+        ratings_map
+            .entry(book_id)
+            .or_insert_with(Vec::new)
+            .push(rating);
+    }
+
+    Ok(ratings_map)
+}
+
+// Helper function to batch load statuses for multiple books
+async fn fetch_statuses_for_books(
+    pool: &Pool<Sqlite>,
+    book_ids: &[i64],
+) -> Result<HashMap<i64, Vec<crate::models::books::BookStatus>>, sqlx::Error> {
+    if book_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+    let query = format!(
+        "SELECT rs.id, rs.user_id, rs.book_id, rs.status_id, rs.created_at, rs.updated_at, 
+                s.name as status_name, u.name as user_name, u.color as user_color
+         FROM reading_status rs
+         INNER JOIN users u ON rs.user_id = u.id
+         INNER JOIN status s ON rs.status_id = s.id
+         WHERE rs.book_id IN ({})
+         ORDER BY rs.created_at DESC",
+        placeholders
+    );
+
+    let mut query_builder = sqlx::query(&query);
+    for &book_id in book_ids {
+        query_builder = query_builder.bind(book_id);
+    }
+
+    let rows = query_builder.fetch_all(pool).await?;
+
+    let mut statuses_map: HashMap<i64, Vec<crate::models::books::BookStatus>> = HashMap::new();
+    for row in rows {
+        let book_id: i64 = row.get("book_id");
+        let status = crate::models::books::BookStatus {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            book_id,
+            status_id: row.get("status_id"),
+            status_name: row.get("status_name"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            user: crate::models::books::StatusUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                color: row.get("user_color"),
+            },
+        };
+        statuses_map
+            .entry(book_id)
+            .or_insert_with(Vec::new)
+            .push(status);
+    }
+
+    Ok(statuses_map)
+}
+
+// Helper function to batch load current user statuses for multiple books
+async fn fetch_current_user_statuses(
+    pool: &Pool<Sqlite>,
+    book_ids: &[i64],
+    user_id: i64,
+) -> Result<HashMap<i64, i64>, sqlx::Error> {
+    if book_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+    let query = format!(
+        "SELECT book_id, status_id FROM reading_status WHERE user_id = ? AND book_id IN ({})",
+        placeholders
+    );
+
+    let mut query_builder = sqlx::query(&query).bind(user_id);
+    for &book_id in book_ids {
+        query_builder = query_builder.bind(book_id);
+    }
+
+    let rows = query_builder.fetch_all(pool).await?;
+
+    let mut status_map: HashMap<i64, i64> = HashMap::new();
+    for row in rows {
+        let book_id: i64 = row.get("book_id");
+        let status_id: i64 = row.get("status_id");
+        status_map.insert(book_id, status_id);
+    }
+
+    Ok(status_map)
+}
+
+// Helper function to fetch book details with optional pre-fetched ratings/statuses
 async fn fetch_book_details(
     pool: &Pool<Sqlite>,
     book: Book,
+    ratings: Vec<BookRating>,
+    statuses: Vec<crate::models::books::BookStatus>,
+    current_user_status: Option<i64>,
 ) -> Result<BookWithDetails, sqlx::Error> {
     let book_id = book.id;
 
@@ -144,19 +286,23 @@ async fn fetch_book_details(
         })
         .collect();
 
+    // Ratings and statuses are now passed as parameters (pre-fetched in batch)
+
     Ok(BookWithDetails {
         id: book.id,
         user_id: book.user_id,
         cover_image: book.cover_image,
         title: book.title,
         author: book.author,
-        rating: book.rating,
         series: book.series,
         created_at: book.created_at,
         updated_at: book.updated_at,
         tags: book_tags,
         genres: book_genres,
         journals: book_journals,
+        ratings,
+        statuses,
+        current_user_status,
     })
 }
 
@@ -231,19 +377,15 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, book: Book) -> Result<Book, 
         "Attempting to create book: '{}' for user: {}",
         book.title, book.user_id
     );
-    debug!(
-        "Book details - Author: '{}', Rating: {:?}",
-        book.author, book.rating
-    );
+    debug!("Book details - Author: '{}'", book.author);
 
     let row = sqlx::query!(
-        "INSERT INTO books (user_id, cover_image, title, author, rating, series) VALUES (?, ?, ?, ?, ?, ?) 
-         RETURNING id, user_id, cover_image, title, author, rating, series, created_at, updated_at",
+        "INSERT INTO books (user_id, cover_image, title, author, series) VALUES (?, ?, ?, ?, ?) 
+         RETURNING id, user_id, cover_image, title, author, series, created_at, updated_at",
         book.user_id,
         book.cover_image,
         book.title,
         book.author,
-        book.rating,
         book.series
     )
     .fetch_one(pool)
@@ -255,7 +397,6 @@ pub async fn create_book_query(pool: &Pool<Sqlite>, book: Book) -> Result<Book, 
         cover_image: row.cover_image,
         title: row.title,
         author: row.author,
-        rating: row.rating,
         series: row.series,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -312,11 +453,10 @@ pub async fn update_book_query(
 ) -> Result<Book, sqlx::Error> {
     let updated_book = sqlx::query_as!(
         Book,
-        "UPDATE books SET cover_image = ?, title = ?, author = ?, rating = ?, series = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, rating, series, created_at, updated_at",
+        "UPDATE books SET cover_image = ?, title = ?, author = ?, series = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, user_id, cover_image, title, author, series, created_at, updated_at",
         book.cover_image,
         book.title,
         book.author,
-        book.rating,
         book.series,
         id
     )
@@ -363,13 +503,14 @@ pub async fn delete_book_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), sqlx:
 pub async fn get_book_details_query(
     pool: &Pool<Sqlite>,
     id: i64,
+    current_user_id: Option<i64>,
 ) -> Result<Option<BookWithDetails>, sqlx::Error> {
     debug!("Querying database for book with details for ID: {}", id);
 
     // First get the book
     let book = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books WHERE id = ?",
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at FROM books WHERE id = ?",
         id
     )
     .fetch_optional(pool)
@@ -382,30 +523,66 @@ pub async fn get_book_details_query(
 
     info!("Found book with ID {}: '{}'", id, book.title);
 
+    // Fetch ratings and statuses for this book
+    let book_ids = vec![id];
+    let mut ratings_map = fetch_ratings_for_books(pool, &book_ids).await?;
+    let mut statuses_map = fetch_statuses_for_books(pool, &book_ids).await?;
+
+    let ratings = ratings_map.remove(&id).unwrap_or_default();
+    let statuses = statuses_map.remove(&id).unwrap_or_default();
+
+    // Get current user status if provided
+    let current_user_status = if let Some(user_id) = current_user_id {
+        let status_map = fetch_current_user_statuses(pool, &book_ids, user_id).await?;
+        status_map.get(&id).copied()
+    } else {
+        None
+    };
+
     // Use helper function to fetch all details
-    let book_with_details = fetch_book_details(pool, book).await?;
+    let book_with_details =
+        fetch_book_details(pool, book, ratings, statuses, current_user_status).await?;
     Ok(Some(book_with_details))
 }
 
 pub async fn get_all_books_with_details_query(
     pool: &Pool<Sqlite>,
+    current_user_id: Option<i64>,
 ) -> Result<Vec<BookWithDetails>, sqlx::Error> {
     debug!("Querying database for all books with details");
 
     // First get all books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at FROM books ORDER BY updated_at DESC"
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at FROM books ORDER BY updated_at DESC"
     )
     .fetch_all(pool)
     .await?;
 
     info!("Found {} books", books.len());
 
+    // Batch fetch ratings and statuses for all books
+    let book_ids: Vec<i64> = books.iter().map(|b| b.id).collect();
+    let mut ratings_map = fetch_ratings_for_books(pool, &book_ids).await?;
+    let mut statuses_map = fetch_statuses_for_books(pool, &book_ids).await?;
+
+    // Fetch current user statuses if user_id is provided
+    let current_user_statuses = if let Some(user_id) = current_user_id {
+        fetch_current_user_statuses(pool, &book_ids, user_id).await?
+    } else {
+        HashMap::new()
+    };
+
     // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
     for book in books {
-        let book_with_details = fetch_book_details(pool, book).await?;
+        let book_id = book.id;
+        let ratings = ratings_map.remove(&book_id).unwrap_or_default();
+        let statuses = statuses_map.remove(&book_id).unwrap_or_default();
+        let current_user_status = current_user_statuses.get(&book_id).copied();
+
+        let book_with_details =
+            fetch_book_details(pool, book, ratings, statuses, current_user_status).await?;
         books_with_details.push(book_with_details);
     }
 
@@ -419,6 +596,7 @@ pub async fn get_all_books_with_details_query(
 pub async fn search_books_with_details_query(
     pool: &Pool<Sqlite>,
     search_term: &str,
+    current_user_id: Option<i64>,
 ) -> Result<Vec<BookWithDetails>, sqlx::Error> {
     debug!(
         "Searching for books with details using term: {}",
@@ -430,7 +608,7 @@ pub async fn search_books_with_details_query(
     // First get matching books
     let books = sqlx::query_as!(
         Book,
-        "SELECT id, user_id, cover_image, title, author, rating, series, created_at, updated_at 
+        "SELECT id, user_id, cover_image, title, author, series, created_at, updated_at 
          FROM books 
          WHERE title LIKE ? OR author LIKE ? OR series LIKE ?
          ORDER BY updated_at DESC",
@@ -447,10 +625,28 @@ pub async fn search_books_with_details_query(
         search_term
     );
 
+    // Batch fetch ratings and statuses for all books
+    let book_ids: Vec<i64> = books.iter().map(|b| b.id).collect();
+    let mut ratings_map = fetch_ratings_for_books(pool, &book_ids).await?;
+    let mut statuses_map = fetch_statuses_for_books(pool, &book_ids).await?;
+
+    // Fetch current user statuses if user_id is provided
+    let current_user_statuses = if let Some(user_id) = current_user_id {
+        fetch_current_user_statuses(pool, &book_ids, user_id).await?
+    } else {
+        HashMap::new()
+    };
+
     // Use helper function to fetch details for each book
     let mut books_with_details = Vec::new();
     for book in books {
-        let book_with_details = fetch_book_details(pool, book).await?;
+        let book_id = book.id;
+        let ratings = ratings_map.remove(&book_id).unwrap_or_default();
+        let statuses = statuses_map.remove(&book_id).unwrap_or_default();
+        let current_user_status = current_user_statuses.get(&book_id).copied();
+
+        let book_with_details =
+            fetch_book_details(pool, book, ratings, statuses, current_user_status).await?;
         books_with_details.push(book_with_details);
     }
 

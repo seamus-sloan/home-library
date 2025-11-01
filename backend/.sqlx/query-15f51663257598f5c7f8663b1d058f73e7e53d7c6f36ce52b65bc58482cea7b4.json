@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT status_id FROM reading_status WHERE user_id = ? AND book_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "status_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "15f51663257598f5c7f8663b1d058f73e7e53d7c6f36ce52b65bc58482cea7b4"
+}

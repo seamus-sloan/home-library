@@ -134,7 +134,7 @@ export function BookList() {
   return (
     <div>
       <div className="pb-4 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-        <div className="flex-1">
+        <div className="flex-1 order-2 lg:order-1">
           <BookSearch
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -143,7 +143,7 @@ export function BookList() {
           />
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 order-1 lg:order-2 self-end">
           <BookFilter
             isOpen={isFilterOpen}
             onToggle={() => setIsFilterOpen(!isFilterOpen)}

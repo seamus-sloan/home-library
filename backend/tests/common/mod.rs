@@ -84,13 +84,12 @@ impl TestApp {
 
     pub async fn create_test_book(&self, user_id: i64, title: &str, author: &str) -> i64 {
         let result = sqlx::query_as::<_, (i64,)>(
-            "INSERT INTO books (user_id, title, author, cover_image, rating) VALUES (?, ?, ?, ?, ?) RETURNING id"
+            "INSERT INTO books (user_id, title, author, cover_image) VALUES (?, ?, ?, ?) RETURNING id"
         )
         .bind(user_id)
         .bind(title)
         .bind(author)
         .bind(None::<String>)
-        .bind(None::<f64>)
         .fetch_one(&self.pool)
         .await
         .unwrap();

@@ -18,7 +18,6 @@ pub struct Book {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub series: Option<String>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
@@ -29,7 +28,6 @@ pub struct CreateBookRequest {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
     pub series: Option<String>,
@@ -40,8 +38,6 @@ pub struct UpdateBookRequest {
     pub cover_image: Option<String>,
     pub title: Option<String>,
     pub author: Option<String>,
-    #[serde(default, deserialize_with = "deserialize_double_option")]
-    pub rating: Option<Option<f64>>, // Option<Option<f64>> to handle explicit null values
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
     pub series: Option<String>,
@@ -78,19 +74,63 @@ pub struct BookJournal {
 }
 
 #[derive(serde_derive::Serialize)]
+pub struct RatingUser {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct BookRating {
+    pub id: i64,
+    pub user_id: i64,
+    pub book_id: i64,
+    pub rating: f64,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+    pub user: RatingUser,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct StatusUser {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct BookStatus {
+    pub id: i64,
+    pub user_id: i64,
+    pub book_id: i64,
+    pub status_id: i64,
+    pub status_name: String,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+    pub user: StatusUser,
+}
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct UpsertStatusRequest {
+    pub status_id: i64,
+}
+
+#[derive(serde_derive::Serialize)]
 pub struct BookWithDetails {
     pub id: i64,
     pub user_id: i64,
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
-    pub rating: Option<f64>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     pub tags: Vec<BookTag>,
     pub genres: Vec<BookGenre>,
     pub series: Option<String>,
     pub journals: Vec<BookJournal>,
+    pub ratings: Vec<BookRating>,
+    pub statuses: Vec<BookStatus>,
+    pub current_user_status: Option<i64>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]

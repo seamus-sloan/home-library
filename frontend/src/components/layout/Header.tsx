@@ -37,7 +37,7 @@ export function Header({ onAddClick }: HeaderProps) {
             className="flex items-center gap-2 bg-amber-900/40 hover:bg-amber-800/50 text-amber-100 px-4 py-2 rounded-lg border border-amber-700/30 hover:border-amber-600/50 transition-all duration-200 font-medium"
           >
             <PlusCircleIcon size={18} />
-            <span>Add Book</span>
+            <span className="hidden sm:inline">Add Book</span>
           </button>
           <UserMenu />
         </div>

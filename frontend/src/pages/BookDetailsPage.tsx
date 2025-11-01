@@ -1,16 +1,24 @@
 import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { CategoryBadge, StarRating } from '../components/common'
+import { CategoryBadge } from '../components/common'
 import { BookForm, type BookFormData } from '../components/forms'
 import { AddJournalForm } from '../components/forms/AddJournalForm'
 import { JournalList } from '../components/journal/JournalList'
-import { useGetBookQuery, useUpdateBookMutation } from '../middleware/backend'
+import { InteractiveRating, RatingsList } from '../components/rating'
+import StatusDropdown from '../components/status/StatusDropdown'
+import StatusList from '../components/status/StatusList'
+import { useDeleteRatingMutation, useDeleteStatusMutation, useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation, useUpsertStatusMutation } from '../middleware/backend'
+import type { RootState } from '../store/store'
+import type { ReadingStatusValue } from '../types'
+import { formatRelativeDate } from '../utils/dateUtils'
 
 export function BookDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
 
   // Use RTK Query to fetch book data (now includes tags and journals)
   const { data: bookWithDetails, isLoading: loading, error } = useGetBookQuery(id || '', {
@@ -19,6 +27,10 @@ export function BookDetails() {
 
   // Use mutation for updating books
   const [updateBook] = useUpdateBookMutation()
+  const [upsertRating] = useUpsertRatingMutation()
+  const [deleteRating] = useDeleteRatingMutation()
+  const [upsertStatus] = useUpsertStatusMutation()
+  const [deleteStatus] = useDeleteStatusMutation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
@@ -86,6 +98,56 @@ export function BookDetails() {
   const handleAddJournal = async () => {
     // Close the form
     setIsAddingJournal(false)
+  }
+
+  // Handle rating change
+  const handleRatingChange = async (rating: number) => {
+    if (!id || !currentUser) return
+
+    try {
+      await upsertRating({
+        bookId: parseInt(id),
+        rating: rating,
+      }).unwrap()
+    } catch (error) {
+      console.error('Error updating rating:', error)
+    }
+  }
+
+  // Handle rating deletion
+  const handleRatingDelete = async () => {
+    if (!id || !currentUser) return
+
+    try {
+      await deleteRating(parseInt(id)).unwrap()
+    } catch (error) {
+      console.error('Error deleting rating:', error)
+    }
+  }
+
+  // Handle status change
+  const handleStatusChange = async (statusId: ReadingStatusValue) => {
+    if (!id || !currentUser) return
+
+    try {
+      await upsertStatus({
+        bookId: parseInt(id),
+        statusId: statusId,
+      }).unwrap()
+    } catch (error) {
+      console.error('Error updating status:', error)
+    }
+  }
+
+  // Handle status deletion
+  const handleStatusDelete = async () => {
+    if (!id || !currentUser) return
+
+    try {
+      await deleteStatus(parseInt(id)).unwrap()
+    } catch (error) {
+      console.error('Error deleting status:', error)
+    }
   }
 
   return (
@@ -166,16 +228,68 @@ export function BookDetails() {
                   </div>
                 </div>
               )}
-              {/* Display rating */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-amber-200 mb-2">Rating:</h4>
-                <StarRating
-                  rating={bookWithDetails.rating}
-                  onRatingChange={() => { }} // No-op for display view
-                  readonly={true}
-                  size="medium"
-                />
+
+              {/* Ratings Section */}
+              <div className="mb-6 md:mb-4">
+                <h4 className="text-sm font-medium text-amber-200 mb-3">Ratings:</h4>
+
+                {/* If user is logged in but hasn't rated yet, show the rating prompt */}
+                {currentUser && !bookWithDetails.ratings?.some(r => r.user_id === currentUser.id) && (
+                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                    <p className="text-xs text-amber-600 mb-3">Click the stars below to rate this book</p>
+                    <InteractiveRating
+                      ratings={bookWithDetails.ratings || []}
+                      currentUserId={currentUser.id}
+                      onRatingChange={handleRatingChange}
+                    />
+                  </div>
+                )}
+
+                {/* Show all ratings (your own will be clickable) */}
+                {bookWithDetails.ratings && bookWithDetails.ratings.length > 0 ? (
+                  <RatingsList
+                    ratings={bookWithDetails.ratings}
+                    currentUserId={currentUser?.id}
+                    onRatingChange={currentUser ? handleRatingChange : undefined}
+                    onRatingDelete={currentUser ? handleRatingDelete : undefined}
+                  />
+                ) : (
+                  <div className="text-amber-400 text-center py-4">
+                    {currentUser ? 'No ratings yet. Be the first to rate!' : 'No ratings yet'}
+                  </div>
+                )}
               </div>
+
+              {/* Reading Status Section */}
+              <div className="mb-6 md:mb-4">
+                <h4 className="text-sm font-medium text-amber-200 mb-3">Reading Status:</h4>
+
+                {/* If user is logged in but hasn't set status yet, show the status prompt */}
+                {currentUser && !bookWithDetails.statuses?.some(s => s.user_id === currentUser.id) && (
+                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                    <p className="text-xs text-amber-600 mb-3">Set your reading status for this book</p>
+                    <StatusDropdown
+                      value={null}
+                      onChange={handleStatusChange}
+                    />
+                  </div>
+                )}
+
+                {/* Show all statuses (your own will be editable) */}
+                {bookWithDetails.statuses && bookWithDetails.statuses.length > 0 ? (
+                  <StatusList
+                    statuses={bookWithDetails.statuses}
+                    currentUserId={currentUser?.id ?? null}
+                    onStatusChange={currentUser ? handleStatusChange : undefined}
+                    onStatusDelete={currentUser ? handleStatusDelete : undefined}
+                  />
+                ) : (
+                  <div className="text-amber-400 text-center py-4">
+                    {currentUser ? 'No status set yet. Select one above!' : 'No statuses yet'}
+                  </div>
+                )}
+              </div>
+
               {/* Display tags */}
               {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
                 <div className="mb-4">
@@ -195,20 +309,12 @@ export function BookDetails() {
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Added on {new Date(bookWithDetails.created_at || 0).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                Added {formatRelativeDate(bookWithDetails.created_at || new Date().toISOString(), true)}
               </span>
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Last updated on {new Date(bookWithDetails.updated_at || 0).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                Last updated {formatRelativeDate(bookWithDetails.updated_at || new Date().toISOString(), true)}
               </span>
             </div>
           </div>
