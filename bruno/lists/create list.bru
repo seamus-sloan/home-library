@@ -17,7 +17,36 @@ headers {
 body:json {
   {
     "type_id": 1,
-    "name": "my list",
-    "books": [1, 4, 7, 10, 44, 55]
+    "name": "Seamus's Cosmere",
+    "books": [
+      44,
+      43,
+      45,
+      46,
+      48,
+      49,
+      94,
+      95,
+      96,
+      98,
+      114,
+      115,
+      117,
+      118,
+      120,
+      116,
+      119,
+      47,
+      100,
+      99,
+      97,
+      14,
+      141,
+      145
+    ]
   }
+}
+
+script:post-response {
+  bru.setEnvVar(LIST_ID, res.body.id)
 }
