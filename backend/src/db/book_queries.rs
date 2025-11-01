@@ -173,6 +173,38 @@ async fn fetch_book_details(
         })
         .collect();
 
+    // Get reading statuses for the book with user information
+    let statuses = sqlx::query(
+        "SELECT rs.id, rs.user_id, rs.book_id, rs.status_id, rs.created_at, rs.updated_at, 
+                s.name as status_name, u.name as user_name, u.color as user_color
+         FROM reading_status rs
+         INNER JOIN users u ON rs.user_id = u.id
+         INNER JOIN status s ON rs.status_id = s.id
+         WHERE rs.book_id = ?
+         ORDER BY rs.created_at DESC",
+    )
+    .bind(book_id)
+    .fetch_all(pool)
+    .await?;
+
+    let book_statuses: Vec<crate::models::books::BookStatus> = statuses
+        .into_iter()
+        .map(|row| crate::models::books::BookStatus {
+            id: row.get("id"),
+            user_id: row.get("user_id"),
+            book_id: row.get("book_id"),
+            status_id: row.get("status_id"),
+            status_name: row.get("status_name"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+            user: crate::models::books::StatusUser {
+                id: row.get("user_id"),
+                name: row.get("user_name"),
+                color: row.get("user_color"),
+            },
+        })
+        .collect();
+
     Ok(BookWithDetails {
         id: book.id,
         user_id: book.user_id,
@@ -186,6 +218,7 @@ async fn fetch_book_details(
         genres: book_genres,
         journals: book_journals,
         ratings: book_ratings,
+        statuses: book_statuses,
     })
 }
 

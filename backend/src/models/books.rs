@@ -92,6 +92,30 @@ pub struct BookRating {
 }
 
 #[derive(serde_derive::Serialize)]
+pub struct StatusUser {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(serde_derive::Serialize)]
+pub struct BookStatus {
+    pub id: i64,
+    pub user_id: i64,
+    pub book_id: i64,
+    pub status_id: i64,
+    pub status_name: String,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+    pub user: StatusUser,
+}
+
+#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+pub struct UpsertStatusRequest {
+    pub status_id: i64,
+}
+
+#[derive(serde_derive::Serialize)]
 pub struct BookWithDetails {
     pub id: i64,
     pub user_id: i64,
@@ -105,6 +129,7 @@ pub struct BookWithDetails {
     pub series: Option<String>,
     pub journals: Vec<BookJournal>,
     pub ratings: Vec<BookRating>,
+    pub statuses: Vec<BookStatus>,
 }
 
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]

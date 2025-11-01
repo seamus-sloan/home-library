@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM reading_status WHERE user_id = ? AND book_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "316878684579232da99571533ac98d263eee8445a596d33ef3b661051b209c8d"
+}

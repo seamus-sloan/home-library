@@ -12,6 +12,9 @@ use crate::db::book_queries::{
 };
 use crate::db::journal_queries::{create_journal_entry, get_journals_by_book_id};
 use crate::db::rating_queries::{delete_rating_query, get_rating_query, upsert_rating_query};
+use crate::db::reading_status_queries::{
+    delete_status_query, get_status_query, upsert_status_query,
+};
 use crate::models::{Book, BookWithDetails, CreateBookRequest, UpdateBookRequest};
 use crate::utils::extract_user_id_from_headers;
 
@@ -465,6 +468,109 @@ pub async fn get_user_rating(
         }
         Err(e) => {
             error!("Failed to get rating: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Upsert (create or update) a reading status for a book by the current user
+pub async fn upsert_status(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+    Json(payload): Json<crate::models::books::UpsertStatusRequest>,
+) -> Result<StatusCode, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!(
+        "Upserting status for book {} by user {}: status_id={}",
+        book_id, user_id, payload.status_id
+    );
+
+    // Validate status_id is valid (0=UNREAD, 1=READ, 2=READING, 3=TBR, 99=DNF)
+    if ![0, 1, 2, 3, 99].contains(&payload.status_id) {
+        warn!("Invalid status_id value: {}", payload.status_id);
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    match upsert_status_query(&pool, user_id, book_id, payload.status_id).await {
+        Ok(_) => {
+            info!(
+                "Successfully upserted status for book {} by user {}",
+                book_id, user_id
+            );
+            Ok(StatusCode::OK)
+        }
+        Err(e) => {
+            error!("Failed to upsert status: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Delete a reading status for a book by the current user
+pub async fn delete_status(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<StatusCode, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!("Deleting status for book {} by user {}", book_id, user_id);
+
+    match delete_status_query(&pool, user_id, book_id).await {
+        Ok(_) => {
+            info!(
+                "Successfully deleted status for book {} by user {}",
+                book_id, user_id
+            );
+            Ok(StatusCode::NO_CONTENT)
+        }
+        Err(e) => {
+            error!("Failed to delete status: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Get the current user's reading status for a book
+pub async fn get_user_status(
+    State(pool): State<Pool<Sqlite>>,
+    Path(book_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<Json<Option<i64>>, StatusCode> {
+    let user_id = match extract_user_id_from_headers(&headers) {
+        Ok(id) => id,
+        Err(status) => {
+            warn!("Failed to extract user_id from headers");
+            return Err(status);
+        }
+    };
+
+    debug!("Getting status for book {} by user {}", book_id, user_id);
+
+    match get_status_query(&pool, user_id, book_id).await {
+        Ok(status) => {
+            info!(
+                "Successfully retrieved status for book {} by user {}: {:?}",
+                book_id, user_id, status
+            );
+            Ok(Json(status))
+        }
+        Err(e) => {
+            error!("Failed to get status: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
