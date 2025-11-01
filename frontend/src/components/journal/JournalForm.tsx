@@ -84,7 +84,7 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
           bookId,
           entry: {
             user_id: currentUser?.id || null,
-            title: "", // Removing title for now
+            title: "", // Title field is not currently used
             content: html,
           },
         }).unwrap()
