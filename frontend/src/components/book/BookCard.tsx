@@ -11,6 +11,20 @@ interface BookCardProps {
   book: Book | BookWithDetails
   onClick: () => void
 }
+
+// Helper function to convert hex color to rgba with opacity
+const hexToRgba = (hex: string, opacity: number): string => {
+  // Remove # if present
+  hex = hex.replace('#', '')
+
+  // Parse hex values
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`
+}
+
 export function BookCard({ book, onClick }: BookCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -20,6 +34,11 @@ export function BookCard({ book, onClick }: BookCardProps) {
   // Check if book has READ status
   const isRead = 'current_user_status' in book && book.current_user_status === 1
   const userColor = currentUser?.color || '#f59e0b' // Default to amber if no user
+
+  // Create background color: blend user color (65% opacity) over zinc-700/70
+  const backgroundColor = isRead
+    ? `linear-gradient(${hexToRgba(userColor, 0.65)}, ${hexToRgba(userColor, 0.65)}), rgb(63 63 70 / 0.7)`
+    : 'rgb(63 63 70 / 0.7)'
 
   const handleEditBook = () => {
     setIsEditModalOpen(true)
@@ -58,9 +77,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
       <div
         className={`cursor-pointer group relative rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)] transition-colors duration-300`}
         style={{
-          backgroundColor: isRead
-            ? `color-mix(in srgb, ${userColor} 90%, rgb(63 63 70 / 0.7))`
-            : 'rgb(63 63 70 / 0.7)' // zinc-700/70 with user color mixed in
+          background: backgroundColor
         }}
         onClick={onClick}
       >
