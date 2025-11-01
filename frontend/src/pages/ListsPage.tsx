@@ -1,13 +1,16 @@
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useDeleteListMutation, useGetListsQuery } from '../middleware/backend'
+import { useAddListMutation, useDeleteListMutation, useGetListsQuery } from '../middleware/backend'
 import type { RootState } from '../store/store'
 
 export function ListsPage() {
     const { data: lists, isLoading, error } = useGetListsQuery()
     const [isAddingList, setIsAddingList] = useState(false)
+    const [listName, setListName] = useState('')
+    const [listType, setListType] = useState(1)
     const [deleteList] = useDeleteListMutation()
+    const [addList, { isLoading: isCreating }] = useAddListMutation()
     const currentUser = useSelector((state: RootState) => state.user.currentUser)
 
     const handleDeleteList = async (listId: number, listName: string) => {
@@ -18,6 +21,28 @@ export function ListsPage() {
                 console.error('Failed to delete list:', err)
                 alert('Failed to delete list')
             }
+        }
+    }
+
+    const handleCreateList = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!listName.trim()) {
+            alert('Please enter a list name')
+            return
+        }
+
+        try {
+            await addList({
+                name: listName,
+                type_id: listType,
+                books: []
+            }).unwrap()
+            setIsAddingList(false)
+            setListName('')
+            setListType(1)
+        } catch (err) {
+            console.error('Failed to create list:', err)
+            alert('Failed to create list')
         }
     }
 
@@ -77,7 +102,9 @@ export function ListsPage() {
 
                             {/* Book covers - horizontal scrolling */}
                             {list.books.length === 0 ? (
-                                <div className="text-amber-100/50 italic">No books in this list</div>
+                                <div className="text-amber-100/50 italic">
+                                    Open the list to add books to the list!
+                                </div>
                             ) : (
                                 <div className="overflow-x-auto -mx-2 px-2">
                                     <div className="flex gap-3 pb-2">
@@ -124,17 +151,73 @@ export function ListsPage() {
                 </div>
             )}
 
-            {/* TODO: Add List Modal */}
+            {/* Add List Modal */}
             {isAddingList && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-700">
-                        <p className="text-amber-100">Add List Modal - Coming Soon</p>
-                        <button
-                            onClick={() => setIsAddingList(false)}
-                            className="mt-4 px-4 py-2 bg-zinc-800 text-amber-100 rounded hover:bg-zinc-700"
-                        >
-                            Close
-                        </button>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-zinc-900 rounded-lg border border-zinc-700 w-full max-w-md">
+                        <form onSubmit={handleCreateList}>
+                            {/* Modal Header */}
+                            <div className="px-6 py-4 border-b border-zinc-700">
+                                <h3 className="text-xl font-semibold text-amber-100">Create New List</h3>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="px-6 py-4 space-y-4">
+                                {/* List Name Input */}
+                                <div>
+                                    <label htmlFor="listName" className="block text-sm font-medium text-amber-100 mb-2">
+                                        List Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="listName"
+                                        value={listName}
+                                        onChange={(e) => setListName(e.target.value)}
+                                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-amber-100 placeholder-amber-100/40 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50"
+                                        placeholder="Enter list name..."
+                                        autoFocus
+                                    />
+                                </div>
+
+                                {/* List Type Dropdown */}
+                                <div>
+                                    <label htmlFor="listType" className="block text-sm font-medium text-amber-100 mb-2">
+                                        List Type
+                                    </label>
+                                    <select
+                                        id="listType"
+                                        value={listType}
+                                        onChange={(e) => setListType(Number(e.target.value))}
+                                        className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50"
+                                    >
+                                        <option value={1}>SEQUENCED</option>
+                                        <option value={2}>UNORDERED</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-6 py-4 border-t border-zinc-700 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsAddingList(false)
+                                        setListName('')
+                                        setListType(1)
+                                    }}
+                                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-100 rounded-lg border border-zinc-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isCreating || !listName.trim()}
+                                    className="px-4 py-2 bg-amber-900/40 hover:bg-amber-800/50 text-amber-100 rounded-lg border border-amber-700/30 hover:border-amber-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isCreating ? 'Creating...' : 'Create List'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
