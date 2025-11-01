@@ -404,6 +404,12 @@ pub async fn upsert_rating(
         return Err(StatusCode::BAD_REQUEST);
     }
 
+    // Validate rating is in half-star increments (0, 0.5, 1.0, 1.5, etc.)
+    if (payload.rating * 2.0).fract() != 0.0 {
+        warn!("Rating must be in half-star increments: {}", payload.rating);
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
     match upsert_rating_query(&pool, user_id, book_id, payload.rating).await {
         Ok(_) => {
             info!(
