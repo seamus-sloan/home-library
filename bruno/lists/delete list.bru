@@ -1,0 +1,15 @@
+meta {
+  name: Delete List
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{BASE_URL}}/lists/{{LIST_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}

@@ -6,11 +6,30 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   server: {
     proxy: {
-      '/users': 'http://localhost:3000',
-      '/books': 'http://localhost:3000',
-      '/journals': 'http://localhost:3000',
-      '/tags': 'http://localhost:3000',
-      '/genres': 'http://localhost:3000',
+      '/users': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/books': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/journals': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/tags': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/genres': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '^/lists(/|$)': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react()],

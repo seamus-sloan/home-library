@@ -1,4 +1,4 @@
-import { BookOpenIcon, PlusCircleIcon } from 'lucide-react'
+import { BookOpenIcon, ListIcon, PlusCircleIcon } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import type { RootState } from '../../store/store'
@@ -32,6 +32,13 @@ export function Header({ onAddClick }: HeaderProps) {
           <h1 className="text-2xl font-bold text-amber-50 tracking-wide">The Sloan Library</h1>
         </Link>
         <div className="flex items-center gap-4">
+          <Link
+            to="/lists"
+            className="flex items-center gap-2 bg-zinc-800/60 hover:bg-zinc-700/60 text-amber-100 px-4 py-2 rounded-lg border border-zinc-700/50 hover:border-zinc-600/50 transition-all duration-200 font-medium"
+          >
+            <ListIcon size={18} />
+            <span className="hidden sm:inline">Lists</span>
+          </Link>
           <button
             onClick={handleAddClick}
             className="flex items-center gap-2 bg-amber-900/40 hover:bg-amber-800/50 text-amber-100 px-4 py-2 rounded-lg border border-amber-700/30 hover:border-amber-600/50 transition-all duration-200 font-medium"

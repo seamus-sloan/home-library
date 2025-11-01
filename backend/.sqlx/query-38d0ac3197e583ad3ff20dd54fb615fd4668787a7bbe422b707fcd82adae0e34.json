@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM list_books WHERE list_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "38d0ac3197e583ad3ff20dd54fb615fd4668787a7bbe422b707fcd82adae0e34"
+}

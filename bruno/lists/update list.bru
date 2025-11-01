@@ -1,0 +1,23 @@
+meta {
+  name: Update List
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BASE_URL}}/lists/{{LIST_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "name": "updated name",
+    "type_id": 2,
+    "books": [4, 1, 7]
+  }
+}

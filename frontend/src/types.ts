@@ -163,3 +163,30 @@ export interface UpdateBookRequest {
   tags?: number[]
   genres?: number[]
 }
+
+// List types
+export interface BookInList {
+  id: number
+  cover_image: string | null
+  status_name: string | null
+}
+
+export interface ListWithBooks {
+  id: number
+  user_id: number
+  type_id: number
+  name: string
+  books: BookInList[]
+}
+
+export interface CreateListRequest {
+  type_id: number
+  name: string
+  books: number[]
+}
+
+export interface UpdateListRequest {
+  name?: string
+  type_id?: number
+  books?: number[]
+}

@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT \n            b.id as \"id!\",\n            b.cover_image,\n            s.name as status_name\n        FROM list_books lb\n        INNER JOIN books b ON lb.book_id = b.id\n        LEFT JOIN reading_status rs ON rs.book_id = b.id AND rs.user_id = ?\n        LEFT JOIN status s ON rs.status_id = s.id\n        WHERE lb.list_id = ?\n        ORDER BY lb.position\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "cover_image",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "status_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "8f7bfbac3aedbc61922ea0a76bba265e3eb3b0fefda61cb7d24ec0dee3fc19fd"
+}
