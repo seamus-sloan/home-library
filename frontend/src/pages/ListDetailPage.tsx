@@ -189,7 +189,7 @@ export function ListDetailPage() {
         )
     }
 
-    const canEdit = currentUser && currentUser.id === list.user_id
+    const canEdit = !!(currentUser && currentUser.id === list.user_id)
 
     return (
         <div className="space-y-8">
@@ -271,7 +271,7 @@ export function ListDetailPage() {
                     {list.books.map((book, index) => (
                         <div
                             key={book.id}
-                            draggable={canEdit || false}
+                            draggable={canEdit}
                             onDragStart={() => handleDragStart(index)}
                             onDragOver={(e) => handleDragOver(e, index)}
                             onDrop={(e) => handleDrop(e, index)}
