@@ -153,7 +153,7 @@ export function ListDetailPage() {
         return (
             <div className="space-y-4">
                 <button
-                    onClick={() => navigate('/lists')}
+                    onClick={() => navigate('/list')}
                     className="flex items-center gap-2 text-amber-100 hover:text-amber-50 transition-colors"
                 >
                     <ArrowLeftIcon size={20} />
@@ -170,10 +170,10 @@ export function ListDetailPage() {
         <div className="space-y-8">
             {/* Back Button */}
             <button
-                onClick={() => navigate('/lists')}
+                onClick={() => navigate('/list')}
                 className="flex items-center gap-2 text-amber-100 hover:text-amber-50 transition-colors"
             >
-                <ArrowLeftIcon size={20} />
+                <ArrowLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Back to Lists</span>
             </button>
 
@@ -222,7 +222,7 @@ export function ListDetailPage() {
                                     className="p-2 text-amber-100 hover:text-amber-50 hover:bg-zinc-800 rounded-lg transition-all duration-200"
                                     title="Edit list"
                                 >
-                                    <EditIcon size={20} />
+                                    <EditIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 </button>
                             )}
                         </>
@@ -280,10 +280,10 @@ export function ListDetailPage() {
                                             e.stopPropagation()
                                             handleRemoveBook(book.id)
                                         }}
-                                        className="absolute top-2 right-2 p-1 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                        className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                         title="Remove from list"
                                     >
-                                        <XIcon size={14} />
+                                        <XIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     </button>
                                 )}
 
@@ -311,8 +311,7 @@ export function ListDetailPage() {
                             className="w-full aspect-[2/3] relative rounded-lg border-2 border-dashed border-zinc-700 hover:border-amber-600/50 bg-zinc-900/30 hover:bg-zinc-900/50 transition-all duration-300 flex items-center justify-center group"
                         >
                             <PlusIcon
-                                size={48}
-                                className="text-zinc-600 group-hover:text-amber-600/50 transition-colors duration-300"
+                                className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-600 group-hover:text-amber-600/50 transition-colors duration-300"
                             />
                         </button>
                     )}
@@ -333,7 +332,7 @@ export function ListDetailPage() {
                                 }}
                                 className="p-1 text-amber-100 hover:text-amber-50 hover:bg-zinc-800 rounded transition-colors"
                             >
-                                <XIcon size={20} />
+                                <XIcon className="w-4 h-4" />
                             </button>
                         </div>
 
@@ -367,8 +366,8 @@ export function ListDetailPage() {
                                                     onClick={() => handleAddBook(book)}
                                                     disabled={alreadyInList}
                                                     className={`w-full flex items-center gap-4 p-3 rounded-lg border transition-all duration-200 text-left ${alreadyInList
-                                                            ? 'bg-zinc-800/50 border-zinc-700/50 opacity-50 cursor-not-allowed'
-                                                            : 'bg-zinc-800 border-zinc-700 hover:border-amber-600/50 hover:bg-zinc-800/80'
+                                                        ? 'bg-zinc-800/50 border-zinc-700/50 opacity-50 cursor-not-allowed'
+                                                        : 'bg-zinc-800 border-zinc-700 hover:border-amber-600/50 hover:bg-zinc-800/80'
                                                         }`}
                                                 >
                                                     {/* Book Cover */}

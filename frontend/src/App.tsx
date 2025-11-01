@@ -60,7 +60,7 @@ function AppContent() {
             }
           />
           <Route
-            path="/lists"
+            path="/list"
             element={
               <ProtectedRoute>
                 <ListsPage />
@@ -68,7 +68,7 @@ function AppContent() {
             }
           />
           <Route
-            path="/lists/:id"
+            path="/list/:id"
             element={
               <ProtectedRoute>
                 <ListDetailPage />
