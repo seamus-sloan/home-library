@@ -298,7 +298,7 @@ export const api = createApi({
 
     updateUser: builder.mutation<User, { 
       id: number; 
-      user: { name: string; color: string }; 
+      user: { name: string; color: string; avatar_image?: string | null }; 
     }>({
       query: ({ id, user }) => ({
         url: `/users/${id}`,

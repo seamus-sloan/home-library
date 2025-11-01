@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ? \n         RETURNING id, name, color, created_at, updated_at, last_login",
+  "query": "SELECT id, name, color, avatar_image, created_at, updated_at, last_login FROM users WHERE id = ?",
   "describe": {
     "columns": [
       {
@@ -19,18 +19,23 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "avatar_image",
         "ordinal": 3,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "last_login",
+        "name": "updated_at",
         "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_login",
+        "ordinal": 6,
         "type_info": "Text"
       }
     ],
@@ -43,8 +48,9 @@
       false,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "16be030701c981bcef36ae62c168a175ab16db684a67b61472b28f0c5f1d6ca0"
+  "hash": "954b2348edd393676803207c0063856842937519a5c486982d6cdd5bd460b3e4"
 }

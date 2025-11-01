@@ -42,6 +42,7 @@ export interface User {
   id: number,
   name: string,
   color: string,
+  avatar_image?: string | null,
   created_at: string,
   updated_at: string,
 }
@@ -51,6 +52,7 @@ export interface UserProfile {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 // New types for the enhanced API response

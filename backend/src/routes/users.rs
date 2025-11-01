@@ -1,11 +1,11 @@
 use axum::Json;
-use axum::extract::{State, Path};
+use axum::extract::{Path, State};
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
 use crate::db::{get_all_users, select_user as db_select_user, update_user as db_update_user};
-use crate::models::{SelectUser, User, UpdateUserRequest};
+use crate::models::{SelectUser, UpdateUserRequest, User};
 
 pub async fn get_users(State(pool): State<Pool<Sqlite>>) -> Result<Json<Vec<User>>, StatusCode> {
     debug!("Fetching all users from database");
@@ -48,7 +48,19 @@ pub async fn update_user(
 ) -> Result<Json<User>, StatusCode> {
     info!("Updating user with ID: {}", user_id);
 
-    match db_update_user(&pool, user_id, request.name, request.color).await {
+    // Convert Option<String> to Option<Option<String>> for the avatar_image
+    // If provided, wrap it in Some, otherwise None means "don't change"
+    let avatar_image_update = request.avatar_image.map(Some);
+
+    match db_update_user(
+        &pool,
+        user_id,
+        request.name,
+        request.color,
+        avatar_image_update,
+    )
+    .await
+    {
         Ok(updated_user) => {
             info!("Successfully updated user with ID: {}", updated_user.id);
             Ok(Json(updated_user))

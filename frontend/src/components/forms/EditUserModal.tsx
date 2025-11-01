@@ -1,5 +1,5 @@
-import { XIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ImageIcon, Trash2Icon, XIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { User } from '../../contexts/UserContext'
 import { useUpdateUserMutation } from '../../middleware/backend'
@@ -16,22 +16,28 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
     const [formData, setFormData] = useState({
         name: user.name,
         color: user.color,
+        avatar_image: user.avatar_image || null,
     })
     const [errors, setErrors] = useState({
         name: '',
+        image: '',
     })
+    const [previewUrl, setPreviewUrl] = useState<string | null>(user.avatar_image || null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Reset form when modal opens/user changes
     useEffect(() => {
         setFormData({
             name: user.name,
             color: user.color,
+            avatar_image: user.avatar_image || null,
         })
-        setErrors({ name: '' })
+        setPreviewUrl(user.avatar_image || null)
+        setErrors({ name: '', image: '' })
     }, [user, isOpen])
 
     const validateForm = () => {
-        const newErrors = { name: '' }
+        const newErrors = { name: '', image: '' }
 
         if (!formData.name.trim()) {
             newErrors.name = 'Name is required'
@@ -39,6 +45,44 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
 
         setErrors(newErrors)
         return !newErrors.name
+    }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            setErrors(prev => ({ ...prev, image: 'Please select an image file' }))
+            return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setErrors(prev => ({ ...prev, image: 'Image size must be less than 5MB' }))
+            return
+        }
+
+        // Read file and convert to base64
+        const reader = new FileReader()
+        reader.onload = (event) => {
+            const base64String = event.target?.result as string
+            setFormData(prev => ({ ...prev, avatar_image: base64String }))
+            setPreviewUrl(base64String)
+            setErrors(prev => ({ ...prev, image: '' }))
+        }
+        reader.onerror = () => {
+            setErrors(prev => ({ ...prev, image: 'Failed to read image file' }))
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const handleDeleteImage = () => {
+        setFormData(prev => ({ ...prev, avatar_image: null }))
+        setPreviewUrl(null)
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +98,7 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
                 user: {
                     name: formData.name.trim(),
                     color: formData.color,
+                    avatar_image: formData.avatar_image,
                 },
             }).unwrap()
 
@@ -61,7 +106,7 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
             onClose()
         } catch (error) {
             console.error('Failed to update user:', error)
-            setErrors({ name: 'Failed to update user. Please try again.' })
+            setErrors({ name: 'Failed to update user. Please try again.', image: '' })
         }
     }
 
@@ -93,6 +138,71 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Profile Picture Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-amber-200 mb-2">
+                                Profile Picture
+                            </label>
+                            <div className="flex items-start gap-4">
+                                {/* Preview */}
+                                <div className="flex-shrink-0">
+                                    {previewUrl ? (
+                                        <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-amber-700/30">
+                                            <img
+                                                src={previewUrl}
+                                                alt="Profile preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className="w-24 h-24 rounded-full flex items-center justify-center text-white font-bold text-2xl"
+                                            style={{ backgroundColor: formData.color }}
+                                        >
+                                            {formData.name.charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Upload and Delete buttons */}
+                                <div className="flex-1 flex flex-col gap-2">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                        id="avatar-upload"
+                                        disabled={isLoading}
+                                    />
+                                    <label
+                                        htmlFor="avatar-upload"
+                                        className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 text-amber-200 rounded-lg border border-zinc-700 hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <ImageIcon size={16} />
+                                        <span>Upload Image</span>
+                                    </label>
+                                    {previewUrl && (
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteImage}
+                                            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-900/30 text-red-300 rounded-lg border border-red-700/30 hover:bg-red-900/50 transition-colors"
+                                            disabled={isLoading}
+                                        >
+                                            <Trash2Icon size={16} />
+                                            <span>Remove Image</span>
+                                        </button>
+                                    )}
+                                    <p className="text-xs text-amber-400/70">
+                                        Max size: 5MB
+                                    </p>
+                                </div>
+                            </div>
+                            {errors.image && (
+                                <p className="text-red-400 text-sm mt-2">{errors.image}</p>
+                            )}
+                        </div>
+
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-amber-200 mb-2">
                                 Name

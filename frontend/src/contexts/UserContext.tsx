@@ -4,6 +4,7 @@ export interface User {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 interface UserContextType {

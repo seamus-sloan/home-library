@@ -108,7 +108,8 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
           <UserAvatar user={{
             id: currentUser.id,
             name: currentUser.name,
-            color: currentUser.color
+            color: currentUser.color,
+            avatar_image: currentUser.avatar_image
           }} size="sm" />
           <h4 className="text-lg font-medium text-amber-50">
             {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}

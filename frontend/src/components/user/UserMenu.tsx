@@ -49,7 +49,8 @@ export function UserMenu() {
                 <UserAvatar user={{
                     id: currentUser.id,
                     name: currentUser.name,
-                    color: currentUser.color
+                    color: currentUser.color,
+                    avatar_image: currentUser.avatar_image
                 }} size="sm" />
                 <span className="text-amber-200 hidden sm:inline font-medium">
                     {currentUser.name}
