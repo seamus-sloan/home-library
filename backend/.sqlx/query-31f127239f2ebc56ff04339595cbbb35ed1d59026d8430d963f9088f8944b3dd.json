@@ -1,10 +1,10 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, name, color, created_at, updated_at, last_login FROM users",
+  "query": "\n                SELECT id as \"id!\", name, color, avatar_image\n                FROM users\n                WHERE id = ?\n                ",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "id!",
         "ordinal": 0,
         "type_info": "Integer"
       },
@@ -19,32 +19,20 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "avatar_image",
         "ordinal": 3,
-        "type_info": "Text"
-      },
-      {
-        "name": "updated_at",
-        "ordinal": 4,
-        "type_info": "Text"
-      },
-      {
-        "name": "last_login",
-        "ordinal": 5,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       false,
       false,
       false,
-      true,
-      true,
       true
     ]
   },
-  "hash": "da42ce339450993910855968951999e0ab23f8d8b50f1f67ebf325d8804e498d"
+  "hash": "31f127239f2ebc56ff04339595cbbb35ed1d59026d8430d963f9088f8944b3dd"
 }

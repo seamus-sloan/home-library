@@ -62,6 +62,7 @@ pub struct JournalUser {
     pub id: i64,
     pub name: String,
     pub color: String,
+    pub avatar_image: Option<String>,
 }
 
 #[derive(serde_derive::Serialize)]
@@ -79,6 +80,7 @@ pub struct RatingUser {
     pub id: i64,
     pub name: String,
     pub color: String,
+    pub avatar_image: Option<String>,
 }
 
 #[derive(serde_derive::Serialize)]
@@ -97,6 +99,7 @@ pub struct StatusUser {
     pub id: i64,
     pub name: String,
     pub color: String,
+    pub avatar_image: Option<String>,
 }
 
 #[derive(serde_derive::Serialize)]

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "UPDATE users SET name = ?, color = ?, updated_at = datetime('now') WHERE id = ? \n         RETURNING id, name, color, created_at, updated_at, last_login",
+  "query": "SELECT id, name, color, avatar_image, created_at, updated_at, last_login FROM users",
   "describe": {
     "columns": [
       {
@@ -19,23 +19,28 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "avatar_image",
         "ordinal": 3,
         "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "last_login",
+        "name": "updated_at",
         "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_login",
+        "ordinal": 6,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 0
     },
     "nullable": [
       false,
@@ -43,8 +48,9 @@
       false,
       true,
       true,
+      true,
       true
     ]
   },
-  "hash": "cf7c33deffb2167be7c2d237562197e618719dd2e152a5b389a6c854421f8275"
+  "hash": "0b0adec1766a99b6cac4f65b3f647982d46f1515ad4ecf0e2908bd612b0e3208"
 }

@@ -33,7 +33,7 @@ pub async fn get_all_lists_query(pool: &Pool<Sqlite>) -> Result<Vec<ListWithBook
         let user = sqlx::query_as!(
             ListUser,
             r#"
-            SELECT id as "id!", name, color
+            SELECT id as "id!", name, color, avatar_image
             FROM users
             WHERE id = ?
             "#,
@@ -88,7 +88,7 @@ pub async fn get_list_by_id_query(
             let user = sqlx::query_as!(
                 ListUser,
                 r#"
-                SELECT id as "id!", name, color
+                SELECT id as "id!", name, color, avatar_image
                 FROM users
                 WHERE id = ?
                 "#,

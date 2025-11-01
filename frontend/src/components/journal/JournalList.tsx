@@ -68,6 +68,7 @@ export function JournalList({ journals, bookId }: JournalListProps) {
                     id: journal.user.id,
                     name: journal.user.name,
                     color: journal.user.color,
+                    avatar_image: journal.user.avatar_image,
                   }}
                   size="sm"
                 />

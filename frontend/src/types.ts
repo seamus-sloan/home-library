@@ -42,6 +42,7 @@ export interface User {
   id: number,
   name: string,
   color: string,
+  avatar_image?: string | null,
   created_at: string,
   updated_at: string,
 }
@@ -51,6 +52,7 @@ export interface UserProfile {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 // New types for the enhanced API response
@@ -70,6 +72,7 @@ export interface JournalUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookJournal {
@@ -85,6 +88,7 @@ export interface RatingUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookRating {
@@ -119,6 +123,7 @@ export interface StatusUser {
   id: number
   name: string
   color: string
+  avatar_image?: string | null
 }
 
 export interface BookStatus {
