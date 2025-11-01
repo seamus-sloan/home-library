@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { CategoryBadge } from '../components/common'
 import { BookForm, type BookFormData } from '../components/forms'
-import { AddJournalForm } from '../components/forms/AddJournalForm'
+import { JournalForm } from '../components/journal/JournalForm'
 import { JournalList } from '../components/journal/JournalList'
 import { InteractiveRating, RatingsList } from '../components/rating'
 import StatusDropdown from '../components/status/StatusDropdown'
@@ -365,13 +365,13 @@ export function BookDetails() {
           )}
         </div>
         {isAddingJournal ? (
-          <AddJournalForm
+          <JournalForm
             bookId={bookWithDetails.id}
             onSubmit={handleAddJournal}
             onCancel={() => setIsAddingJournal(false)}
           />
         ) : (
-          <JournalList journals={bookWithDetails.journals || []} />
+          <JournalList journals={bookWithDetails.journals || []} bookId={bookWithDetails.id} />
         )}
       </div>
     </div>

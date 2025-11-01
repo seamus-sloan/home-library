@@ -1,23 +1,39 @@
 import { XIcon } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useAddJournalEntryMutation } from '../../middleware/backend'
+import { useAddJournalEntryMutation, useUpdateJournalEntryMutation } from '../../middleware/backend'
 import type { RootState } from '../../store/store'
+import type { JournalEntry } from '../../types'
 import { UserAvatar } from '../common/UserAvatar'
-interface AddJournalFormProps {
-  bookId: number,
+
+interface JournalFormProps {
+  bookId: number
+  journal?: JournalEntry // If provided, we're editing; otherwise, creating
   onSubmit: () => void
   onCancel: () => void
 }
-export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormProps) {
+
+export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalFormProps) {
+  const isEditing = !!journal
+
   const [formData, setFormData] = useState({
-    content: '',
+    content: journal?.content || '',
   })
   const [errors, setErrors] = useState({
     content: '',
   })
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
   const [addJournalEntry] = useAddJournalEntryMutation()
+  const [updateJournalEntry] = useUpdateJournalEntryMutation()
+
+  // Update form data when journal prop changes
+  useEffect(() => {
+    if (journal) {
+      setFormData({
+        content: journal.content,
+      })
+    }
+  }, [journal])
 
 
   const handleChange = (
@@ -40,7 +56,6 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     e.preventDefault()
     // Validate form
     const newErrors = {
-      // title: formData.title ? '' : 'Journal title is required',
       content: formData.content ? '' : 'Journal entry cannot be empty',
     }
     setErrors(newErrors)
@@ -51,21 +66,33 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
     }
 
     try {
-      await addJournalEntry({
-        bookId,
-        entry: {
-          user_id: currentUser?.id || null,
-          title: "", // Removing title for now
-          content: formData.content,
-        },
-      }).unwrap()
+      if (isEditing && journal) {
+        // Update existing journal entry
+        await updateJournalEntry({
+          bookId,
+          id: journal.id,
+          entry: {
+            content: formData.content,
+          },
+        }).unwrap()
+      } else {
+        // Create new journal entry
+        await addJournalEntry({
+          bookId,
+          entry: {
+            user_id: currentUser?.id || null,
+            title: "", // Removing title for now
+            content: formData.content,
+          },
+        }).unwrap()
+      }
 
       setFormData({
         content: '',
       })
       onSubmit()
     } catch (error) {
-      console.error('Error adding journal entry:', error)
+      console.error('Error saving journal entry:', error)
       setErrors({
         content: error instanceof Error ? error.message : 'Failed to save journal entry',
       })
@@ -82,7 +109,9 @@ export function AddJournalForm({ bookId, onSubmit, onCancel }: AddJournalFormPro
             name: currentUser.name,
             color: currentUser.color
           }} size="sm" />
-          <h4 className="text-lg font-medium text-amber-50">New Journal Entry</h4>
+          <h4 className="text-lg font-medium text-amber-50">
+            {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
+          </h4>
         </div>
         <button
           onClick={onCancel}

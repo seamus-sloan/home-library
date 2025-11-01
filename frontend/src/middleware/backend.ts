@@ -109,6 +109,24 @@ export const api = createApi({
         'JournalEntry',
       ],
     }),
+
+    updateJournalEntry: builder.mutation<JournalEntry, { 
+      bookId: number;
+      id: number; 
+      entry: Partial<Omit<JournalEntry, 'id' | 'book_id' | 'user_id' | 'created_at' | 'updated_at'>>; 
+    }>({
+      query: ({ bookId, id, entry }) => ({
+        url: `/books/${bookId}/journals/${id}`,
+        method: 'PUT',
+        body: entry,
+      }),
+      invalidatesTags: (_result, _error, { bookId, id }) => [
+        { type: 'JournalEntry', id },
+        { type: 'JournalEntry', id: `book-${bookId}` },
+        { type: 'Book', id: bookId.toString() },
+        'JournalEntry',
+      ],
+    }),
     //#endregion
 
     //#region Tag Endpoints
@@ -304,6 +322,7 @@ export const {
   useGetJournalsQuery,
   useGetJournalQuery,
   useAddJournalEntryMutation,
+  useUpdateJournalEntryMutation,
   useGetTagsQuery,
   useGetTagQuery,
   useAddTagMutation,

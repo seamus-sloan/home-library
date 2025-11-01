@@ -1,3 +1,2 @@
-export { AddJournalForm } from '../forms/AddJournalForm'
+export { JournalForm } from './JournalForm'
 export { JournalList } from './JournalList'
-
