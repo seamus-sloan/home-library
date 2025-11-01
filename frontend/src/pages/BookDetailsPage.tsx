@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, BookOpenIcon, EditIcon, PlusIcon } from 'lucide-react'
+import { ArrowLeftIcon, BookOpenIcon, EditIcon, InfoIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -34,6 +34,7 @@ export function BookDetails() {
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAddingJournal, setIsAddingJournal] = useState(false)
+  const [showFormattingHelp, setShowFormattingHelp] = useState(false)
 
   // Handle form submission
   const handleBookFormSubmit = async (data: BookFormData) => {
@@ -353,7 +354,75 @@ export function BookDetails() {
       {/* Reading Journal Section */}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-amber-50">Reading Journal</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-amber-50">Reading Journal</h3>
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowFormattingHelp(!showFormattingHelp)
+                }}
+                onMouseEnter={() => {
+                  // Only use hover on non-touch devices
+                  if (window.matchMedia('(hover: hover)').matches) {
+                    setShowFormattingHelp(true)
+                  }
+                }}
+                onMouseLeave={() => {
+                  // Only use hover on non-touch devices
+                  if (window.matchMedia('(hover: hover)').matches) {
+                    setShowFormattingHelp(false)
+                  }
+                }}
+                className="text-amber-400 hover:text-amber-300 transition-colors"
+                aria-label="Formatting help"
+              >
+                <InfoIcon size={18} />
+              </button>
+              {showFormattingHelp && (
+                <>
+                  {/* Backdrop for mobile - clicking outside dismisses */}
+                  <div
+                    className="fixed inset-0 z-10 md:hidden"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowFormattingHelp(false)
+                    }}
+                  />
+                  <div
+                    className="absolute left-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-zinc-800 border border-zinc-700 rounded-lg p-4 shadow-xl z-20"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-amber-50">Text Formatting</h4>
+                      <button
+                        onClick={() => setShowFormattingHelp(false)}
+                        className="text-amber-400 hover:text-amber-300 md:hidden"
+                        aria-label="Close"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="text-xs text-amber-200 space-y-1.5">
+                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+B</kbd> <span className="text-amber-300">Bold</span></div>
+                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+I</kbd> <span className="text-amber-300">Italic</span></div>
+                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+Shift+X</kbd> <span className="text-amber-300">Strikethrough</span></div>
+                      <div className="pt-1 border-t border-zinc-700 mt-2">
+                        <div className="text-amber-300 mb-1">Markdown shortcuts:</div>
+                        <div><code className="text-amber-400"># </code> Heading 1</div>
+                        <div><code className="text-amber-400">## </code> Heading 2</div>
+                        <div><code className="text-amber-400">### </code> Heading 3</div>
+                        <div><code className="text-amber-400">* </code> or <code className="text-amber-400">- </code> Bullet list</div>
+                        <div><code className="text-amber-400">1. </code> Numbered list</div>
+                        <div><code className="text-amber-400">&gt; </code> Blockquote</div>
+                        <div><code className="text-amber-400">``` </code> Code block</div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
           {!isAddingJournal && (
             <button
               onClick={() => setIsAddingJournal(true)}

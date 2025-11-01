@@ -124,7 +124,7 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
       </div>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <div className={`bg-zinc-800 border rounded-md ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}>
+          <div className={`bg-zinc-900 border rounded-md ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}>
             <EditorContent editor={editor} />
           </div>
           {errors.content && <p className="text-red-400 text-sm mt-1">{errors.content}</p>}
