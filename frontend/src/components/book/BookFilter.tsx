@@ -33,11 +33,17 @@ export function BookFilter({
     hasActiveFilters
 }: BookFilterProps) {
     const filterRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
 
     // Click outside handler to close filter dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+            if (
+                filterRef.current &&
+                !filterRef.current.contains(event.target as Node) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(event.target as Node)
+            ) {
                 onToggle()
             }
         }
@@ -52,9 +58,11 @@ export function BookFilter({
     }, [isOpen, onToggle])
 
     return (
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-end gap-3">
+            {/* Filter Button */}
             <div className="relative">
                 <button
+                    ref={buttonRef}
                     onClick={onToggle}
                     className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-200 hover:border-amber-600/50 transition-colors"
                 >
@@ -131,30 +139,36 @@ export function BookFilter({
                 )}
             </div>
 
-            {/* Clear Filters Button - Outside of dropdown */}
+            {/* Active Filters and Clear Button Row */}
             {hasActiveFilters && (
-                <button
-                    onClick={onClearFilters}
-                    className="px-3 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30 text-sm"
-                >
-                    Clear Filters
-                </button>
-            )}
+                <div className="flex items-center gap-3 flex-wrap justify-end">
+                    {/* Active Filters Display */}
+                    <div className="flex items-center gap-2 text-sm text-amber-300">
+                        <span className="hidden sm:inline">Active:</span>
+                        {selectedGenre && (
+                            <span className="px-2 py-1 bg-amber-900/40 text-amber-200 rounded border border-amber-700/30">
+                                {selectedGenre}
+                            </span>
+                        )}
+                        {selectedRating !== null && (
+                            <span className="px-2 py-1 bg-amber-900/40 text-amber-200 rounded border border-amber-700/30">
+                                {selectedRating} Stars
+                            </span>
+                        )}
+                        {selectedTag && (
+                            <span className="px-2 py-1 bg-amber-900/40 text-amber-200 rounded border border-amber-700/30">
+                                {selectedTag}
+                            </span>
+                        )}
+                    </div>
 
-            {/* Active Filters Display */}
-            {hasActiveFilters && (
-                <div className="flex items-center gap-2 text-sm text-amber-300">
-                    <span>Active filters:</span>
-                    {selectedGenre && (
-                        <span className="px-2 py-1 bg-amber-900/40 text-amber-200 rounded border border-amber-700/30">
-                            {selectedGenre}
-                        </span>
-                    )}
-                    {selectedRating !== null && (
-                        <span className="px-2 py-1 bg-amber-900/40 text-amber-200 rounded border border-amber-700/30">
-                            {selectedRating} Stars
-                        </span>
-                    )}
+                    {/* Clear Filters Button */}
+                    <button
+                        onClick={onClearFilters}
+                        className="px-3 py-2 bg-amber-900/40 text-amber-100 rounded-md hover:bg-amber-800/50 transition-colors border border-amber-700/30 text-sm whitespace-nowrap"
+                    >
+                        Clear
+                    </button>
                 </div>
             )}
         </div>
