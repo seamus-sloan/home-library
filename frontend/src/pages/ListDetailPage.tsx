@@ -1,7 +1,8 @@
-import { ArrowLeftIcon, EditIcon, PlusIcon, XIcon } from 'lucide-react'
+import { ArrowDownIcon, ArrowLeftIcon, ArrowUpIcon, EditIcon, PlusIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
+import { UserAvatar } from '../components/common/UserAvatar'
 import { useGetBooksQuery, useGetListQuery, useUpdateListMutation } from '../middleware/backend'
 import type { RootState } from '../store/store'
 import type { BookWithDetails } from '../types'
@@ -97,6 +98,30 @@ export function ListDetailPage() {
         } catch (err) {
             console.error('Failed to remove book:', err)
             alert('Failed to remove book from list')
+        }
+    }
+
+    // Move book up or down in the list
+    const handleMoveBook = async (fromIndex: number, direction: 'up' | 'down') => {
+        if (!list) return
+
+        const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1
+        if (toIndex < 0 || toIndex >= list.books.length) return
+
+        const newBooks = [...list.books]
+        const [movedBook] = newBooks.splice(fromIndex, 1)
+        newBooks.splice(toIndex, 0, movedBook)
+
+        try {
+            await updateList({
+                id: list.id,
+                list: {
+                    books: newBooks.map(b => b.id)
+                }
+            }).unwrap()
+        } catch (err) {
+            console.error('Failed to reorder books:', err)
+            alert('Failed to reorder books')
         }
     }
 
@@ -215,7 +240,10 @@ export function ListDetailPage() {
                         </div>
                     ) : (
                         <>
-                            <h1 className="text-3xl font-bold text-amber-50">{list.name}</h1>
+                            <div className="flex items-center gap-3">
+                                <UserAvatar user={list.user} size="md" />
+                                <h1 className="text-3xl font-bold text-amber-50">{list.name}</h1>
+                            </div>
                             {canEdit && (
                                 <button
                                     onClick={handleStartEdit}
@@ -239,7 +267,7 @@ export function ListDetailPage() {
             <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-amber-100">Books</h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4">
                     {list.books.map((book, index) => (
                         <div
                             key={book.id}
@@ -248,7 +276,7 @@ export function ListDetailPage() {
                             onDragOver={(e) => handleDragOver(e, index)}
                             onDrop={(e) => handleDrop(e, index)}
                             onDragEnd={handleDragEnd}
-                            className={`group relative cursor-pointer ${draggedIndex === index ? 'opacity-50' : ''
+                            className={`group relative ${draggedIndex === index ? 'opacity-50' : ''
                                 } ${draggedOverIndex === index ? 'ring-2 ring-amber-600' : ''
                                 }`}
                         >
@@ -273,18 +301,48 @@ export function ListDetailPage() {
                                     </div>
                                 )}
 
-                                {/* Remove button */}
+                                {/* Remove button - always visible on mobile, hover on desktop */}
                                 {canEdit && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation()
                                             handleRemoveBook(book.id)
                                         }}
-                                        className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                        className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-red-900/80 hover:bg-red-800 text-red-100 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10"
                                         title="Remove from list"
                                     >
                                         <XIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     </button>
+                                )}
+
+                                {/* Mobile reorder buttons - only visible on mobile */}
+                                {canEdit && list.type_id === 1 && (
+                                    <div className="absolute bottom-1 right-1 flex flex-col gap-1 sm:hidden">
+                                        {index > 0 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleMoveBook(index, 'up')
+                                                }}
+                                                className="p-1 bg-amber-900/80 hover:bg-amber-800 text-amber-100 rounded transition-colors z-10"
+                                                title="Move up"
+                                            >
+                                                <ArrowUpIcon className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                        {index < list.books.length - 1 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleMoveBook(index, 'down')
+                                                }}
+                                                className="p-1 bg-amber-900/80 hover:bg-amber-800 text-amber-100 rounded transition-colors z-10"
+                                                title="Move down"
+                                            >
+                                                <ArrowDownIcon className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
 
                                 {/* Status badge if available */}

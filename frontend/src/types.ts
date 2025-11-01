@@ -171,12 +171,19 @@ export interface BookInList {
   status_name: string | null
 }
 
+export interface ListUser {
+  id: number
+  name: string
+  color: string
+}
+
 export interface ListWithBooks {
   id: number
   user_id: number
   type_id: number
   name: string
   books: BookInList[]
+  user: ListUser
 }
 
 export interface CreateListRequest {

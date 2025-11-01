@@ -2,6 +2,7 @@ import { PlusCircleIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { UserAvatar } from '../components/common/UserAvatar'
 import { useAddListMutation, useDeleteListMutation, useGetListsQuery } from '../middleware/backend'
 import type { RootState } from '../store/store'
 
@@ -85,12 +86,17 @@ export function ListsPage() {
                         >
                             {/* List name with delete button */}
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold text-amber-100">
-                                    {list.name}
-                                    <span className="ml-3 text-sm font-normal text-amber-100/60">
-                                        ({list.books.length} {list.books.length === 1 ? 'book' : 'books'})
-                                    </span>
-                                </h2>
+                                <div className="flex items-center gap-3">
+                                    <UserAvatar user={list.user} size="sm" />
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-amber-100">
+                                            {list.name}
+                                        </h2>
+                                        <p className="text-sm text-amber-100/60">
+                                            {list.books.length} {list.books.length === 1 ? 'book' : 'books'}
+                                        </p>
+                                    </div>
+                                </div>
                                 {currentUser && currentUser.id === list.user_id && (
                                     <button
                                         onClick={(e) => {
