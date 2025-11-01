@@ -1,13 +1,40 @@
 /**
+ * Parse a date string from the backend (which is in UTC format "YYYY-MM-DD HH:MM:SS")
+ * and convert it to a proper Date object in the user's local timezone
+ */
+const parseUTCDate = (dateString: string): Date => {
+    // Backend sends dates in format "2025-11-01 01:29:58" which is UTC
+    // Convert to ISO 8601 format by replacing space with 'T' and adding 'Z' for UTC
+    const isoString = dateString.replace(' ', 'T') + 'Z'
+    return new Date(isoString)
+}
+
+/**
  * Format a date string to a user-friendly relative or absolute format
- * @param dateString - ISO date string to format
- * @param lowercase - Whether to lowercase the first character (for use in sentences like "Last updated just now")
- * @returns Formatted date string
+ * @param dateString - Date string from backend in UTC format ("YYYY-MM-DD HH:MM:SS")
+ * @param lowercase - Whether to lowercase "Just now" to "just now" (only affects the immediate timeframe; other formats already start lowercase)
+ * @returns Formatted date string, or 'Invalid date' if the input is invalid
  */
 export const formatRelativeDate = (dateString: string, lowercase: boolean = false): string => {
-    const date = new Date(dateString)
+    const date = parseUTCDate(dateString)
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+        return 'Invalid date'
+    }
+    
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
+    
+    // Handle future dates
+    if (diffMs < 0) {
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        })
+    }
+    
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
@@ -44,11 +71,17 @@ export const formatRelativeDate = (dateString: string, lowercase: boolean = fals
 
 /**
  * Format a date string to a short format (e.g., "Oct 29, 2025")
- * @param dateString - ISO date string to format
- * @returns Formatted date string
+ * @param dateString - Date string from backend in UTC format ("YYYY-MM-DD HH:MM:SS")
+ * @returns Formatted date string, or 'Invalid date' if the input is invalid
  */
 export const formatShortDate = (dateString: string): string => {
-    const date = new Date(dateString)
+    const date = parseUTCDate(dateString)
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+        return 'Invalid date'
+    }
+    
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -58,12 +91,19 @@ export const formatShortDate = (dateString: string): string => {
 
 /**
  * Format a date string to a long format with time (e.g., "October 29, 2025 at 02:43 AM")
- * @param dateString - ISO date string to format
- * @returns Formatted date string
+ * @param dateString - Date string from backend in UTC format ("YYYY-MM-DD HH:MM:SS")
+ * @returns Formatted date string, or 'Invalid date' if the input is invalid
  */
 export const formatLongDate = (dateString: string): string => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
+    const date = parseUTCDate(dateString)
+    
+    // Validate date
+    if (isNaN(date.getTime())) {
+        return 'Invalid date'
+    }
+    
+    // Use toLocaleString instead of toLocaleDateString to include time
+    return date.toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

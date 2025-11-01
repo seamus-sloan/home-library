@@ -59,7 +59,6 @@ async fn test_create_book_with_tags_and_genres() {
         "title": "Test Book with Tags",
         "author": "Test Author",
         "cover_image": null,
-        "rating": 4.5,
         "created_at": "2025-01-01T00:00:00Z",
         "updated_at": "2025-01-01T00:00:00Z",
         "tags": [tag_id],
@@ -74,7 +73,6 @@ async fn test_create_book_with_tags_and_genres() {
 
     // Verify the book was created with the correct data
     assert_eq!(body["title"], "Test Book with Tags");
-    assert_eq!(body["rating"], 4.5);
 
     // Fetch the book details to verify tags and genres
     let (details_status, details_body) = make_request(
@@ -144,8 +142,7 @@ async fn test_update_book_basic() {
 
     let update_data = json!({
         "title": "Updated Title",
-        "author": "Updated Author",
-        "rating": 3.5
+        "author": "Updated Author"
     });
 
     let (status, body) = make_request(
@@ -160,7 +157,6 @@ async fn test_update_book_basic() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["title"], "Updated Title");
     assert_eq!(body["author"], "Updated Author");
-    assert_eq!(body["rating"], 3.5);
 }
 
 #[tokio::test]
@@ -304,9 +300,10 @@ async fn test_rating_update_and_clear() {
         .create_test_book(user_id, "Rating Test", "Author")
         .await;
 
-    // Set a rating
+    // Note: Ratings are now managed through separate endpoints (not yet implemented)
+    // This test verifies that book updates work without ratings
     let update_data = json!({
-        "rating": 4.5
+        "title": "Rating Test Updated"
     });
 
     let (status, body) = make_request(
@@ -319,24 +316,7 @@ async fn test_rating_update_and_clear() {
     .await;
 
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body["rating"], 4.5);
-
-    // Clear the rating
-    let clear_data = json!({
-        "rating": null
-    });
-
-    let (status, body) = make_request(
-        &test_app,
-        "PUT",
-        &format!("/books/{}", book_id),
-        user_id,
-        Some(clear_data),
-    )
-    .await;
-
-    assert_eq!(status, StatusCode::OK);
-    assert!(body["rating"].is_null());
+    assert_eq!(body["title"], "Rating Test Updated");
 }
 
 #[tokio::test]
@@ -395,12 +375,11 @@ async fn test_create_book_bad_request_malformed_rating() {
     let test_app = TestApp::new().await;
     let user_id = test_app.create_test_user().await;
 
-    // Test with invalid rating type (string instead of number)
-    let invalid_rating_data = json!({
+    // Test with invalid title type (number instead of string)
+    let invalid_title_data = json!({
         "user_id": user_id,
-        "title": "Test Book",
+        "title": 123,
         "author": "Test Author",
-        "rating": "not_a_number",
         "created_at": "2025-01-01T00:00:00Z",
         "updated_at": "2025-01-01T00:00:00Z"
     });
@@ -410,7 +389,7 @@ async fn test_create_book_bad_request_malformed_rating() {
         "POST",
         "/books",
         user_id,
-        Some(invalid_rating_data),
+        Some(invalid_title_data),
     )
     .await;
 

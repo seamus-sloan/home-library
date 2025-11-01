@@ -52,6 +52,13 @@ CREATE INDEX IF NOT EXISTS idx_reading_status_status_id ON reading_status(status
 -- SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
 PRAGMA foreign_keys = OFF;
 
+-- Drop any existing temporary tables first (in case of previous failed migration)
+DROP TABLE IF EXISTS temp_books;
+DROP TABLE IF EXISTS temp_book_tags;
+DROP TABLE IF EXISTS temp_journal_entries;
+DROP TABLE IF EXISTS temp_journal_entry_tags;
+DROP TABLE IF EXISTS temp_book_genres;
+
 -- Store existing book data WITH ratings in a temporary table
 CREATE TEMPORARY TABLE temp_books AS 
 SELECT id, user_id, cover_image, title, author, description, series_name, series, rating, created_at, updated_at 
