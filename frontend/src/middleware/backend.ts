@@ -315,6 +315,11 @@ export const api = createApi({
       providesTags: ['List'],
     }),
 
+    getList: builder.query<ListWithBooks, number>({
+      query: (id) => `/lists/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'List', id: id.toString() }],
+    }),
+
     addList: builder.mutation<ListWithBooks, CreateListRequest>({
       query: (list) => ({
         url: '/lists',
@@ -330,7 +335,10 @@ export const api = createApi({
         method: 'PUT',
         body: list,
       }),
-      invalidatesTags: ['List'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'List', id: id.toString() },
+        'List'
+      ],
     }),
 
     deleteList: builder.mutation<void, number>({
@@ -376,6 +384,7 @@ export const {
   useDeleteStatusMutation,
   useGetUserStatusQuery,
   useGetListsQuery,
+  useGetListQuery,
   useAddListMutation,
   useUpdateListMutation,
   useDeleteListMutation,

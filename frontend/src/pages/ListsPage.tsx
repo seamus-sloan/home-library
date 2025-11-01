@@ -1,10 +1,12 @@
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { useAddListMutation, useDeleteListMutation, useGetListsQuery } from '../middleware/backend'
 import type { RootState } from '../store/store'
 
 export function ListsPage() {
+    const navigate = useNavigate()
     const { data: lists, isLoading, error } = useGetListsQuery()
     const [isAddingList, setIsAddingList] = useState(false)
     const [listName, setListName] = useState('')
@@ -78,7 +80,8 @@ export function ListsPage() {
                     {lists.map((list) => (
                         <div
                             key={list.id}
-                            className="border border-zinc-700/50 rounded-lg p-6 bg-zinc-900/30 backdrop-blur-sm"
+                            onClick={() => navigate(`/lists/${list.id}`)}
+                            className="border border-zinc-700/50 rounded-lg p-6 bg-zinc-900/30 backdrop-blur-sm hover:border-amber-600/50 cursor-pointer transition-all duration-200"
                         >
                             {/* List name with delete button */}
                             <div className="flex justify-between items-center mb-4">
@@ -90,7 +93,10 @@ export function ListsPage() {
                                 </h2>
                                 {currentUser && currentUser.id === list.user_id && (
                                     <button
-                                        onClick={() => handleDeleteList(list.id, list.name)}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteList(list.id, list.name)
+                                        }}
                                         className="flex items-center gap-2 bg-red-900/40 hover:bg-red-800/50 text-red-100 px-3 py-1.5 rounded-lg border border-red-700/30 hover:border-red-600/50 transition-all duration-200 text-sm font-medium"
                                         title="Delete list"
                                     >
