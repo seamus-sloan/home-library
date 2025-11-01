@@ -47,13 +47,17 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
         return !newErrors.name
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            setErrors(prev => ({ ...prev, image: 'Please select an image file' }))
+        // Accept common image types including HEIC
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif']
+        const isValidType = validTypes.includes(file.type.toLowerCase()) ||
+            file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|heic|heif)$/i)
+
+        if (!isValidType) {
+            setErrors(prev => ({ ...prev, image: 'Please select a valid image file (JPG, PNG, GIF, WebP, or HEIC)' }))
             return
         }
 
@@ -63,18 +67,71 @@ export function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModa
             return
         }
 
-        // Read file and convert to base64
-        const reader = new FileReader()
-        reader.onload = (event) => {
-            const base64String = event.target?.result as string
+        try {
+            // Convert image to JPEG for compatibility
+            const base64String = await convertImageToJPEG(file)
             setFormData(prev => ({ ...prev, avatar_image: base64String }))
             setPreviewUrl(base64String)
             setErrors(prev => ({ ...prev, image: '' }))
+        } catch (error) {
+            console.error('Error processing image:', error)
+            setErrors(prev => ({ ...prev, image: 'Failed to process image. Please try a different file.' }))
         }
-        reader.onerror = () => {
-            setErrors(prev => ({ ...prev, image: 'Failed to read image file' }))
-        }
-        reader.readAsDataURL(file)
+    }
+
+    const convertImageToJPEG = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+
+            reader.onload = (event) => {
+                const img = new Image()
+                img.onload = () => {
+                    // Create canvas to convert image
+                    const canvas = document.createElement('canvas')
+                    const ctx = canvas.getContext('2d')
+
+                    if (!ctx) {
+                        reject(new Error('Failed to get canvas context'))
+                        return
+                    }
+
+                    // Resize if too large (max 800x800 to keep file size reasonable)
+                    let width = img.width
+                    let height = img.height
+                    const maxSize = 800
+
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = (height / width) * maxSize
+                            width = maxSize
+                        } else {
+                            width = (width / height) * maxSize
+                            height = maxSize
+                        }
+                    }
+
+                    canvas.width = width
+                    canvas.height = height
+
+                    // Draw and convert to JPEG
+                    ctx.drawImage(img, 0, 0, width, height)
+                    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85) // 85% quality
+                    resolve(jpegDataUrl)
+                }
+
+                img.onerror = () => {
+                    reject(new Error('Failed to load image'))
+                }
+
+                img.src = event.target?.result as string
+            }
+
+            reader.onerror = () => {
+                reject(new Error('Failed to read file'))
+            }
+
+            reader.readAsDataURL(file)
+        })
     }
 
     const handleDeleteImage = () => {
