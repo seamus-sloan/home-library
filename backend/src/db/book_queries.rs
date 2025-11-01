@@ -261,7 +261,7 @@ async fn fetch_book_details(
 
     // Get journals for the book with user information
     let journals = sqlx::query(
-        "SELECT je.id, je.title, je.content, je.created_at, u.id as user_id, u.name as user_name, u.color
+        "SELECT je.id, je.title, je.content, je.created_at, je.updated_at, u.id as user_id, u.name as user_name, u.color
          FROM journal_entries je
          INNER JOIN users u ON je.user_id = u.id
          WHERE je.book_id = ?
@@ -278,6 +278,7 @@ async fn fetch_book_details(
             title: row.get("title"),
             content: row.get("content"),
             created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
             user: crate::models::books::JournalUser {
                 id: row.get("user_id"),
                 name: row.get("user_name"),

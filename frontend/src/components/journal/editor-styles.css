@@ -1,0 +1,180 @@
+/* TipTap Editor Styles */
+.ProseMirror {
+  min-height: 150px;
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: rgb(250 204 21 / 0.4); /* amber-400 with opacity */
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Prose styling for rich text content - applies to both editor and rendered content */
+.ProseMirror.prose,
+.prose.journal-content {
+  color: rgb(254 243 199); /* amber-50 */
+}
+
+.ProseMirror.prose p,
+.prose.journal-content p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.ProseMirror.prose p:first-child,
+.prose.journal-content p:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror.prose p:last-child,
+.prose.journal-content p:last-child {
+  margin-bottom: 0;
+}
+
+.ProseMirror.prose strong,
+.prose.journal-content strong {
+  color: rgb(254 243 199); /* amber-50 */
+  font-weight: 600;
+}
+
+.ProseMirror.prose em,
+.prose.journal-content em {
+  font-style: italic;
+}
+
+.ProseMirror.prose code,
+.prose.journal-content code {
+  background-color: rgb(39 39 42); /* zinc-800 */
+  color: rgb(251 191 36); /* amber-400 */
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.ProseMirror.prose pre,
+.prose.journal-content pre {
+  background-color: rgb(39 39 42); /* zinc-800 */
+  color: rgb(254 243 199); /* amber-50 */
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+.ProseMirror.prose pre code,
+.prose.journal-content pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 1em;
+}
+
+.ProseMirror.prose ul,
+.ProseMirror.prose ol,
+.prose.journal-content ul,
+.prose.journal-content ol {
+  padding-left: 1.5rem;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.ProseMirror.prose ul,
+.prose.journal-content ul {
+  list-style-type: disc;
+}
+
+.ProseMirror.prose ol,
+.prose.journal-content ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror.prose li,
+.prose.journal-content li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.ProseMirror.prose blockquote,
+.prose.journal-content blockquote {
+  border-left: 3px solid rgb(251 191 36); /* amber-400 */
+  padding-left: 1rem;
+  font-style: italic;
+  color: rgb(252 211 77); /* amber-300 */
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.ProseMirror.prose h1,
+.ProseMirror.prose h2,
+.ProseMirror.prose h3,
+.ProseMirror.prose h4,
+.ProseMirror.prose h5,
+.ProseMirror.prose h6,
+.prose.journal-content h1,
+.prose.journal-content h2,
+.prose.journal-content h3,
+.prose.journal-content h4,
+.prose.journal-content h5,
+.prose.journal-content h6 {
+  color: rgb(254 243 199); /* amber-50 */
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror.prose h1:first-child,
+.ProseMirror.prose h2:first-child,
+.ProseMirror.prose h3:first-child,
+.ProseMirror.prose h4:first-child,
+.ProseMirror.prose h5:first-child,
+.ProseMirror.prose h6:first-child,
+.prose.journal-content h1:first-child,
+.prose.journal-content h2:first-child,
+.prose.journal-content h3:first-child,
+.prose.journal-content h4:first-child,
+.prose.journal-content h5:first-child,
+.prose.journal-content h6:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror.prose h1,
+.prose.journal-content h1 {
+  font-size: 1.875rem;
+}
+
+.ProseMirror.prose h2,
+.prose.journal-content h2 {
+  font-size: 1.5rem;
+}
+
+.ProseMirror.prose h3,
+.prose.journal-content h3 {
+  font-size: 1.25rem;
+}
+
+.ProseMirror.prose h4,
+.prose.journal-content h4 {
+  font-size: 1.125rem;
+}
+
+.ProseMirror.prose hr,
+.prose.journal-content hr {
+  border: none;
+  border-top: 1px solid rgb(63 63 70); /* zinc-700 */
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.ProseMirror.prose a,
+.prose.journal-content a {
+  color: rgb(251 191 36); /* amber-400 */
+  text-decoration: underline;
+}
+
+.ProseMirror.prose a:hover,
+.prose.journal-content a:hover {
+  color: rgb(252 211 77); /* amber-300 */
+}
