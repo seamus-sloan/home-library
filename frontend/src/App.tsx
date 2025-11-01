@@ -5,6 +5,7 @@ import { BookList } from './components/book/BookList'
 import { BookFormPage } from './components/forms'
 import { Header } from './components/layout/Header'
 import { BookDetails } from './pages/BookDetailsPage'
+import { ListDetailPage } from './pages/ListDetailPage'
 import { ListsPage } from './pages/ListsPage'
 import { LoginPage } from './pages/LoginPage'
 import type { RootState } from './store/store'
@@ -59,10 +60,18 @@ function AppContent() {
             }
           />
           <Route
-            path="/lists"
+            path="/list"
             element={
               <ProtectedRoute>
                 <ListsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/list/:id"
+            element={
+              <ProtectedRoute>
+                <ListDetailPage />
               </ProtectedRoute>
             }
           />

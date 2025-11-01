@@ -21,6 +21,14 @@ pub struct BookInList {
     pub status_name: Option<String>,
 }
 
+// User info to include in list responses
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ListUser {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
 // List with books for GET responses
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ListWithBooks {
@@ -29,6 +37,7 @@ pub struct ListWithBooks {
     pub type_id: i64,
     pub name: String,
     pub books: Vec<BookInList>,
+    pub user: ListUser,
 }
 
 // Request body for creating a list

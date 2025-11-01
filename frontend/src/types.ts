@@ -177,6 +177,7 @@ export interface ListWithBooks {
   type_id: number
   name: string
   books: BookInList[]
+  user: UserProfile
 }
 
 export interface CreateListRequest {
