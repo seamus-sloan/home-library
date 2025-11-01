@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify'
 import { BookIcon, Edit2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -6,6 +7,7 @@ import type { BookJournal } from '../../types'
 import { formatRelativeDate } from '../../utils/dateUtils'
 import { UserAvatar } from '../common/UserAvatar'
 import { JournalForm } from './JournalForm'
+import './editor-styles.css'
 
 interface JournalListProps {
   journals: BookJournal[]
@@ -91,9 +93,10 @@ export function JournalList({ journals, bookId }: JournalListProps) {
                 </button>
               )}
             </div>
-            <p className="text-amber-200 whitespace-pre-wrap pl-11">
-              {journal.content}
-            </p>
+            <div
+              className="text-amber-200 pl-11 prose journal-content prose-amber prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(journal.content) }}
+            />
           </div>
         )
       })}

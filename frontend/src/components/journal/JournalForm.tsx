@@ -1,3 +1,6 @@
+import Placeholder from '@tiptap/extension-placeholder'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 import { XIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -5,6 +8,7 @@ import { useAddJournalEntryMutation, useUpdateJournalEntryMutation } from '../..
 import type { RootState } from '../../store/store'
 import type { JournalEntry } from '../../types'
 import { UserAvatar } from '../common/UserAvatar'
+import './editor-styles.css'
 
 interface JournalFormProps {
   bookId: number
@@ -16,9 +20,6 @@ interface JournalFormProps {
 export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalFormProps) {
   const isEditing = !!journal
 
-  const [formData, setFormData] = useState({
-    content: journal?.content || '',
-  })
   const [errors, setErrors] = useState({
     content: '',
   })
@@ -26,37 +27,39 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
   const [addJournalEntry] = useAddJournalEntryMutation()
   const [updateJournalEntry] = useUpdateJournalEntryMutation()
 
-  // Update form data when journal prop changes
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: 'Write your thoughts about this book...',
+      }),
+    ],
+    content: journal?.content || '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-amber prose-invert max-w-none min-h-[150px] px-3 py-2 focus:outline-none',
+      },
+    },
+  })
+
+  // Update editor content when journal prop changes
   useEffect(() => {
-    if (journal) {
-      setFormData({
-        content: journal.content,
-      })
+    if (journal && editor && !editor.isDestroyed) {
+      editor.commands.setContent(journal.content)
     }
-  }, [journal])
+  }, [journal, editor])
 
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
-    // Clear error when user types
-    if (errors[name as keyof typeof errors]) {
-      setErrors({
-        ...errors,
-        [name]: '',
-      })
-    }
-  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!editor) return
+
+    const html = editor.getHTML()
+    const isEmpty = editor.isEmpty
+
     // Validate form
     const newErrors = {
-      content: formData.content ? '' : 'Journal entry cannot be empty',
+      content: isEmpty ? 'Journal entry cannot be empty' : '',
     }
     setErrors(newErrors)
 
@@ -72,7 +75,7 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
           bookId,
           id: journal.id,
           entry: {
-            content: formData.content,
+            content: html,
           },
         }).unwrap()
       } else {
@@ -82,14 +85,12 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
           entry: {
             user_id: currentUser?.id || null,
             title: "", // Removing title for now
-            content: formData.content,
+            content: html,
           },
         }).unwrap()
       }
 
-      setFormData({
-        content: '',
-      })
+      editor.commands.clearContent()
       onSubmit()
     } catch (error) {
       console.error('Error saving journal entry:', error)
@@ -122,25 +123,10 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
         </button>
       </div>
       <form onSubmit={handleSubmit}>
-        {/* Having a journal title seems superfluous at the moment... */}
-        {/* <div className="mb-4">
-          <textarea
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 min-h-[150px] ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
-            placeholder="Name your journal entry..."
-          />
-          {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
-        </div> */}
         <div className="mb-4">
-          <textarea
-            name="content"
-            value={formData.content}
-            onChange={handleChange}
-            className={`w-full px-3 py-2 bg-zinc-800 border rounded-md text-amber-50 min-h-[150px] ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}
-            placeholder="Write your thoughts about this book..."
-          />
+          <div className={`bg-zinc-800 border rounded-md ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}>
+            <EditorContent editor={editor} />
+          </div>
           {errors.content && <p className="text-red-400 text-sm mt-1">{errors.content}</p>}
         </div>
         <div className="flex justify-end gap-3">
@@ -161,56 +147,4 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
       </form>
     </div>
   )
-
-  // return (
-  //   <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-md">
-  //     <div className="flex justify-between items-center mb-4">
-  //       <h4 className="text-lg font-medium text-white">New Journal Entry</h4>
-  //       <button
-  //         onClick={onCancel}
-  //         className="text-gray-400 hover:text-gray-200"
-  //         aria-label="Close"
-  //       >
-  //         <XIcon size={18} />
-  //       </button>
-  //     </div>
-  //     <form onSubmit={handleSubmit}>
-  //       <div className="mb-4">
-  //         <textarea
-  //           name="title"
-  //           value={formData.title}
-  //           onChange={handleChange}
-  //           className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white min-h-[150px] ${errors.title? 'border-red-500' : 'border-gray-600'}`}
-  //           placeholder="Name your journal entry..."
-  //         />
-  //         {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
-  //       </div>
-  //       <div className="mb-4">
-  //         <textarea
-  //           name="content"
-  //           value={formData.content}
-  //           onChange={handleChange}
-  //           className={`w-full px-3 py-2 bg-gray-700 border rounded-md text-white min-h-[150px] ${errors.content ? 'border-red-500' : 'border-gray-600'}`}
-  //           placeholder="Write your thoughts about this book..."
-  //         />
-  //         {errors.content && <p className="text-red-400 text-sm mt-1">{errors.content}</p>}
-  //       </div>
-  //       <div className="flex justify-end gap-3">
-  //         <button
-  //           type="button"
-  //           onClick={onCancel}
-  //           className="px-4 py-2 border border-gray-600 rounded-md hover:bg-gray-700 transition-colors text-gray-300"
-  //         >
-  //           Cancel
-  //         </button>
-  //         <button
-  //           type="submit"
-  //           className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-  //         >
-  //           Save Entry
-  //         </button>
-  //       </div>
-  //     </form>
-  //   </div>
-  // )
 }
