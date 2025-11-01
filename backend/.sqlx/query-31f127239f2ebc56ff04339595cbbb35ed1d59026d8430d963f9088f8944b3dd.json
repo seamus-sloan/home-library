@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id as \"id!\", name, color\n            FROM users\n            WHERE id = ?\n            ",
+  "query": "\n                SELECT id as \"id!\", name, color, avatar_image\n                FROM users\n                WHERE id = ?\n                ",
   "describe": {
     "columns": [
       {
@@ -17,6 +17,11 @@
         "name": "color",
         "ordinal": 2,
         "type_info": "Text"
+      },
+      {
+        "name": "avatar_image",
+        "ordinal": 3,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -25,8 +30,9 @@
     "nullable": [
       false,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "50e192d01814f014d94db151f303532d1d4b06abd7d210316457b586dd21127e"
+  "hash": "31f127239f2ebc56ff04339595cbbb35ed1d59026d8430d963f9088f8944b3dd"
 }
