@@ -1,0 +1,23 @@
+meta {
+  name: Create List
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/lists
+  body: json
+  auth: none
+}
+
+headers {
+  currentUserId: {{USER_ID}}
+}
+
+body:json {
+  {
+    "type_id": 1,
+    "name": "my list",
+    "books": [1, 4, 7, 10, 44, 55]
+  }
+}
