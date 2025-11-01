@@ -66,11 +66,21 @@ export function LoginPage() {
                         onClick={() => handleUserSelect(user)}
                         className="flex flex-col items-center cursor-pointer group"
                     >
-                        <div
-                            className={`w-32 h-32 rounded-md mb-4 flex items-center justify-center text-white text-4xl font-bold group-hover:ring-4 ring-amber-400 transition-all`}
-                            style={{ backgroundColor: user.color }}
-                        >
-                            {user.name.charAt(0)}
+                        <div className="mb-4 group-hover:ring-4 ring-amber-400 transition-all rounded-lg overflow-hidden">
+                            {user.avatar_image ? (
+                                <img
+                                    src={user.avatar_image}
+                                    alt={user.name}
+                                    className="w-32 h-32 object-cover"
+                                />
+                            ) : (
+                                <div
+                                    className="w-32 h-32 flex items-center justify-center text-white text-4xl font-bold"
+                                    style={{ backgroundColor: user.color }}
+                                >
+                                    {user.name.charAt(0)}
+                                </div>
+                            )}
                         </div>
                         <span className="text-white text-xl group-hover:text-amber-300 transition-colors">
                             {user.name}
