@@ -12,6 +12,21 @@
   pointer-events: none;
 }
 
+/* Image styles */
+.ProseMirror img,
+.prose.journal-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem; /* rounded-md */
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid rgb(251 191 36); /* amber-400 */
+  outline-offset: 2px;
+}
+
 /* Prose styling for rich text content - applies to both editor and rendered content */
 .ProseMirror.prose,
 .prose.journal-content {

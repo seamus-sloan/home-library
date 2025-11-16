@@ -1,5 +1,6 @@
 use axum::{
     Router,
+    extract::DefaultBodyLimit,
     http::StatusCode,
     response::Json,
     routing::{delete, get, post, put},
@@ -64,5 +65,6 @@ pub async fn app(pool: Pool<Sqlite>) -> Router {
         .route("/lists/{id}", get(get_list))
         .route("/lists/{id}", put(update_list))
         .route("/lists/{id}", delete(delete_list))
+        .layer(DefaultBodyLimit::max(10 * 1024 * 1024)) // 10MB limit for images in journal entries
         .with_state(pool)
 }
