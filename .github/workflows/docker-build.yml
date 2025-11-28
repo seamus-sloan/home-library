@@ -1,0 +1,174 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches:
+      - '**'  # Build on all branches
+  pull_request:
+    branches:
+      - main
+
+env:
+  # Future improvement: Replace with your local registry
+  # REGISTRY: registry.local:5000
+  REGISTRY: ghcr.io
+  # Future improvement: Update if using different namespace
+  IMAGE_NAMESPACE: ${{ github.repository_owner }}
+
+jobs:
+  build-backend:
+    name: Build Backend Image
+    # Future improvement: Replace with your k8s runner
+    # runs-on: [self-hosted, k8s]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write  # For GHCR push (when enabled)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Future improvement: Authentication for local registry
+      # - name: Login to Local Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ secrets.REGISTRY_USERNAME }}
+      #     password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      # Currently using GHCR (disabled by default)
+      # Uncomment to push images to GitHub Container Registry
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          # Future improvement: Enable push when registry is ready
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Build args if needed
+          # build-args: |
+          #   BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          #   VCS_REF=${{ github.sha }}
+
+      # Future improvement: Uncomment when ready to push
+      # - name: Push Backend Image
+      #   if: github.event_name != 'pull_request'
+      #   run: |
+      #     docker buildx build \
+      #       --push \
+      #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:latest \
+      #       ./backend
+
+  build-frontend:
+    name: Build Frontend Image
+    # Future improvement: Replace with your k8s runner
+    # runs-on: [self-hosted, k8s]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write  # For GHCR push (when enabled)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Future improvement: Authentication for local registry
+      # - name: Login to Local Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ secrets.REGISTRY_USERNAME }}
+      #     password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      # Currently using GHCR (disabled by default)
+      # Uncomment to push images to GitHub Container Registry
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          # Future improvement: Enable push when registry is ready
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Build args if needed
+          # build-args: |
+          #   BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          #   VCS_REF=${{ github.sha }}
+
+      # Future improvement: Uncomment when ready to push
+      # - name: Push Frontend Image
+      #   if: github.event_name != 'pull_request'
+      #   run: |
+      #     docker buildx build \
+      #       --push \
+      #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:latest \
+      #       ./frontend
+
+  # Future improvement: Add deployment job when using k8s
+  # deploy:
+  #   name: Deploy to Kubernetes
+  #   needs: [build-backend, build-frontend]
+  #   runs-on: [self-hosted, k8s]
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Deploy to k8s
+  #       run: |
+  #         kubectl set image deployment/home-library-backend \
+  #           backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:${{ github.sha }}
+  #         kubectl set image deployment/home-library-frontend \
+  #           frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:${{ github.sha }}
