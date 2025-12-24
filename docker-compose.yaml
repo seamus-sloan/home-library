@@ -42,7 +42,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
       - ./webhook/.env
-    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload
+    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload -template
     networks:
       - home-library-network
     restart: always
