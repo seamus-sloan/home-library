@@ -9,9 +9,15 @@ services:
     volumes:
       # Persist SQLite database
       - ./data:/app/data
+      # Optional: Mount NAS for remote backups
+      # Uncomment the line below and adjust the path to your NAS mount point
+      # - /mnt/nas/path/to/backups:/app/backups-nas
     environment:
       - RUST_LOG=backend=info,sqlx=info
       - DATABASE_FILE=/app/data/library.db
+      # Optional: Enable NAS backups by setting NAS_BACKUP_DIR
+      # Uncomment the line below if you mounted a NAS volume above
+      # - NAS_BACKUP_DIR=/app/backups-nas
     networks:
       - home-library-network
     restart: always
