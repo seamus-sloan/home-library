@@ -21,19 +21,11 @@ if [ -f "$DB_FILE" ]; then
 
         # Copy to NAS if NAS_BACKUP_DIR is set
         if [ -n "$NAS_BACKUP_DIR" ]; then
-            NAS_BACKUP_FILE="$NAS_BACKUP_DIR/backup-$TIMESTAMP.db"
-            echo "$(date): Copying backup to NAS: $NAS_BACKUP_FILE"
-
-            # Ensure NAS backup directory exists
             mkdir -p "$NAS_BACKUP_DIR" 2>/dev/null || true
-
-            # Copy to NAS
-            cp "$BACKUP_FILE" "$NAS_BACKUP_FILE"
-
-            if [ $? -eq 0 ] && [ -f "$NAS_BACKUP_FILE" ]; then
-                echo "$(date): NAS backup successful: $NAS_BACKUP_FILE ($(du -h "$NAS_BACKUP_FILE" | cut -f1))"
+            if cp "$BACKUP_FILE" "$NAS_BACKUP_DIR/"; then
+                echo "$(date): NAS backup successful: $NAS_BACKUP_DIR/backup-$TIMESTAMP.db"
             else
-                echo "$(date): NAS backup failed (non-critical - local backup exists)" >&2
+                echo "$(date): NAS backup failed (non-critical)" >&2
             fi
         fi
 

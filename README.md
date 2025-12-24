@@ -81,79 +81,27 @@ If you prefer using Docker for development:
 
 **Note**: The Docker setup persists your SQLite database in the `./data` directory, so your data will survive container restarts.
 
-## 💾 Backup Configuration
+## 💾 Backups
 
-The application automatically creates daily backups at 12PM UTC via a cron job running inside the backend container.
+Daily backups run automatically at 12PM UTC. Local backups are stored in `./data/backups/` (retains 7 most recent).
 
-### Local Backups (Default)
+### Optional NAS Backups
 
-By default, backups are stored in `./data/backups/` on the host system. The backup system:
-- Creates timestamped backups (format: `backup-YYYYMMDD-HHMMSS.db`)
-- Retains the 7 most recent backups
-- Automatically deletes older backups to save space
+To copy backups to a NAS:
 
-### NAS/Remote Backups (Optional)
-
-To enable automatic backups to remote storage (NAS, network drive, cloud mount, etc.):
-
-1. **Mount your NAS on the host system**
-   ```bash
-   # Example for NFS mount
-   sudo mount -t nfs 192.168.1.3:/volume1/shared /mnt/nas
-
-   # Or for CIFS/SMB mount
-   sudo mount -t cifs //192.168.1.3/shared /mnt/nas -o credentials=/root/.credentials/nas-credentials
-   ```
-
-2. **Update `docker-compose.yml`**
-
-   Uncomment and adjust the NAS volume mount:
+1. Mount your NAS on the host (e.g., `/mnt/nas`)
+2. Update `docker-compose.yml`:
    ```yaml
    volumes:
-     - ./data:/app/data
-     - /mnt/nas/path/to/backups:/app/backups-nas  # Uncomment and adjust path
-   ```
-
-3. **Enable NAS backups via environment variable**
-
-   Uncomment the environment variable:
-   ```yaml
+     - /mnt/nas/path/to/backups:/app/backups-nas
    environment:
-     - NAS_BACKUP_DIR=/app/backups-nas  # Uncomment this line
+     - NAS_BACKUP_DIR=/app/backups-nas
    ```
+3. Restart: `docker-compose up -d`
 
-4. **Restart the containers**
-   ```bash
-   docker-compose down
-   docker-compose up -d
-   ```
+**Note:** Don't mount NAS directly to `/app/data/backups` - SQLite requires local filesystem for reliable backups.
 
-### Important Notes
-
-- **Do NOT mount the NAS directly to `/app/data` or `/app/data/backups`** - SQLite requires local filesystem access for reliable operations. Network filesystems will cause "database is locked" errors.
-- **NAS backups are non-critical** - If the NAS copy fails, the local backup will still succeed and the application will continue running.
-- **Backup retention** - Only local backups are cleaned up automatically. You may want to implement your own retention policy for NAS backups.
-
-### Manual Backup Testing
-
-To manually trigger a backup:
-```bash
-docker exec home-library-backend /app/backup.sh
-```
-
-Check backup logs:
-```bash
-docker exec home-library-backend tail -f /var/log/backup.log
-```
-
-List current backups:
-```bash
-# Local backups
-ls -lh ./data/backups/
-
-# NAS backups (if configured)
-ls -lh /mnt/nas/path/to/backups/
-```
+Manual backup: `docker exec home-library-backend /app/backup.sh`
 
 ## 🥧 Deploying to Raspberry Pi
 
