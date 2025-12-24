@@ -5,19 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: home-library-backend
     ports:
-      - "3000:3000"
+      - "3003:3000"
     volumes:
-      # Persist SQLite database
       - ./data:/app/data
-      # Optional: Mount NAS as backup destination
-      # Uncomment and adjust the path to store backups on NAS
-      # - /mnt/nas/path/to/backups:/app/backups
+      - /mnt/nas/home-lab/library/backups:/app/backups
     environment:
       - RUST_LOG=backend=info,sqlx=info
       - DATABASE_FILE=/app/data/library.db
-      # Optional: Set custom backup location (defaults to /app/data/backups)
-      # Uncomment to store backups on NAS (must match volume mount above)
-      # - BACKUP_DIR=/app/backups
+      - BACKUP_DIR=/app/backups
     networks:
       - home-library-network
     restart: always
@@ -28,9 +23,26 @@ services:
       dockerfile: Dockerfile
     container_name: home-library-frontend
     ports:
-      - "80:80"
+      - "3002:80"
     depends_on:
       - backend
+    networks:
+      - home-library-network
+    restart: always
+
+  webhook:
+    image: almir/webhook:latest
+    container_name: home-library-webhook
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./webhook/hooks.json:/etc/webhook/hooks.json:ro
+      - ./webhook/deploy.sh:/app/deploy.sh:ro
+      - .:/repo
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./webhook/.env
+    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload
     networks:
       - home-library-network
     restart: always
@@ -38,7 +50,3 @@ services:
 networks:
   home-library-network:
     driver: bridge
-
-volumes:
-  home-library-data:
-    driver: local
