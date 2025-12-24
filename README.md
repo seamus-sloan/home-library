@@ -83,23 +83,17 @@ If you prefer using Docker for development:
 
 ## 💾 Backups
 
-Daily backups run automatically at 12PM UTC. Local backups are stored in `./data/backups/` (retains 7 most recent).
+Daily backups run automatically at 12PM UTC. By default, backups are stored in `./data/backups/` (retains 7 most recent).
 
-### Optional NAS Backups
+### NAS Backups
 
-To copy backups to a NAS:
-
-1. Mount your NAS on the host (e.g., `/mnt/nas`)
-2. Update `docker-compose.yml`:
-   ```yaml
-   volumes:
-     - /mnt/nas/path/to/backups:/app/backups-nas
-   environment:
-     - NAS_BACKUP_DIR=/app/backups-nas
-   ```
-3. Restart: `docker-compose up -d`
-
-**Note:** Don't mount NAS directly to `/app/data/backups` - SQLite requires local filesystem for reliable backups.
+To store backups on a NAS, update `docker-compose.yml`:
+```yaml
+volumes:
+  - /mnt/nas/path/to/backups:/app/backups
+environment:
+  - BACKUP_DIR=/app/backups
+```
 
 Manual backup: `docker exec home-library-backend /app/backup.sh`
 

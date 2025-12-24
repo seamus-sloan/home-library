@@ -4,35 +4,32 @@
 # This script creates timestamped backups of the SQLite database
 
 DB_FILE="${DATABASE_FILE:-/app/data/library.db}"
-BACKUP_DIR="/app/data/backups"
+BACKUP_DIR="${BACKUP_DIR:-/app/data/backups}"
 TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-BACKUP_FILE="$BACKUP_DIR/backup-$TIMESTAMP.db"
+TEMP_BACKUP="/app/data/backup-$TIMESTAMP.db"
+FINAL_BACKUP="$BACKUP_DIR/backup-$TIMESTAMP.db"
 
-# Create backup directory if it doesn't exist
-mkdir -p "$BACKUP_DIR"
-
-# Create backup using sqlite3
+# Create backup next to database (always local filesystem for SQLite reliability)
 if [ -f "$DB_FILE" ]; then
-    echo "$(date): Creating backup of $DB_FILE to $BACKUP_FILE"
-    sqlite3 "$DB_FILE" ".backup $BACKUP_FILE"
-    
-    if [ $? -eq 0 ] && [ -f "$BACKUP_FILE" ] && [ -s "$BACKUP_FILE" ]; then
-        echo "$(date): Backup successful: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+    echo "$(date): Creating backup of $DB_FILE"
+    sqlite3 "$DB_FILE" ".backup $TEMP_BACKUP"
 
-        # Copy to NAS if NAS_BACKUP_DIR is set
-        if [ -n "$NAS_BACKUP_DIR" ]; then
-            mkdir -p "$NAS_BACKUP_DIR" 2>/dev/null || true
-            if cp "$BACKUP_FILE" "$NAS_BACKUP_DIR/"; then
-                echo "$(date): NAS backup successful: $NAS_BACKUP_DIR/backup-$TIMESTAMP.db"
-            else
-                echo "$(date): NAS backup failed (non-critical)" >&2
-            fi
+    if [ $? -eq 0 ] && [ -f "$TEMP_BACKUP" ] && [ -s "$TEMP_BACKUP" ]; then
+        echo "$(date): Backup created: $TEMP_BACKUP ($(du -h "$TEMP_BACKUP" | cut -f1))"
+
+        # Move backup to destination directory
+        mkdir -p "$BACKUP_DIR"
+        if mv "$TEMP_BACKUP" "$FINAL_BACKUP"; then
+            echo "$(date): Backup moved to: $FINAL_BACKUP"
+        else
+            echo "$(date): Failed to move backup to $BACKUP_DIR" >&2
+            exit 1
         fi
 
         # Count total backups after successful backup
         TOTAL_BACKUPS=$(find "$BACKUP_DIR" -name "backup-*.db" | wc -l)
         echo "$(date): Total backups: $TOTAL_BACKUPS"
-        
+
         # If we have 8 backups, delete the oldest one
         if [ "$TOTAL_BACKUPS" -ge 8 ]; then
             OLDEST_BACKUP=$(find "$BACKUP_DIR" -name "backup-*.db" -type f -printf '%T+ %p\n' | sort | head -n1 | cut -d' ' -f2-)
@@ -47,6 +44,7 @@ if [ -f "$DB_FILE" ]; then
         fi
     else
         echo "$(date): Backup failed!" >&2
+        rm -f "$TEMP_BACKUP"
         exit 1
     fi
 else
