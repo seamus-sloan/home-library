@@ -81,6 +81,22 @@ If you prefer using Docker for development:
 
 **Note**: The Docker setup persists your SQLite database in the `./data` directory, so your data will survive container restarts.
 
+## 💾 Backups
+
+Daily backups run automatically at 12PM UTC. By default, backups are stored in `./data/backups/` (retains 7 most recent).
+
+### NAS Backups
+
+To store backups on a NAS, update `docker-compose.yml`:
+```yaml
+volumes:
+  - /mnt/nas/path/to/backups:/app/backups
+environment:
+  - BACKUP_DIR=/app/backups
+```
+
+Manual backup: `docker exec home-library-backend /app/backup.sh`
+
 ## 🥧 Deploying to Raspberry Pi
 
 ### Option 1: Manual Deployment
