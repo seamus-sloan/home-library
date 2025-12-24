@@ -1,7 +1,7 @@
 [
   {
     "id": "deploy-home-library",
-    "execute-command": "/webhook/deploy.sh",
+    "execute-command": "/app/deploy.sh",
     "command-working-directory": "{{ getenv `WEBHOOK_WORKING_DIR` }}",
     "response-message": "Deployment triggered",
     "trigger-rule": {

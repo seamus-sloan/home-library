@@ -31,7 +31,9 @@ services:
     restart: always
 
   webhook:
-    image: almir/webhook:latest
+    build:
+      context: ./webhook
+      dockerfile: Dockerfile
     container_name: home-library-webhook
     ports:
       - "9000:9000"
