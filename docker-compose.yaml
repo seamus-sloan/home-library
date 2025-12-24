@@ -45,6 +45,8 @@ services:
     env_file:
       - ./webhook/.env
     command: -verbose -hooks=/etc/webhook/hooks.json -hotreload -template
+    group_add:
+      - "990"
     networks:
       - home-library-network
     restart: always
