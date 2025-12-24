@@ -30,27 +30,6 @@ services:
       - home-library-network
     restart: always
 
-  webhook:
-    build:
-      context: ./webhook
-      dockerfile: Dockerfile
-    container_name: home-library-webhook
-    ports:
-      - "9000:9000"
-    volumes:
-      - ./webhook/hooks.json:/etc/webhook/hooks.json:ro
-      - ./webhook/deploy.sh:/app/deploy.sh:ro
-      - .:/repo
-      - /var/run/docker.sock:/var/run/docker.sock
-    env_file:
-      - ./webhook/.env
-    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload -template
-    group_add:
-      - "990"
-    networks:
-      - home-library-network
-    restart: always
-
 networks:
   home-library-network:
     driver: bridge
