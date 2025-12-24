@@ -58,7 +58,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build Backend Image
@@ -128,7 +128,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build Frontend Image
