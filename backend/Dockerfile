@@ -9,12 +9,14 @@ RUN cargo install sqlx-cli --no-default-features --features sqlite
 # Copy manifests first for better layer caching
 COPY Cargo.toml Cargo.lock ./
 
-# Create src directory and a dummy main.rs to build dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
+# Create src directory and dummy files to build dependencies
+RUN mkdir -p src/bin && \
+    echo "fn main() {}" > src/main.rs && \
+    echo "fn main() {}" > src/bin/reset-e2e-db.rs
 
 # Build dependencies
 RUN cargo build --release
-RUN rm src/main.rs
+RUN rm src/main.rs src/bin/reset-e2e-db.rs
 
 # Now copy the actual source code
 COPY src ./src
