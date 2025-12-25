@@ -1,7 +1,8 @@
 name: PR Checks
 on:
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
 
 jobs:
   # Build backend once and cache for other jobs
