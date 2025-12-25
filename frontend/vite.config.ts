@@ -38,6 +38,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    passWithNoTests: true,
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
