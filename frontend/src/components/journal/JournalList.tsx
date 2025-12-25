@@ -31,7 +31,7 @@ export function JournalList({ journals, bookId }: JournalListProps) {
 
   return (
     <div className="space-y-4">
-      {journals.map((journal) => {
+      {journals.map(journal => {
         const isEditing = editingJournalId === journal.id
         const canEdit = currentUser?.id === journal.user.id
         const wasEdited = journal.created_at !== journal.updated_at
@@ -79,7 +79,10 @@ export function JournalList({ journals, bookId }: JournalListProps) {
                   <div className="text-xs text-amber-400">
                     Created {formatRelativeDate(journal.created_at, true)}
                     {wasEdited && (
-                      <> | Edited {formatRelativeDate(journal.updated_at, true)}</>
+                      <>
+                        {' '}
+                        | Edited {formatRelativeDate(journal.updated_at, true)}
+                      </>
                     )}
                   </div>
                 </div>
@@ -96,7 +99,9 @@ export function JournalList({ journals, bookId }: JournalListProps) {
             </div>
             <div
               className="text-amber-200 pl-11 prose journal-content prose-amber prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(journal.content) }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(journal.content),
+              }}
             />
           </div>
         )

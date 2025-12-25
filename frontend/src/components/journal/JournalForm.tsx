@@ -5,7 +5,10 @@ import StarterKit from '@tiptap/starter-kit'
 import { ImageIcon, XIcon } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useAddJournalEntryMutation, useUpdateJournalEntryMutation } from '../../middleware/backend'
+import {
+  useAddJournalEntryMutation,
+  useUpdateJournalEntryMutation,
+} from '../../middleware/backend'
 import type { RootState } from '../../store/store'
 import type { JournalEntry } from '../../types'
 import { UserAvatar } from '../common/UserAvatar'
@@ -18,7 +21,12 @@ interface JournalFormProps {
   onCancel: () => void
 }
 
-export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalFormProps) {
+export function JournalForm({
+  bookId,
+  journal,
+  onSubmit,
+  onCancel,
+}: JournalFormProps) {
   const isEditing = !!journal
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -46,7 +54,8 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
     content: journal?.content || '',
     editorProps: {
       attributes: {
-        class: 'prose prose-amber prose-invert max-w-none min-h-[150px] px-3 py-2 focus:outline-none',
+        class:
+          'prose prose-amber prose-invert max-w-none min-h-[150px] px-3 py-2 focus:outline-none',
       },
     },
   })
@@ -64,7 +73,9 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
 
     // Check if file is an image
     if (!file.type.startsWith('image/')) {
-      setErrors({ content: 'Please select an image file (JPG, PNG, GIF, etc.)' })
+      setErrors({
+        content: 'Please select an image file (JPG, PNG, GIF, etc.)',
+      })
       return
     }
 
@@ -76,7 +87,7 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
 
     // Convert to base64 and insert into editor
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = e => {
       const base64 = e.target?.result as string
       editor.chain().focus().setImage({ src: base64 }).run()
     }
@@ -123,7 +134,7 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
           bookId,
           entry: {
             user_id: currentUser?.id || null,
-            title: "", // Title field is not currently used
+            title: '', // Title field is not currently used
             content: html,
           },
         }).unwrap()
@@ -134,7 +145,10 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
     } catch (error) {
       console.error('Error saving journal entry:', error)
       setErrors({
-        content: error instanceof Error ? error.message : 'Failed to save journal entry',
+        content:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save journal entry',
       })
     }
   }
@@ -144,12 +158,15 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 shadow-md">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
-          <UserAvatar user={{
-            id: currentUser.id,
-            name: currentUser.name,
-            color: currentUser.color,
-            avatar_image: currentUser.avatar_image
-          }} size="sm" />
+          <UserAvatar
+            user={{
+              id: currentUser.id,
+              name: currentUser.name,
+              color: currentUser.color,
+              avatar_image: currentUser.avatar_image,
+            }}
+            size="sm"
+          />
           <h4 className="text-lg font-medium text-amber-50">
             {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
           </h4>
@@ -164,10 +181,14 @@ export function JournalForm({ bookId, journal, onSubmit, onCancel }: JournalForm
       </div>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <div className={`bg-zinc-900 border rounded-md ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}>
+          <div
+            className={`bg-zinc-900 border rounded-md ${errors.content ? 'border-red-500' : 'border-zinc-700'}`}
+          >
             <EditorContent editor={editor} />
           </div>
-          {errors.content && <p className="text-red-400 text-sm mt-1">{errors.content}</p>}
+          {errors.content && (
+            <p className="text-red-400 text-sm mt-1">{errors.content}</p>
+          )}
         </div>
         <div className="flex justify-between items-center gap-3">
           <div className="flex items-center gap-2">

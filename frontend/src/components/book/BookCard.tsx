@@ -65,7 +65,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
       <div
         className={`cursor-pointer group relative rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)] transition-colors duration-300`}
         style={{
-          background: backgroundColor
+          background: backgroundColor,
         }}
         onClick={onClick}
       >
@@ -89,7 +89,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
                 alt={`${book.title} cover`}
                 className="relative max-h-full max-w-full h-auto w-auto object-contain group-hover:scale-105 transition-all duration-300 ease-out rounded"
                 style={{
-                  transition: 'transform 0.2s ease-out'
+                  transition: 'transform 0.2s ease-out',
                 }}
                 onError={e => {
                   const target = e.target as HTMLImageElement
@@ -121,7 +121,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
         isOpen={isDeleteDialogOpen}
         title="Delete Book"
         message={`Are you sure you want to delete "${book.title}"? This action cannot be undone.`}
-        confirmText={isDeleting ? "Deleting..." : "Delete"}
+        confirmText={isDeleting ? 'Deleting...' : 'Delete'}
         cancelText="Cancel"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}

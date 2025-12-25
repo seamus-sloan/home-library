@@ -12,7 +12,7 @@ export interface Book {
 
 export interface JournalEntry {
   user_id: number | null
-  id: number 
+  id: number
   book_id: number
   title: string
   content: string
@@ -39,12 +39,12 @@ export interface Genre {
 }
 
 export interface User {
-  id: number,
-  name: string,
-  color: string,
-  avatar_image?: string | null,
-  created_at: string,
-  updated_at: string,
+  id: number
+  name: string
+  color: string
+  avatar_image?: string | null
+  created_at: string
+  updated_at: string
 }
 
 // Simplified user for avatars and display
@@ -109,7 +109,8 @@ export const ReadingStatus = {
   DNF: 99,
 } as const
 
-export type ReadingStatusValue = typeof ReadingStatus[keyof typeof ReadingStatus]
+export type ReadingStatusValue =
+  (typeof ReadingStatus)[keyof typeof ReadingStatus]
 
 export const ReadingStatusLabels: Record<ReadingStatusValue, string> = {
   [ReadingStatus.UNREAD]: 'Unread',

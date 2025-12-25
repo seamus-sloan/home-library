@@ -20,33 +20,39 @@ export function useScrollRestoration() {
       const restoreScroll = () => {
         const maxAttempts = 10
         let attempts = 0
-        
+
         const tryRestore = () => {
           attempts++
           // Check if page has content (document height > window height typically means content loaded)
-          if (document.body.scrollHeight > window.innerHeight || attempts >= maxAttempts) {
+          if (
+            document.body.scrollHeight > window.innerHeight ||
+            attempts >= maxAttempts
+          ) {
             window.scrollTo(0, location.state.scrollPosition)
           } else {
             // Try again in 50ms
             setTimeout(tryRestore, 50)
           }
         }
-        
+
         tryRestore()
       }
-      
+
       // Start trying to restore after a small delay
       setTimeout(restoreScroll, 100)
     }
   }, [routeKey, location.state?.scrollPosition])
 
   // Function to navigate while storing current scroll position
-  const navigateWithScrollState = (to: string, options?: { replace?: boolean }) => {
+  const navigateWithScrollState = (
+    to: string,
+    options?: { replace?: boolean }
+  ) => {
     const currentScrollPosition = window.scrollY
-    
+
     navigate(to, {
       ...options,
-      state: { scrollPosition: currentScrollPosition }
+      state: { scrollPosition: currentScrollPosition },
     })
   }
 

@@ -1,4 +1,4 @@
-import type { UserProfile } from "../../types"
+import type { UserProfile } from '../../types'
 
 interface UserAvatarProps {
   user: UserProfile

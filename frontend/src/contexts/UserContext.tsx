@@ -15,8 +15,8 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType>({
   currentUser: null,
-  setCurrentUser: () => { },
-  logout: () => { },
+  setCurrentUser: () => {},
+  logout: () => {},
 })
 
 export const useUser = () => useContext(UserContext)

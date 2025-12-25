@@ -1,70 +1,80 @@
 import { useState } from 'react'
-import { useAddGenreMutation, useGetGenresQuery, useUpdateGenreMutation } from '../../middleware/backend'
+import {
+  useAddGenreMutation,
+  useGetGenresQuery,
+  useUpdateGenreMutation,
+} from '../../middleware/backend'
 import type { Genre } from '../../types'
 import { CategorySearch } from './CategorySearch'
 
 interface GenreSearchProps {
-    selectedGenres: Genre[]
-    onGenresChange: (genres: Genre[]) => void
-    placeholder?: string
-    className?: string
-    multiple?: boolean
+  selectedGenres: Genre[]
+  onGenresChange: (genres: Genre[]) => void
+  placeholder?: string
+  className?: string
+  multiple?: boolean
 }
 
 export function GenreSearch({
-    selectedGenres,
-    onGenresChange,
-    placeholder = "Search for genres...",
-    className = "",
-    multiple = true
+  selectedGenres,
+  onGenresChange,
+  placeholder = 'Search for genres...',
+  className = '',
+  multiple = true,
 }: GenreSearchProps) {
-    const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
-    // Use RTK Query to fetch genres
-    const {
-        data: availableGenres = [],
-        isLoading
-    } = useGetGenresQuery(searchTerm.trim() ? { name: searchTerm.trim() } : undefined)
+  // Use RTK Query to fetch genres
+  const { data: availableGenres = [], isLoading } = useGetGenresQuery(
+    searchTerm.trim() ? { name: searchTerm.trim() } : undefined
+  )
 
-    // Use RTK Query mutation for creating genres
-    const [addGenre, { isLoading: isCreatingGenre }] = useAddGenreMutation()
+  // Use RTK Query mutation for creating genres
+  const [addGenre, { isLoading: isCreatingGenre }] = useAddGenreMutation()
 
-    // Use RTK Query mutation for updating genres
-    const [updateGenre] = useUpdateGenreMutation()
+  // Use RTK Query mutation for updating genres
+  const [updateGenre] = useUpdateGenreMutation()
 
-    const handleCreateGenre = async (name: string, color: string): Promise<Genre> => {
-        const result = await addGenre({
-            name,
-            color
-        }).unwrap()
-        return result
-    }
+  const handleCreateGenre = async (
+    name: string,
+    color: string
+  ): Promise<Genre> => {
+    const result = await addGenre({
+      name,
+      color,
+    }).unwrap()
+    return result
+  }
 
-    const handleEditGenre = async (id: number, name: string, color: string): Promise<void> => {
-        await updateGenre({ id, genre: { name, color } }).unwrap()
+  const handleEditGenre = async (
+    id: number,
+    name: string,
+    color: string
+  ): Promise<void> => {
+    await updateGenre({ id, genre: { name, color } }).unwrap()
 
-        // Update the selected genres with the new data
-        const updatedGenres = selectedGenres.map(genre =>
-            genre.id === id ? { ...genre, name, color } : genre
-        )
-        onGenresChange(updatedGenres)
-    }
-
-    return (
-        <CategorySearch<Genre>
-            selectedItems={selectedGenres}
-            onItemsChange={onGenresChange}
-            availableItems={availableGenres}
-            isLoading={isLoading}
-            onCreateItem={handleCreateGenre}
-            isCreating={isCreatingGenre}
-            placeholder={placeholder}
-            className={className}
-            multiple={multiple}
-            categoryType="genre"
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            onEditItem={handleEditGenre}
-        />
+    // Update the selected genres with the new data
+    const updatedGenres = selectedGenres.map(genre =>
+      genre.id === id ? { ...genre, name, color } : genre
     )
+    onGenresChange(updatedGenres)
+  }
+
+  return (
+    <CategorySearch<Genre>
+      selectedItems={selectedGenres}
+      onItemsChange={onGenresChange}
+      availableItems={availableGenres}
+      isLoading={isLoading}
+      onCreateItem={handleCreateGenre}
+      isCreating={isCreatingGenre}
+      placeholder={placeholder}
+      className={className}
+      multiple={multiple}
+      categoryType="genre"
+      searchTerm={searchTerm}
+      onSearchTermChange={setSearchTerm}
+      onEditItem={handleEditGenre}
+    />
+  )
 }

@@ -1,48 +1,76 @@
 // import the correct RootState type from your store
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { User } from "../contexts/UserContext"
+import type { User } from '../contexts/UserContext'
 import type { RootState } from '../store/store'
-import type { Book, BookWithDetails, CreateBookRequest, CreateListRequest, Genre, JournalEntry, ListWithBooks, Tag, UpdateBookRequest, UpdateListRequest } from "../types"
+import type {
+  Book,
+  BookWithDetails,
+  CreateBookRequest,
+  CreateListRequest,
+  Genre,
+  JournalEntry,
+  ListWithBooks,
+  Tag,
+  UpdateBookRequest,
+  UpdateListRequest,
+} from '../types'
 
 // Define our API slice
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: '/',
-    prepareHeaders: (headers, {getState}) => {
-        const state = getState() as RootState
-        const currentUserId = state.user?.currentUser?.id
-        if (currentUserId) {
-          headers.set('currentUserId', currentUserId.toString())
-        }
+    prepareHeaders: (headers, { getState }) => {
+      const state = getState() as RootState
+      const currentUserId = state.user?.currentUser?.id
+      if (currentUserId) {
+        headers.set('currentUserId', currentUserId.toString())
+      }
       // Set content type
       headers.set('Content-Type', 'application/json')
-      
+
       return headers
     },
   }),
-  tagTypes: ['Book', 'JournalEntry', 'Tag', 'Genre', 'User', 'Rating', 'Status', 'List'],
-  endpoints: (builder) => ({
+  tagTypes: [
+    'Book',
+    'JournalEntry',
+    'Tag',
+    'Genre',
+    'User',
+    'Rating',
+    'Status',
+    'List',
+  ],
+  endpoints: builder => ({
     // #region Book Endpoints
     getBooks: builder.query<BookWithDetails[], { search?: string } | void>({
-      query: (params) => {
-        const search = params && typeof params === 'object' && 'search' in params ? params.search : undefined
+      query: params => {
+        const search =
+          params && typeof params === 'object' && 'search' in params
+            ? params.search
+            : undefined
         return search ? `/books?search=${encodeURIComponent(search)}` : '/books'
       },
       providesTags: (_result, _error, params) => {
-        const search = params && typeof params === 'object' && 'search' in params ? params.search : undefined
-        return search ? [{ type: 'Book', id: `search-${search}` }] : [{ type: 'Book', id: 'all' }]
+        const search =
+          params && typeof params === 'object' && 'search' in params
+            ? params.search
+            : undefined
+        return search
+          ? [{ type: 'Book', id: `search-${search}` }]
+          : [{ type: 'Book', id: 'all' }]
       },
       keepUnusedDataFor: 0, // Don't cache unused data
     }),
-    
+
     getBook: builder.query<BookWithDetails, string>({
-      query: (id) => `/books/${id}`,
+      query: id => `/books/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Book', id }],
     }),
-    
+
     addBook: builder.mutation<Book, CreateBookRequest>({
-      query: (book) => ({
+      query: book => ({
         url: '/books',
         method: 'POST',
         body: book,
@@ -50,7 +78,10 @@ export const api = createApi({
       invalidatesTags: ['Book'],
     }),
 
-    updateBook: builder.mutation<BookWithDetails, { id: number; book: UpdateBookRequest }>({
+    updateBook: builder.mutation<
+      BookWithDetails,
+      { id: number; book: UpdateBookRequest }
+    >({
       query: ({ id, book }) => ({
         url: `/books/${id}`,
         method: 'PUT',
@@ -59,26 +90,26 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Book', id: id.toString() },
         { type: 'Book', id: 'all' },
-        'Book'
+        'Book',
       ],
     }),
 
     deleteBook: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/books/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, id) => [
         { type: 'Book', id: id.toString() },
         { type: 'Book', id: 'all' },
-        'Book'
+        'Book',
       ],
     }),
     //#endregion
 
     //#region Journal Endpoints
     getBookJournals: builder.query<JournalEntry[], number>({
-      query: (bookId) => `/books/${bookId}/journals`,
+      query: bookId => `/books/${bookId}/journals`,
       providesTags: (_result, _error, bookId) => [
         { type: 'JournalEntry', id: `book-${bookId}` },
       ],
@@ -90,14 +121,20 @@ export const api = createApi({
     }),
 
     getJournal: builder.query<JournalEntry, number>({
-      query: (id) => `/journals/${id}`,
+      query: id => `/journals/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'JournalEntry', id }],
     }),
 
-    addJournalEntry: builder.mutation<JournalEntry, { 
-      bookId: number; 
-      entry: Omit<JournalEntry, 'id' | 'book_id' | 'created_at' | 'updated_at'>; 
-    }>({
+    addJournalEntry: builder.mutation<
+      JournalEntry,
+      {
+        bookId: number
+        entry: Omit<
+          JournalEntry,
+          'id' | 'book_id' | 'created_at' | 'updated_at'
+        >
+      }
+    >({
       query: ({ bookId, entry }) => ({
         url: `/books/${bookId}/journals`,
         method: 'POST',
@@ -110,11 +147,19 @@ export const api = createApi({
       ],
     }),
 
-    updateJournalEntry: builder.mutation<JournalEntry, { 
-      bookId: number;
-      id: number; 
-      entry: Partial<Omit<JournalEntry, 'id' | 'book_id' | 'user_id' | 'created_at' | 'updated_at'>>; 
-    }>({
+    updateJournalEntry: builder.mutation<
+      JournalEntry,
+      {
+        bookId: number
+        id: number
+        entry: Partial<
+          Omit<
+            JournalEntry,
+            'id' | 'book_id' | 'user_id' | 'created_at' | 'updated_at'
+          >
+        >
+      }
+    >({
       query: ({ bookId, id, entry }) => ({
         url: `/books/${bookId}/journals/${id}`,
         method: 'PUT',
@@ -131,20 +176,23 @@ export const api = createApi({
 
     //#region Tag Endpoints
     getTags: builder.query<Tag[], { name?: string } | void>({
-      query: (params) => {
-        const name = params && typeof params === 'object' && 'name' in params ? params.name : undefined
+      query: params => {
+        const name =
+          params && typeof params === 'object' && 'name' in params
+            ? params.name
+            : undefined
         return name ? `/tags?name=${encodeURIComponent(name)}` : '/tags'
       },
       providesTags: ['Tag'],
     }),
 
     getTag: builder.query<Tag, number>({
-      query: (id) => `/tags/${id}`,
+      query: id => `/tags/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Tag', id }],
     }),
 
     addTag: builder.mutation<Tag, { name: string; color: string }>({
-      query: (tag) => ({
+      query: tag => ({
         url: '/tags',
         method: 'POST',
         body: tag,
@@ -152,20 +200,26 @@ export const api = createApi({
       invalidatesTags: ['Tag'],
     }),
 
-    updateTag: builder.mutation<Tag, { 
-      id: number; 
-      tag: { name: string; color: string }; 
-    }>({
+    updateTag: builder.mutation<
+      Tag,
+      {
+        id: number
+        tag: { name: string; color: string }
+      }
+    >({
       query: ({ id, tag }) => ({
         url: `/tags/${id}`,
         method: 'PUT',
         body: tag,
       }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: 'Tag', id }, 'Tag'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Tag', id },
+        'Tag',
+      ],
     }),
 
     deleteTag: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/tags/${id}`,
         method: 'DELETE',
       }),
@@ -175,20 +229,23 @@ export const api = createApi({
 
     //#region Genre Endpoints
     getGenres: builder.query<Genre[], { name?: string } | void>({
-      query: (params) => {
-        const name = params && typeof params === 'object' && 'name' in params ? params.name : undefined
+      query: params => {
+        const name =
+          params && typeof params === 'object' && 'name' in params
+            ? params.name
+            : undefined
         return name ? `/genres?name=${encodeURIComponent(name)}` : '/genres'
       },
       providesTags: ['Genre'],
     }),
 
     getGenre: builder.query<Genre, number>({
-      query: (id) => `/genres/${id}`,
+      query: id => `/genres/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Genre', id }],
     }),
 
     addGenre: builder.mutation<Genre, { name: string; color: string }>({
-      query: (genre) => ({
+      query: genre => ({
         url: '/genres',
         method: 'POST',
         body: genre,
@@ -196,24 +253,33 @@ export const api = createApi({
       invalidatesTags: ['Genre'],
     }),
 
-    updateGenre: builder.mutation<Genre, { 
-      id: number; 
-      genre: { name: string; color: string }; 
-    }>({
+    updateGenre: builder.mutation<
+      Genre,
+      {
+        id: number
+        genre: { name: string; color: string }
+      }
+    >({
       query: ({ id, genre }) => ({
         url: `/genres/${id}`,
         method: 'PUT',
         body: genre,
       }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: 'Genre', id }, 'Genre'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Genre', id },
+        'Genre',
+      ],
     }),
 
     deleteGenre: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/genres/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_result, _error, id) => [{ type: 'Genre', id }, 'Genre'],
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Genre', id },
+        'Genre',
+      ],
     }),
     //#endregion
 
@@ -231,7 +297,7 @@ export const api = createApi({
     }),
 
     deleteRating: builder.mutation<void, number>({
-      query: (bookId) => ({
+      query: bookId => ({
         url: `/books/${bookId}/ratings`,
         method: 'DELETE',
       }),
@@ -242,7 +308,7 @@ export const api = createApi({
     }),
 
     getUserRating: builder.query<number | null, number>({
-      query: (bookId) => `/books/${bookId}/ratings`,
+      query: bookId => `/books/${bookId}/ratings`,
       providesTags: (_result, _error, bookId) => [
         { type: 'Rating', id: `book-${bookId}` },
       ],
@@ -263,7 +329,7 @@ export const api = createApi({
     }),
 
     deleteStatus: builder.mutation<void, number>({
-      query: (bookId) => ({
+      query: bookId => ({
         url: `/books/${bookId}/status`,
         method: 'DELETE',
       }),
@@ -274,7 +340,7 @@ export const api = createApi({
     }),
 
     getUserStatus: builder.query<number | null, number>({
-      query: (bookId) => `/books/${bookId}/status`,
+      query: bookId => `/books/${bookId}/status`,
       providesTags: (_result, _error, bookId) => [
         { type: 'Status', id: `book-${bookId}` },
       ],
@@ -288,7 +354,7 @@ export const api = createApi({
     }),
 
     selectUser: builder.mutation<User, number>({
-      query: (userId) => ({
+      query: userId => ({
         url: '/users/select',
         method: 'POST',
         body: { id: userId }, // Backend expects 'id', not 'userId'
@@ -296,10 +362,13 @@ export const api = createApi({
       invalidatesTags: ['User'],
     }),
 
-    updateUser: builder.mutation<User, { 
-      id: number; 
-      user: { name: string; color: string; avatar_image?: string | null }; 
-    }>({
+    updateUser: builder.mutation<
+      User,
+      {
+        id: number
+        user: { name: string; color: string; avatar_image?: string | null }
+      }
+    >({
       query: ({ id, user }) => ({
         url: `/users/${id}`,
         method: 'PUT',
@@ -316,12 +385,14 @@ export const api = createApi({
     }),
 
     getList: builder.query<ListWithBooks, number>({
-      query: (id) => `/lists/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'List', id: id.toString() }],
+      query: id => `/lists/${id}`,
+      providesTags: (_result, _error, id) => [
+        { type: 'List', id: id.toString() },
+      ],
     }),
 
     addList: builder.mutation<ListWithBooks, CreateListRequest>({
-      query: (list) => ({
+      query: list => ({
         url: '/lists',
         method: 'POST',
         body: list,
@@ -329,7 +400,10 @@ export const api = createApi({
       invalidatesTags: ['List'],
     }),
 
-    updateList: builder.mutation<ListWithBooks, { id: number; list: UpdateListRequest }>({
+    updateList: builder.mutation<
+      ListWithBooks,
+      { id: number; list: UpdateListRequest }
+    >({
       query: ({ id, list }) => ({
         url: `/lists/${id}`,
         method: 'PUT',
@@ -337,12 +411,12 @@ export const api = createApi({
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'List', id: id.toString() },
-        'List'
+        'List',
       ],
     }),
 
     deleteList: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/lists/${id}`,
         method: 'DELETE',
       }),
