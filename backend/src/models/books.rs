@@ -1,14 +1,3 @@
-use serde::{Deserialize, Deserializer};
-
-// Custom deserializer to handle Option<Option<T>> properly
-fn deserialize_double_option<'de, T, D>(deserializer: D) -> Result<Option<Option<T>>, D::Error>
-where
-    T: Deserialize<'de>,
-    D: Deserializer<'de>,
-{
-    Ok(Some(Option::deserialize(deserializer)?))
-}
-
 #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 pub struct Book {
     #[serde(skip_deserializing)]

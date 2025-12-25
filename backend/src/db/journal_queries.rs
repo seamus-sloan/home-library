@@ -6,7 +6,7 @@ use crate::models::JournalEntry;
 // Journal queries
 pub async fn create_journal_entry(
     pool: &Pool<Sqlite>,
-    mut journal: JournalEntry,
+    journal: JournalEntry,
 ) -> Result<JournalEntry, sqlx::Error> {
     debug!(
         "Creating new journal entry for book ID: {} by user ID: {}",

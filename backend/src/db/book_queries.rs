@@ -114,7 +114,7 @@ async fn fetch_ratings_for_books(
         };
         ratings_map
             .entry(book_id)
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(rating);
     }
 
@@ -169,7 +169,7 @@ async fn fetch_statuses_for_books(
         };
         statuses_map
             .entry(book_id)
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(status);
     }
 
