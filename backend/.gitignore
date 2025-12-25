@@ -1,1 +1,11 @@
 /target
+
+# Databases (all .db files in data/ directory)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Legacy database files (in case they exist)
+/*.db
+/*.db-shm
+/*.db-wal

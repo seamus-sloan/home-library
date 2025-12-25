@@ -3,9 +3,14 @@ name = "backend"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "reset-e2e-db"
+path = "src/bin/reset-e2e-db.rs"
+
 [dependencies]
 axum = "0.8.4"
 chrono = "0.4.41"
+dotenvy = "0.15"
 reqwest = { version = "0.12.22", features = ["json"] }
 serde = "1.0.219"
 serde_derive = "1.0.219"

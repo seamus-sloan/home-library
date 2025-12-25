@@ -11,9 +11,20 @@ use crate::db::init_db;
 
 #[tokio::main]
 async fn main() {
+    // Load .env file from project root (parent directory)
+    if let Err(e) = dotenvy::from_filename("../.env") {
+        debug!("Could not load .env file from parent directory: {}", e);
+        // Try current directory as fallback
+        if let Err(e2) = dotenvy::dotenv() {
+            debug!("Could not load .env file from current directory: {}", e2);
+        }
+    }
+
     // Initialize tracing subscriber for logging
     tracing_subscriber::fmt()
-        .with_env_filter("backend=debug,sqlx=info")
+        .with_env_filter(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "backend=debug,sqlx=info".to_string()),
+        )
         .init();
 
     info!("Starting backend server...");
