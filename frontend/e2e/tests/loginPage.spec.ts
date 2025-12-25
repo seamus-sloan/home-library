@@ -32,7 +32,7 @@ test("selecting user navigates to home page", async() => {
     let testUser: User | undefined;
 
     await test.step("navigate to login page", async() => {
-        let usersRequest = loginPage.waitForResponseStatus("/users", { method: "GET", returnJson: true });
+        const usersRequest = loginPage.waitForResponseStatus("/users", { method: "GET", returnJson: true });
         await loginPage.goto();
         users = await usersRequest as User[];
     });

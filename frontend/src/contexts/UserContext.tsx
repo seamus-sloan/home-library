@@ -19,7 +19,10 @@ const UserContext = createContext<UserContextType>({
   logout: () => {},
 })
 
-export const useUser = () => useContext(UserContext)
+// Exporting the hook separately to avoid react-refresh warning
+const useUser = () => useContext(UserContext)
+
+export { useUser }
 
 export const UserProvider: React.FC<{
   children: React.ReactNode

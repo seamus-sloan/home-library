@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { store } from '../store/store'
 
 // Create a custom render function that includes providers
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   // Add any custom options here if needed
 }
@@ -26,5 +27,6 @@ export function renderWithProviders(
 }
 
 // Re-export everything from testing-library
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'
 export { renderWithProviders as render }

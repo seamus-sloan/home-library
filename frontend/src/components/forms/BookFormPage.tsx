@@ -1,5 +1,6 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import { BookForm, type BookFormData } from './BookForm'
+import type { BookTag, BookGenre } from '../../types'
 
 interface BookFormPageProps {
   onSubmit: (book: {
@@ -7,8 +8,8 @@ interface BookFormPageProps {
     author: string
     cover_image: string
     series?: string
-    tags?: any[]
-    genres?: any[]
+    tags?: BookTag[]
+    genres?: BookGenre[]
   }) => void
   onCancel: () => void
 }
