@@ -41,9 +41,8 @@ async fn manage_book_relationships(
 
     // Insert new relationships
     if !item_ids.is_empty() {
-        let insert_query = format!(
-            "INSERT INTO {table_name} (book_id, {foreign_key_name}) VALUES (?, ?)"
-        );
+        let insert_query =
+            format!("INSERT INTO {table_name} (book_id, {foreign_key_name}) VALUES (?, ?)");
 
         for &item_id in item_ids {
             sqlx::query(&insert_query)
@@ -319,9 +318,8 @@ pub async fn default_book_cover_query(
     let encoded_title = form_urlencoded::byte_serialize(book.title.as_bytes()).collect::<String>();
     let encoded_author =
         form_urlencoded::byte_serialize(book.author.as_bytes()).collect::<String>();
-    let query = format!(
-        "{BOOK_COVER_API_URL}?book_title={encoded_title}&author_name={encoded_author}"
-    );
+    let query =
+        format!("{BOOK_COVER_API_URL}?book_title={encoded_title}&author_name={encoded_author}");
 
     debug!("Sending request to fetch default cover: {}", query);
 
