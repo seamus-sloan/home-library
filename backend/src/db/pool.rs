@@ -10,7 +10,7 @@ pub async fn init_db() -> Pool<Sqlite> {
         info!("DATABASE_FILE not set, using default: data/development.db");
         "data/development.db".to_string()
     });
-    info!("📂 Using database file: {}", database_file);
+    info!("📂 Using database file: {database_file}");
 
     let opt = sqlx::sqlite::SqliteConnectOptions::new()
         .filename(&database_file)

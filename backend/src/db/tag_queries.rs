@@ -13,7 +13,7 @@ pub async fn get_tags_by_name_query(
     pool: &Pool<Sqlite>,
     name_filter: &str,
 ) -> Result<Vec<Tag>, sqlx::Error> {
-    let pattern = format!("%{}%", name_filter);
+    let pattern = format!("%{name_filter}%");
     let rows = sqlx::query_as!(
         Tag,
         "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM tags WHERE name LIKE ? ORDER BY name",

@@ -26,7 +26,7 @@ pub async fn get_genres_by_name_query(
         name_filter
     );
 
-    let pattern = format!("%{}%", name_filter);
+    let pattern = format!("%{name_filter}%");
     let genres = sqlx::query_as!(
         Genre,
         "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM genres WHERE name LIKE ? ORDER BY name",

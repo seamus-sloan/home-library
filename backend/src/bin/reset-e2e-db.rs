@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Get database file path - default to E2E database
     let db_file = env::var("DATABASE_FILE").unwrap_or_else(|_| "data/library-e2e.db".to_string());
-    println!("  - Database file: {}", db_file);
+    println!("  - Database file: {db_file}");
 
     // Remove existing database if it exists
     if Path::new(&db_file).exists() {

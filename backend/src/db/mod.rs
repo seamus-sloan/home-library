@@ -13,7 +13,5 @@ pub use genre_queries::*;
 pub use journal_queries::*;
 pub use list_queries::*;
 pub use pool::init_db;
-pub use rating_queries::*;
-pub use reading_status_queries::*;
 pub use tag_queries::*;
 pub use user_queries::*;
