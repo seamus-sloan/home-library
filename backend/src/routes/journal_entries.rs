@@ -1,10 +1,12 @@
 use axum::Json;
-use axum::extract::{State, Path};
+use axum::extract::{Path, State};
 use reqwest::StatusCode;
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, error, info, warn};
 
-use crate::db::{get_all_journals, get_journal_by_id, update_journal_entry as db_update_journal_entry};
+use crate::db::{
+    get_all_journals, get_journal_by_id, update_journal_entry as db_update_journal_entry,
+};
 use crate::models::{JournalEntry, UpdateJournalRequest};
 
 pub async fn get_journal_entries_query(
@@ -56,11 +58,17 @@ pub async fn update_journal_entry(
     Path((book_id, journal_id)): Path<(i64, i64)>,
     Json(request): Json<UpdateJournalRequest>,
 ) -> Result<Json<JournalEntry>, StatusCode> {
-    info!("Updating journal entry with ID: {} in book: {}", journal_id, book_id);
+    info!(
+        "Updating journal entry with ID: {} in book: {}",
+        journal_id, book_id
+    );
 
     match db_update_journal_entry(&pool, journal_id, request.title, request.content).await {
         Ok(updated_journal) => {
-            info!("Successfully updated journal entry with ID: {}", updated_journal.id);
+            info!(
+                "Successfully updated journal entry with ID: {}",
+                updated_journal.id
+            );
             Ok(Json(updated_journal))
         }
         Err(e) => {

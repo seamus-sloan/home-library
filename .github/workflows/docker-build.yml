@@ -1,10 +1,6 @@
 name: Build Docker Images
-
 on:
   push:
-    branches:
-      - '**'  # Build on all branches
-  pull_request:
     branches:
       - main
 
@@ -24,7 +20,7 @@ jobs:
 
     permissions:
       contents: read
-      packages: write  # For GHCR push (when enabled)
+      packages: write # For GHCR push (when enabled)
 
     steps:
       - name: Checkout code
@@ -77,14 +73,14 @@ jobs:
           #   BUILD_DATE=${{ github.event.head_commit.timestamp }}
           #   VCS_REF=${{ github.sha }}
 
-      # Future improvement: Uncomment when ready to push
-      # - name: Push Backend Image
-      #   if: github.event_name != 'pull_request'
-      #   run: |
-      #     docker buildx build \
-      #       --push \
-      #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:latest \
-      #       ./backend
+          # Future improvement: Uncomment when ready to push
+          # - name: Push Backend Image
+          #   if: github.event_name != 'pull_request'
+          #   run: |
+          #     docker buildx build \
+          #       --push \
+          #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:latest \
+          #       ./backend
 
   build-frontend:
     name: Build Frontend Image
@@ -94,7 +90,7 @@ jobs:
 
     permissions:
       contents: read
-      packages: write  # For GHCR push (when enabled)
+      packages: write # For GHCR push (when enabled)
 
     steps:
       - name: Checkout code
@@ -147,28 +143,28 @@ jobs:
           #   BUILD_DATE=${{ github.event.head_commit.timestamp }}
           #   VCS_REF=${{ github.sha }}
 
-      # Future improvement: Uncomment when ready to push
-      # - name: Push Frontend Image
-      #   if: github.event_name != 'pull_request'
-      #   run: |
-      #     docker buildx build \
-      #       --push \
-      #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:latest \
-      #       ./frontend
+          # Future improvement: Uncomment when ready to push
+          # - name: Push Frontend Image
+          #   if: github.event_name != 'pull_request'
+          #   run: |
+          #     docker buildx build \
+          #       --push \
+          #       --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:latest \
+          #       ./frontend
 
-  # Future improvement: Add deployment job when using k8s
-  # deploy:
-  #   name: Deploy to Kubernetes
-  #   needs: [build-backend, build-frontend]
-  #   runs-on: [self-hosted, k8s]
-  #   if: github.ref == 'refs/heads/main'
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Deploy to k8s
-  #       run: |
-  #         kubectl set image deployment/home-library-backend \
-  #           backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:${{ github.sha }}
-  #         kubectl set image deployment/home-library-frontend \
-  #           frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:${{ github.sha }}
+          # Future improvement: Add deployment job when using k8s
+          # deploy:
+          #   name: Deploy to Kubernetes
+          #   needs: [build-backend, build-frontend]
+          #   runs-on: [self-hosted, k8s]
+          #   if: github.ref == 'refs/heads/main'
+          #   steps:
+          #     - name: Checkout code
+          #       uses: actions/checkout@v4
+          #
+          #     - name: Deploy to k8s
+          #       run: |
+          #         kubectl set image deployment/home-library-backend \
+          #           backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-backend:${{ github.sha }}
+          #         kubectl set image deployment/home-library-frontend \
+          #           frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/home-library-frontend:${{ github.sha }}

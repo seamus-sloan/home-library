@@ -17,7 +17,7 @@ export function useParallaxScroll(speed: number = 0.5) {
         // when element is at bottom of screen, offset is positive
         const elementTop = rect.top
         const scrollProgress = (windowHeight - elementTop) / windowHeight
-        
+
         // Create a range from -30 to +30 pixels based on element position
         const parallaxOffset = (scrollProgress - 0.5) * 60 * speed
         setOffset(Math.max(-30, Math.min(30, parallaxOffset)))

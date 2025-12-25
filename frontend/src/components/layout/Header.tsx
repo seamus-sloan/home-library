@@ -29,7 +29,9 @@ export function Header({ onAddClick }: HeaderProps) {
           <div className="p-2 bg-amber-900/30 rounded-lg border border-amber-700/30 group-hover:border-amber-600/50 transition-colors">
             <BookOpenIcon size={24} className="text-amber-400" />
           </div>
-          <h1 className="text-2xl font-bold text-amber-50 tracking-wide">The Sloan Library</h1>
+          <h1 className="text-2xl font-bold text-amber-50 tracking-wide">
+            The Sloan Library
+          </h1>
         </Link>
         <div className="flex items-center gap-4">
           <Link

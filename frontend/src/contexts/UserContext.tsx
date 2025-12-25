@@ -15,11 +15,14 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType>({
   currentUser: null,
-  setCurrentUser: () => { },
-  logout: () => { },
+  setCurrentUser: () => {},
+  logout: () => {},
 })
 
-export const useUser = () => useContext(UserContext)
+const useUser = () => useContext(UserContext)
+
+// eslint-disable-next-line react-refresh/only-export-components
+export { useUser }
 
 export const UserProvider: React.FC<{
   children: React.ReactNode

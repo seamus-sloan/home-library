@@ -1,13 +1,6 @@
 use sqlx::{Pool, Sqlite};
 use tracing::{debug, info};
 
-#[derive(Debug)]
-pub struct Rating {
-    pub user_id: i64,
-    pub book_id: i64,
-    pub rating: f64,
-}
-
 // Create or update a rating for a book by a user
 pub async fn upsert_rating_query(
     pool: &Pool<Sqlite>,

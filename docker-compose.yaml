@@ -7,11 +7,10 @@ services:
     ports:
       - "3003:3000"
     volumes:
-      - /home/sesloan/library/data:/app/data
-      - /mnt/nas/home-lab/library/backups:/app/backups
+      - ${DATA_DIR:-./data}:/app/data
+      - ${BACKUPS_DIR:-./backups}:/app/backups
     environment:
       - RUST_LOG=backend=info,sqlx=info
-      - DATABASE_FILE=/app/data/library.db
       - BACKUP_DIR=/app/backups
     networks:
       - home-library-network

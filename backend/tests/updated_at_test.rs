@@ -680,7 +680,8 @@ async fn test_book_tag_genre_updates_do_not_update_tag_genre_timestamps() {
     let updated_tag = updated_tags.iter().find(|t| t["id"] == tag_id).unwrap();
     let final_tag_updated_at = updated_tag["updated_at"].as_str().unwrap();
 
-    let (status, updated_genres_body) = make_request(&test_app, "GET", "/genres", user_id, None).await;
+    let (status, updated_genres_body) =
+        make_request(&test_app, "GET", "/genres", user_id, None).await;
     assert_eq!(status, StatusCode::OK);
     let updated_genres = updated_genres_body.as_array().unwrap();
     let updated_genre = updated_genres.iter().find(|g| g["id"] == genre_id).unwrap();

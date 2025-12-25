@@ -21,34 +21,59 @@ Home Library helps you:
 
 ### Local Development
 
-1. **Backend Setup**
+1. **Environment Setup**
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+
+   # Edit .env to configure your setup (all paths relative to backend/ directory)
+   # DATABASE_FILE=data/development.db (default)
+   ```
+
+2. **Backend Setup**
    ```bash
    cd backend
-   
-   # Running will create a SQLite database for you... or you can use sqlx commands
-   export DATABASE_URL="sqlite:library.db"
 
-   # Install dependencies and run migrations
-   cargo build
-   
-   # Start the backend server (runs on port 3000)
+   # Build and start the backend server (runs on port 3000)
+   # The server will automatically:
+   # - Load config from ../.env
+   # - Create the database if it doesn't exist
+   # - Run all migrations
    cargo run
    ```
 
-2. **Frontend Setup** (in a new terminal)
+3. **Frontend Setup** (in a new terminal)
    ```bash
    cd frontend
-   
+
    # Install dependencies
    npm install
-   
+
    # Start the development server (runs on port 5173)
    npm run dev
    ```
 
-3. **Access the application**
+4. **Access the application**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:3000
+
+### Database Configuration
+
+All databases are stored in `backend/data/`:
+- `development.db` - Development database (default)
+- `library-e2e.db` - E2E test database
+- `production.db` - Production database
+
+**Switch databases** by editing `.env`:
+```bash
+DATABASE_FILE=data/library-e2e.db
+```
+
+Or override temporarily:
+```bash
+cd backend
+DATABASE_FILE=data/library-e2e.db cargo run
+```
 
 ### Docker Development
 
@@ -239,8 +264,15 @@ docker-compose pull && docker-compose up -d
 
 **End-to-End Testing:**
 - **Framework**: Playwright
-- **Coverage**: End-to-end coverage
-- **Run tests**: `npm run e2e` (TODO...)
+- **Coverage**: Full user workflows across frontend and backend
+- **Run tests**:
+  ```bash
+  cd frontend
+  npm run test:e2e        # Run all E2E tests
+  npm run test:e2e:ui     # Run in UI mode
+  npm run test:e2e:headed # Run in headed mode
+  ```
+- **Database**: Tests automatically reset `backend/data/library-e2e.db` before each run with seed data
 
 ## Future Enhancements
 - **SQLite optimization**: Consider enabling WAL mode for better concurrent access

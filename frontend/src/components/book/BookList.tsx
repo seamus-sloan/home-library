@@ -15,7 +15,11 @@ export function BookList() {
   const [selectedTag, setSelectedTag] = useState<string>('')
 
   // Use RTK Query to fetch books with search parameter
-  const { data: books = [], isLoading: loading, error } = useGetBooksQuery(
+  const {
+    data: books = [],
+    isLoading: loading,
+    error,
+  } = useGetBooksQuery(
     searchQuery.trim() ? { search: searchQuery.trim() } : undefined
   )
 
@@ -28,22 +32,24 @@ export function BookList() {
 
   // Get unique genres from books
   const genres = useMemo(() => {
-    const genreSet = new Set(books.flatMap(book =>
-      book.genres?.map(genre => genre.name) || []
-    ))
+    const genreSet = new Set(
+      books.flatMap(book => book.genres?.map(genre => genre.name) || [])
+    )
     return Array.from(genreSet).sort()
   }, [books])
 
   // Get unique ratings from books
   const ratings = useMemo(() => {
-    const ratingSet = new Set(books.map(book => book.rating).filter(rating => rating !== null))
+    const ratingSet = new Set(
+      books.map(book => book.rating).filter(rating => rating !== null)
+    )
     return Array.from(ratingSet).sort((a, b) => a - b)
   }, [books])
 
   const tags = useMemo(() => {
-    const tagSet = new Set(books.flatMap(book =>
-      book.tags.map(tag => tag.name)
-    ))
+    const tagSet = new Set(
+      books.flatMap(book => book.tags.map(tag => tag.name))
+    )
     return Array.from(tagSet).sort()
   }, [books])
 
@@ -85,7 +91,9 @@ export function BookList() {
     setSelectedTag('')
   }
 
-  const hasActiveFilters = Boolean(selectedGenre || selectedRating !== null || selectedTag)
+  const hasActiveFilters = Boolean(
+    selectedGenre || selectedRating !== null || selectedTag
+  )
 
   if (loading) {
     return (
@@ -103,7 +111,9 @@ export function BookList() {
         <h2 className="text-2xl font-medium text-amber-200 mb-2">
           Error loading books
         </h2>
-        <p className="text-amber-300 text-center max-w-md">Failed to load books</p>
+        <p className="text-amber-300 text-center max-w-md">
+          Failed to load books
+        </p>
         <button
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-amber-900/40 text-amber-100 rounded-lg border border-amber-700/30 hover:border-amber-600/50 transition-all duration-200"
@@ -176,18 +186,21 @@ export function BookList() {
       )}
 
       {/* No Results Message */}
-      {(searchQuery.trim() || hasActiveFilters) && filteredBooks.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-amber-400 mb-2">🔍</div>
-          <h3 className="text-lg font-medium text-amber-200 mb-2">No books found</h3>
-          <p className="text-amber-300">
-            {searchQuery.trim()
-              ? `No books or authors found for "${searchQuery}"`
-              : 'No books match your current filters'
-            }. Try adjusting your search or filters.
-          </p>
-        </div>
-      )}
+      {(searchQuery.trim() || hasActiveFilters) &&
+        filteredBooks.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-amber-400 mb-2">🔍</div>
+            <h3 className="text-lg font-medium text-amber-200 mb-2">
+              No books found
+            </h3>
+            <p className="text-amber-300">
+              {searchQuery.trim()
+                ? `No books or authors found for "${searchQuery}"`
+                : 'No books match your current filters'}
+              . Try adjusting your search or filters.
+            </p>
+          </div>
+        )}
     </div>
   )
 }

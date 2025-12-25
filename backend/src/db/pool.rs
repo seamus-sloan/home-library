@@ -6,8 +6,11 @@ pub async fn init_db() -> Pool<Sqlite> {
     debug!("Initializing SQLite database connection");
 
     // Get database file path from environment variable or use default
-    let database_file = env::var("DATABASE_FILE").unwrap_or_else(|_| "development.db".to_string());
-    debug!("Using database file: {}", database_file);
+    let database_file = env::var("DATABASE_FILE").unwrap_or_else(|_| {
+        info!("DATABASE_FILE not set, using default: data/development.db");
+        "data/development.db".to_string()
+    });
+    info!("📂 Using database file: {database_file}");
 
     let opt = sqlx::sqlite::SqliteConnectOptions::new()
         .filename(&database_file)

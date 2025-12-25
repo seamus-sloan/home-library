@@ -98,42 +98,42 @@ pub async fn create_book(
             info!("Successfully created book with ID: {}", created_book.id);
 
             // Handle tags if provided
-            if let Some(tag_ids) = request.tags {
-                if !tag_ids.is_empty() {
-                    debug!(
-                        "Creating book_tags relationships for {} tags",
-                        tag_ids.len()
-                    );
-                    if let Err(e) = create_book_tags(&pool, created_book.id, &tag_ids).await {
-                        error!("Failed to create book_tags relationships: {}", e);
-                        // Continue without failing the entire request
-                        warn!("Book created successfully but tags were not associated");
-                    }
+            if let Some(tag_ids) = request.tags
+                && !tag_ids.is_empty()
+            {
+                debug!(
+                    "Creating book_tags relationships for {} tags",
+                    tag_ids.len()
+                );
+                if let Err(e) = create_book_tags(&pool, created_book.id, &tag_ids).await {
+                    error!("Failed to create book_tags relationships: {}", e);
+                    // Continue without failing the entire request
+                    warn!("Book created successfully but tags were not associated");
                 }
             }
 
             // Handle genres if provided
-            if let Some(genre_ids) = request.genres {
-                if !genre_ids.is_empty() {
-                    debug!(
-                        "Creating book_genres relationships for {} genres",
-                        genre_ids.len()
-                    );
-                    for genre_id in genre_ids {
-                        if let Err(e) = crate::db::genre_queries::add_genre_to_book_query(
-                            &pool,
-                            created_book.id,
-                            genre_id,
-                        )
-                        .await
-                        {
-                            error!(
-                                "Failed to create book_genres relationship for genre_id {}: {}",
-                                genre_id, e
-                            );
-                            // Continue without failing the entire request
-                            warn!("Book created successfully but some genres were not associated");
-                        }
+            if let Some(genre_ids) = request.genres
+                && !genre_ids.is_empty()
+            {
+                debug!(
+                    "Creating book_genres relationships for {} genres",
+                    genre_ids.len()
+                );
+                for genre_id in genre_ids {
+                    if let Err(e) = crate::db::genre_queries::add_genre_to_book_query(
+                        &pool,
+                        created_book.id,
+                        genre_id,
+                    )
+                    .await
+                    {
+                        error!(
+                            "Failed to create book_genres relationship for genre_id {}: {}",
+                            genre_id, e
+                        );
+                        // Continue without failing the entire request
+                        warn!("Book created successfully but some genres were not associated");
                     }
                 }
             }

@@ -8,12 +8,18 @@
   --selected-font: 'Merriweather', serif;
 }
 
-html, body {
+html,
+body {
   @apply bg-black;
   font-family: var(--selected-font);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--selected-font);
 }
 

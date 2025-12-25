@@ -1,4 +1,10 @@
-import { ArrowLeftIcon, BookOpenIcon, EditIcon, InfoIcon, PlusIcon } from 'lucide-react'
+import {
+  ArrowLeftIcon,
+  BookOpenIcon,
+  EditIcon,
+  InfoIcon,
+  PlusIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -9,7 +15,14 @@ import { JournalList } from '../components/journal/JournalList'
 import { InteractiveRating, RatingsList } from '../components/rating'
 import StatusDropdown from '../components/status/StatusDropdown'
 import StatusList from '../components/status/StatusList'
-import { useDeleteRatingMutation, useDeleteStatusMutation, useGetBookQuery, useUpdateBookMutation, useUpsertRatingMutation, useUpsertStatusMutation } from '../middleware/backend'
+import {
+  useDeleteRatingMutation,
+  useDeleteStatusMutation,
+  useGetBookQuery,
+  useUpdateBookMutation,
+  useUpsertRatingMutation,
+  useUpsertStatusMutation,
+} from '../middleware/backend'
 import type { RootState } from '../store/store'
 import type { ReadingStatusValue } from '../types'
 import { formatRelativeDate } from '../utils/dateUtils'
@@ -21,7 +34,11 @@ export function BookDetails() {
   const currentUser = useSelector((state: RootState) => state.user.currentUser)
 
   // Use RTK Query to fetch book data (now includes tags and journals)
-  const { data: bookWithDetails, isLoading: loading, error } = useGetBookQuery(id || '', {
+  const {
+    data: bookWithDetails,
+    isLoading: loading,
+    error,
+  } = useGetBookQuery(id || '', {
     skip: !id, // Skip the query if no ID is provided
   })
 
@@ -51,7 +68,7 @@ export function BookDetails() {
           series: data.series || null,
           tags: data.tags.map(tag => tag.id),
           genres: data.genres.map(genre => genre.id),
-        }
+        },
       }).unwrap()
       setIsEditing(false)
     } catch (error) {
@@ -64,7 +81,7 @@ export function BookDetails() {
     if (location.state?.scrollPosition !== undefined) {
       // Navigate back and restore scroll position
       navigate('/', {
-        state: { scrollPosition: location.state.scrollPosition }
+        state: { scrollPosition: location.state.scrollPosition },
       })
     } else {
       navigate('/')
@@ -207,18 +224,26 @@ export function BookDetails() {
           </div>
           <div className="w-full md:w-2/3 bg-zinc-900 p-6 rounded-lg shadow-md border border-zinc-800 flex flex-col">
             <div className="flex-grow">
-              <h1 className="text-3xl font-bold text-amber-50 mb-2">{bookWithDetails.title}</h1>
-              <p className="text-xl text-amber-200 mb-2">by {bookWithDetails.author}</p>
+              <h1 className="text-3xl font-bold text-amber-50 mb-2">
+                {bookWithDetails.title}
+              </h1>
+              <p className="text-xl text-amber-200 mb-2">
+                by {bookWithDetails.author}
+              </p>
               {bookWithDetails.series && (
-                <p className="text-lg text-amber-300 mb-4 italic">{bookWithDetails.series}</p>
+                <p className="text-lg text-amber-300 mb-4 italic">
+                  {bookWithDetails.series}
+                </p>
               )}
 
               {/* Display genres */}
               {bookWithDetails.genres && bookWithDetails.genres.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-amber-200 mb-2">Genres:</h4>
+                  <h4 className="text-sm font-medium text-amber-200 mb-2">
+                    Genres:
+                  </h4>
                   <div className="flex flex-wrap gap-2">
-                    {bookWithDetails.genres.map((genre) => (
+                    {bookWithDetails.genres.map(genre => (
                       <CategoryBadge
                         key={genre.id}
                         item={genre}
@@ -232,61 +257,89 @@ export function BookDetails() {
 
               {/* Ratings Section */}
               <div className="mb-6 md:mb-4">
-                <h4 className="text-sm font-medium text-amber-200 mb-3">Ratings:</h4>
+                <h4 className="text-sm font-medium text-amber-200 mb-3">
+                  Ratings:
+                </h4>
 
                 {/* If user is logged in but hasn't rated yet, show the rating prompt */}
-                {currentUser && !bookWithDetails.ratings?.some(r => r.user_id === currentUser.id) && (
-                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
-                    <p className="text-xs text-amber-600 mb-3">Click the stars below to rate this book</p>
-                    <InteractiveRating
-                      ratings={bookWithDetails.ratings || []}
-                      currentUserId={currentUser.id}
-                      onRatingChange={handleRatingChange}
-                    />
-                  </div>
-                )}
+                {currentUser &&
+                  !bookWithDetails.ratings?.some(
+                    r => r.user_id === currentUser.id
+                  ) && (
+                    <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                      <p className="text-xs text-amber-600 mb-3">
+                        Click the stars below to rate this book
+                      </p>
+                      <InteractiveRating
+                        ratings={bookWithDetails.ratings || []}
+                        currentUserId={currentUser.id}
+                        onRatingChange={handleRatingChange}
+                      />
+                    </div>
+                  )}
 
                 {/* Show all ratings (your own will be clickable) */}
-                {bookWithDetails.ratings && bookWithDetails.ratings.length > 0 ? (
+                {bookWithDetails.ratings &&
+                bookWithDetails.ratings.length > 0 ? (
                   <RatingsList
                     ratings={bookWithDetails.ratings}
                     currentUserId={currentUser?.id}
-                    onRatingChange={currentUser ? handleRatingChange : undefined}
-                    onRatingDelete={currentUser ? handleRatingDelete : undefined}
+                    onRatingChange={
+                      currentUser ? handleRatingChange : undefined
+                    }
+                    onRatingDelete={
+                      currentUser ? handleRatingDelete : undefined
+                    }
                   />
                 ) : (
                   <div className="text-amber-400 text-center py-4">
-                    {currentUser ? 'No ratings yet. Be the first to rate!' : 'No ratings yet'}
+                    {currentUser
+                      ? 'No ratings yet. Be the first to rate!'
+                      : 'No ratings yet'}
                   </div>
                 )}
               </div>
 
               {/* Reading Status Section */}
               <div className="mb-6 md:mb-4">
-                <h4 className="text-sm font-medium text-amber-200 mb-3">Reading Status:</h4>
+                <h4 className="text-sm font-medium text-amber-200 mb-3">
+                  Reading Status:
+                </h4>
 
                 {/* If user is logged in but hasn't set status yet, show the status prompt */}
-                {currentUser && !bookWithDetails.statuses?.some(s => s.user_id === currentUser.id) && (
-                  <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
-                    <p className="text-xs text-amber-600 mb-3">Set your reading status for this book</p>
-                    <StatusDropdown
-                      value={null}
-                      onChange={handleStatusChange}
-                    />
-                  </div>
-                )}
+                {currentUser &&
+                  !bookWithDetails.statuses?.some(
+                    s => s.user_id === currentUser.id
+                  ) && (
+                    <div className="mb-3 p-3 md:p-4 bg-stone-800/50 rounded-lg border border-amber-900/30">
+                      <p className="text-xs text-amber-600 mb-3">
+                        Set your reading status for this book
+                      </p>
+                      <StatusDropdown
+                        value={null}
+                        onChange={handleStatusChange}
+                      />
+                    </div>
+                  )}
 
                 {/* Show all statuses (your own will be editable) */}
-                {bookWithDetails.statuses && bookWithDetails.statuses.length > 0 ? (
+                {bookWithDetails.statuses &&
+                bookWithDetails.statuses.length > 0 ? (
                   <StatusList
                     statuses={bookWithDetails.statuses}
                     currentUserId={currentUser?.id ?? null}
-                    onStatusChange={currentUser ? handleStatusChange : undefined}
-                    onStatusDelete={currentUser ? handleStatusDelete : undefined}
+                    onStatusChange={
+                      currentUser ? handleStatusChange : undefined
+                    }
+                    onStatusDelete={
+                      currentUser ? handleStatusDelete : undefined
+                    }
                   />
                 ) : (
                   <div className="text-amber-400 text-center py-4">
-                    {currentUser ? 'No status set yet. Select one above!' : 'No statuses yet'}
+                    {currentUser
+                      ? 'No status set yet. Select one above!'
+                      : 'No statuses yet'}
                   </div>
                 )}
               </div>
@@ -294,9 +347,11 @@ export function BookDetails() {
               {/* Display tags */}
               {bookWithDetails.tags && bookWithDetails.tags.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-amber-200 mb-2">Tags:</h4>
+                  <h4 className="text-sm font-medium text-amber-200 mb-2">
+                    Tags:
+                  </h4>
                   <div className="flex flex-wrap gap-2">
-                    {bookWithDetails.tags.map((tag) => (
+                    {bookWithDetails.tags.map(tag => (
                       <CategoryBadge
                         key={tag.id}
                         item={tag}
@@ -310,12 +365,20 @@ export function BookDetails() {
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Added {formatRelativeDate(bookWithDetails.created_at || new Date().toISOString(), true)}
+                Added{' '}
+                {formatRelativeDate(
+                  bookWithDetails.created_at || new Date().toISOString(),
+                  true
+                )}
               </span>
             </div>
             <div className="flex justify-end">
               <span className="text-amber-400 text-sm italic">
-                Last updated {formatRelativeDate(bookWithDetails.updated_at || new Date().toISOString(), true)}
+                Last updated{' '}
+                {formatRelativeDate(
+                  bookWithDetails.updated_at || new Date().toISOString(),
+                  true
+                )}
               </span>
             </div>
           </div>
@@ -355,10 +418,12 @@ export function BookDetails() {
       <div className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold text-amber-50">Reading Journal</h3>
+            <h3 className="text-xl font-semibold text-amber-50">
+              Reading Journal
+            </h3>
             <div className="relative">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   setShowFormattingHelp(!showFormattingHelp)
                 }}
@@ -384,17 +449,19 @@ export function BookDetails() {
                   {/* Backdrop for mobile - clicking outside dismisses */}
                   <div
                     className="fixed inset-0 z-10 md:hidden"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation()
                       setShowFormattingHelp(false)
                     }}
                   />
                   <div
                     className="absolute left-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-zinc-800 border border-zinc-700 rounded-lg p-4 shadow-xl z-20"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-amber-50">Text Formatting</h4>
+                      <h4 className="text-sm font-semibold text-amber-50">
+                        Text Formatting
+                      </h4>
                       <button
                         onClick={() => setShowFormattingHelp(false)}
                         className="text-amber-400 hover:text-amber-300 md:hidden"
@@ -404,18 +471,53 @@ export function BookDetails() {
                       </button>
                     </div>
                     <div className="text-xs text-amber-200 space-y-1.5">
-                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+B</kbd> <span className="text-amber-300">Bold</span></div>
-                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+I</kbd> <span className="text-amber-300">Italic</span></div>
-                      <div><kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">Cmd+Shift+X</kbd> <span className="text-amber-300">Strikethrough</span></div>
+                      <div>
+                        <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">
+                          Cmd+B
+                        </kbd>{' '}
+                        <span className="text-amber-300">Bold</span>
+                      </div>
+                      <div>
+                        <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">
+                          Cmd+I
+                        </kbd>{' '}
+                        <span className="text-amber-300">Italic</span>
+                      </div>
+                      <div>
+                        <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-700 rounded text-amber-400">
+                          Cmd+Shift+X
+                        </kbd>{' '}
+                        <span className="text-amber-300">Strikethrough</span>
+                      </div>
                       <div className="pt-1 border-t border-zinc-700 mt-2">
-                        <div className="text-amber-300 mb-1">Markdown shortcuts:</div>
-                        <div><code className="text-amber-400"># </code> Heading 1</div>
-                        <div><code className="text-amber-400">## </code> Heading 2</div>
-                        <div><code className="text-amber-400">### </code> Heading 3</div>
-                        <div><code className="text-amber-400">* </code> or <code className="text-amber-400">- </code> Bullet list</div>
-                        <div><code className="text-amber-400">1. </code> Numbered list</div>
-                        <div><code className="text-amber-400">&gt; </code> Blockquote</div>
-                        <div><code className="text-amber-400">``` </code> Code block</div>
+                        <div className="text-amber-300 mb-1">
+                          Markdown shortcuts:
+                        </div>
+                        <div>
+                          <code className="text-amber-400"># </code> Heading 1
+                        </div>
+                        <div>
+                          <code className="text-amber-400">## </code> Heading 2
+                        </div>
+                        <div>
+                          <code className="text-amber-400">### </code> Heading 3
+                        </div>
+                        <div>
+                          <code className="text-amber-400">* </code> or{' '}
+                          <code className="text-amber-400">- </code> Bullet list
+                        </div>
+                        <div>
+                          <code className="text-amber-400">1. </code> Numbered
+                          list
+                        </div>
+                        <div>
+                          <code className="text-amber-400">&gt; </code>{' '}
+                          Blockquote
+                        </div>
+                        <div>
+                          <code className="text-amber-400">``` </code> Code
+                          block
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -440,7 +542,10 @@ export function BookDetails() {
             onCancel={() => setIsAddingJournal(false)}
           />
         ) : (
-          <JournalList journals={bookWithDetails.journals || []} bookId={bookWithDetails.id} />
+          <JournalList
+            journals={bookWithDetails.journals || []}
+            bookId={bookWithDetails.id}
+          />
         )}
       </div>
     </div>

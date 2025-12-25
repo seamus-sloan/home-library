@@ -1,3 +1,2 @@
-export { InteractiveRating } from './InteractiveRating';
-export { RatingsList } from './RatingsList';
-
+export { InteractiveRating } from './InteractiveRating'
+export { RatingsList } from './RatingsList'

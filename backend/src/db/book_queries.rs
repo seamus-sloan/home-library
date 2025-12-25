@@ -26,7 +26,7 @@ async fn manage_book_relationships(
     );
 
     // Delete existing relationships
-    let delete_query = format!("DELETE FROM {} WHERE book_id = ?", table_name);
+    let delete_query = format!("DELETE FROM {table_name} WHERE book_id = ?");
     let result = sqlx::query(&delete_query)
         .bind(book_id)
         .execute(pool)
@@ -41,10 +41,8 @@ async fn manage_book_relationships(
 
     // Insert new relationships
     if !item_ids.is_empty() {
-        let insert_query = format!(
-            "INSERT INTO {} (book_id, {}) VALUES (?, ?)",
-            table_name, foreign_key_name
-        );
+        let insert_query =
+            format!("INSERT INTO {table_name} (book_id, {foreign_key_name}) VALUES (?, ?)");
 
         for &item_id in item_ids {
             sqlx::query(&insert_query)
@@ -83,9 +81,8 @@ async fn fetch_ratings_for_books(
         "SELECT r.id, r.user_id, r.book_id, r.rating, r.created_at, r.updated_at, u.name as user_name, u.color as user_color, u.avatar_image as user_avatar_image
          FROM ratings r
          INNER JOIN users u ON r.user_id = u.id
-         WHERE r.book_id IN ({})
-         ORDER BY r.created_at DESC",
-        placeholders
+         WHERE r.book_id IN ({placeholders})
+         ORDER BY r.created_at DESC"
     );
 
     let mut query_builder = sqlx::query(&query);
@@ -112,10 +109,7 @@ async fn fetch_ratings_for_books(
                 avatar_image: row.get("user_avatar_image"),
             },
         };
-        ratings_map
-            .entry(book_id)
-            .or_insert_with(Vec::new)
-            .push(rating);
+        ratings_map.entry(book_id).or_default().push(rating);
     }
 
     Ok(ratings_map)
@@ -132,14 +126,13 @@ async fn fetch_statuses_for_books(
 
     let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let query = format!(
-        "SELECT rs.id, rs.user_id, rs.book_id, rs.status_id, rs.created_at, rs.updated_at, 
+        "SELECT rs.id, rs.user_id, rs.book_id, rs.status_id, rs.created_at, rs.updated_at,
                 s.name as status_name, u.name as user_name, u.color as user_color, u.avatar_image as user_avatar_image
          FROM reading_status rs
          INNER JOIN users u ON rs.user_id = u.id
          INNER JOIN status s ON rs.status_id = s.id
-         WHERE rs.book_id IN ({})
-         ORDER BY rs.created_at DESC",
-        placeholders
+         WHERE rs.book_id IN ({placeholders})
+         ORDER BY rs.created_at DESC"
     );
 
     let mut query_builder = sqlx::query(&query);
@@ -167,10 +160,7 @@ async fn fetch_statuses_for_books(
                 avatar_image: row.get("user_avatar_image"),
             },
         };
-        statuses_map
-            .entry(book_id)
-            .or_insert_with(Vec::new)
-            .push(status);
+        statuses_map.entry(book_id).or_default().push(status);
     }
 
     Ok(statuses_map)
@@ -188,8 +178,7 @@ async fn fetch_current_user_statuses(
 
     let placeholders = book_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let query = format!(
-        "SELECT book_id, status_id FROM reading_status WHERE user_id = ? AND book_id IN ({})",
-        placeholders
+        "SELECT book_id, status_id FROM reading_status WHERE user_id = ? AND book_id IN ({placeholders})"
     );
 
     let mut query_builder = sqlx::query(&query).bind(user_id);
@@ -329,10 +318,8 @@ pub async fn default_book_cover_query(
     let encoded_title = form_urlencoded::byte_serialize(book.title.as_bytes()).collect::<String>();
     let encoded_author =
         form_urlencoded::byte_serialize(book.author.as_bytes()).collect::<String>();
-    let query = format!(
-        "{}?book_title={}&author_name={}",
-        BOOK_COVER_API_URL, encoded_title, encoded_author
-    );
+    let query =
+        format!("{BOOK_COVER_API_URL}?book_title={encoded_title}&author_name={encoded_author}");
 
     debug!("Sending request to fetch default cover: {}", query);
 
@@ -424,14 +411,6 @@ pub async fn create_book_tags(
     tag_ids: &[i64],
 ) -> Result<(), sqlx::Error> {
     manage_book_relationships(pool, book_id, tag_ids, "book_tags", "tag_id", "tag").await
-}
-
-pub async fn create_book_genres(
-    pool: &Pool<Sqlite>,
-    book_id: i64,
-    genre_ids: &[i64],
-) -> Result<(), sqlx::Error> {
-    manage_book_relationships(pool, book_id, genre_ids, "book_genres", "genre_id", "genre").await
 }
 
 pub async fn update_book_tags(
@@ -607,7 +586,7 @@ pub async fn search_books_with_details_query(
         search_term
     );
 
-    let search_pattern = format!("%{}%", search_term);
+    let search_pattern = format!("%{search_term}%");
 
     // First get matching books
     let books = sqlx::query_as!(
