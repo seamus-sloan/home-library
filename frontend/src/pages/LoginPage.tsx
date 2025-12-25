@@ -62,6 +62,7 @@ export function LoginPage() {
             <div className="grid grid-cols-2 gap-8 max-w-md">
                 {users.map((user) => (
                     <div
+                        data-testid={`user-${user.id}`}
                         key={user.id}
                         onClick={() => handleUserSelect(user)}
                         className="flex flex-col items-center cursor-pointer group"
@@ -69,12 +70,14 @@ export function LoginPage() {
                         <div className="mb-4 group-hover:ring-4 ring-amber-400 transition-all rounded-lg overflow-hidden">
                             {user.avatar_image ? (
                                 <img
+                                    data-testid={`user-avatar-${user.id}`}
                                     src={user.avatar_image}
                                     alt={user.name}
                                     className="w-32 h-32 object-cover"
                                 />
                             ) : (
                                 <div
+                                    data-testid={`user-avatar-${user.id}`}
                                     className="w-32 h-32 flex items-center justify-center text-white text-4xl font-bold"
                                     style={{ backgroundColor: user.color }}
                                 >
@@ -82,7 +85,7 @@ export function LoginPage() {
                                 </div>
                             )}
                         </div>
-                        <span className="text-white text-xl group-hover:text-amber-300 transition-colors">
+                        <span data-testid={`user-name-${user.id}`} className="text-white text-xl group-hover:text-amber-300 transition-colors">
                             {user.name}
                         </span>
                     </div>

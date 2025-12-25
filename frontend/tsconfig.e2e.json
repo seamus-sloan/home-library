@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "types": ["node"],
+        "target": "ESNext",
+        "module": "CommonJS",
+        "lib": ["ESNext", "DOM"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "outDir": "./dist",
+        "rootDir": "./",
+        "baseUrl": "./"
+    }
+}

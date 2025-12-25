@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { useDeleteBookMutation } from '../../middleware/backend'
 import type { RootState } from '../../store/store'
 import type { Book, BookWithDetails } from '../../types'
+import { hexToRgba } from '../../utils/colorUtils'
 import { ConfirmDialog } from '../common'
 import { BookFormModal } from '../forms'
 import { BookContextMenu } from './BookContextMenu'
@@ -10,19 +11,6 @@ import { BookContextMenu } from './BookContextMenu'
 interface BookCardProps {
   book: Book | BookWithDetails
   onClick: () => void
-}
-
-// Helper function to convert hex color to rgba with opacity
-const hexToRgba = (hex: string, opacity: number): string => {
-  // Remove # if present
-  hex = hex.replace('#', '')
-
-  // Parse hex values
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }
 
 export function BookCard({ book, onClick }: BookCardProps) {

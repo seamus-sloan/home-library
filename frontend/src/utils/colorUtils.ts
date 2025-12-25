@@ -1,4 +1,31 @@
 /**
+ * Converts a hex color to RGB format
+ */
+export const hexToRgb = (hex: string): string => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    if (!result) return hex
+    const r = parseInt(result[1], 16)
+    const g = parseInt(result[2], 16)
+    const b = parseInt(result[3], 16)
+    return `rgb(${r}, ${g}, ${b})`
+}
+
+/**
+ * Converts a hex color to RGBA format with opacity
+ */
+export const hexToRgba = (hex: string, opacity: number): string => {
+    // Remove # if present
+    hex = hex.replace('#', '')
+
+    // Parse hex values
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`
+}
+
+/**
  * Determines if a color is very dark and needs a white border/text
  */
 export const isDarkColor = (hexColor: string): boolean => {
