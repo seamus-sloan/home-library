@@ -29,6 +29,9 @@ Edit `.env` in the project root to configure the backend:
 # Database file path (relative to backend directory)
 DATABASE_FILE=data/development.db
 
+# Database URL for sqlx compile-time verification (relative to backend directory)
+DATABASE_URL=sqlite:data/development.db
+
 # Backup directory (used in production)
 BACKUP_DIR=data/backups
 
@@ -36,12 +39,38 @@ BACKUP_DIR=data/backups
 RUST_LOG=backend=debug,sqlx=info
 ```
 
+**Note:** Both `DATABASE_FILE` and `DATABASE_URL` must point to the same database:
+- `DATABASE_FILE` is used by the application at runtime
+- `DATABASE_URL` is used by sqlx for compile-time query verification (run from `backend/` directory)
+- Both paths are relative to the `backend/` directory
+
 ## Database Files
 
 All databases are stored in `backend/data/`:
 - `development.db` - Development database (default)
 - `library-e2e.db` - E2E test database
 - `production.db` - Production database (when deployed)
+
+## SQLx Query Verification
+
+To verify queries at compile time and update the query cache:
+
+```bash
+cd backend
+cargo sqlx prepare
+```
+
+This requires:
+- `DATABASE_URL` to be set in `.env` (already configured)
+- The database file to exist (run the app once to create it, or run migrations manually)
+
+**If the database doesn't exist yet:**
+```bash
+cd backend
+cargo run  # This will create the database and run migrations
+# Then run sqlx prepare
+cargo sqlx prepare
+```
 
 ## E2E Testing
 

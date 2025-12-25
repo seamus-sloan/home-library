@@ -1,11 +1,11 @@
-use sqlx::{Pool, Sqlite, Error};
-use tracing::{info, debug};
+use sqlx::{Error, Pool, Sqlite};
+use tracing::{debug, info};
 
-use crate::models::books::{Genre, CreateGenreRequest, UpdateGenreRequest};
+use crate::models::books::{CreateGenreRequest, Genre, UpdateGenreRequest};
 
 pub async fn get_all_genres_query(pool: &Pool<Sqlite>) -> Result<Vec<Genre>, Error> {
     debug!("Querying database for all genres");
-    
+
     let genres = sqlx::query_as!(
         Genre,
         "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM genres ORDER BY name"
@@ -17,9 +17,15 @@ pub async fn get_all_genres_query(pool: &Pool<Sqlite>) -> Result<Vec<Genre>, Err
     Ok(genres)
 }
 
-pub async fn get_genres_by_name_query(pool: &Pool<Sqlite>, name_filter: &str) -> Result<Vec<Genre>, Error> {
-    debug!("Querying database for genres with name filter: {}", name_filter);
-    
+pub async fn get_genres_by_name_query(
+    pool: &Pool<Sqlite>,
+    name_filter: &str,
+) -> Result<Vec<Genre>, Error> {
+    debug!(
+        "Querying database for genres with name filter: {}",
+        name_filter
+    );
+
     let pattern = format!("%{}%", name_filter);
     let genres = sqlx::query_as!(
         Genre,
@@ -35,9 +41,9 @@ pub async fn get_genres_by_name_query(pool: &Pool<Sqlite>, name_filter: &str) ->
 
 pub async fn get_genre_by_id_query(pool: &Pool<Sqlite>, id: i64) -> Result<Option<Genre>, Error> {
     debug!("Querying database for genre with id: {}", id);
-    
+
     let genre = sqlx::query_as!(
-        Genre,  
+        Genre,
         "SELECT id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at FROM genres WHERE id = ?",
         id
     )
@@ -53,9 +59,13 @@ pub async fn get_genre_by_id_query(pool: &Pool<Sqlite>, id: i64) -> Result<Optio
     Ok(genre)
 }
 
-pub async fn create_genre_query(pool: &Pool<Sqlite>, genre: &CreateGenreRequest, user_id: i64) -> Result<Genre, Error> {
+pub async fn create_genre_query(
+    pool: &Pool<Sqlite>,
+    genre: &CreateGenreRequest,
+    user_id: i64,
+) -> Result<Genre, Error> {
     debug!("Creating new genre: {}", genre.name);
-    
+
     let result = sqlx::query!(
         "INSERT INTO genres (user_id, name, color) VALUES (?, ?, ?)",
         user_id,
@@ -67,7 +77,7 @@ pub async fn create_genre_query(pool: &Pool<Sqlite>, genre: &CreateGenreRequest,
 
     let genre_id = result.last_insert_rowid();
     info!("Created genre with ID: {}", genre_id);
-    
+
     // Fetch the created genre to return it
     let created_genre = get_genre_by_id_query(pool, genre_id).await?;
     created_genre.ok_or_else(|| Error::RowNotFound)
@@ -79,7 +89,7 @@ pub async fn update_genre_query(
     genre: &UpdateGenreRequest,
 ) -> Result<Genre, Error> {
     debug!("Updating genre with id: {}", id);
-    
+
     let updated_genre = sqlx::query_as!(
         Genre,
         "UPDATE genres SET name = ?, color = ?, updated_at = datetime('now') WHERE id = ? RETURNING id as \"id!\", user_id as \"user_id!\", name, color, created_at, updated_at",
@@ -96,7 +106,7 @@ pub async fn update_genre_query(
 
 pub async fn delete_genre_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), Error> {
     debug!("Deleting genre with id: {}", id);
-    
+
     let result = sqlx::query!("DELETE FROM genres WHERE id = ?", id)
         .execute(pool)
         .await?;
@@ -105,14 +115,21 @@ pub async fn delete_genre_query(pool: &Pool<Sqlite>, id: i64) -> Result<(), Erro
     if rows_affected == 0 {
         return Err(Error::RowNotFound);
     }
-    
-    info!("Deleted genre with ID: {} (rows affected: {})", id, rows_affected);
+
+    info!(
+        "Deleted genre with ID: {} (rows affected: {})",
+        id, rows_affected
+    );
     Ok(())
 }
 
-pub async fn add_genre_to_book_query(pool: &Pool<Sqlite>, book_id: i64, genre_id: i64) -> Result<(), Error> {
+pub async fn add_genre_to_book_query(
+    pool: &Pool<Sqlite>,
+    book_id: i64,
+    genre_id: i64,
+) -> Result<(), Error> {
     debug!("Adding genre {} to book {}", genre_id, book_id);
-    
+
     sqlx::query!(
         "INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)",
         book_id,
