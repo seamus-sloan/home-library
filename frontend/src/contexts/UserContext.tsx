@@ -19,9 +19,9 @@ const UserContext = createContext<UserContextType>({
   logout: () => {},
 })
 
-// Exporting the hook separately to avoid react-refresh warning
 const useUser = () => useContext(UserContext)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { useUser }
 
 export const UserProvider: React.FC<{
