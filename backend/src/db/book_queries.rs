@@ -112,10 +112,7 @@ async fn fetch_ratings_for_books(
                 avatar_image: row.get("user_avatar_image"),
             },
         };
-        ratings_map
-            .entry(book_id)
-            .or_default()
-            .push(rating);
+        ratings_map.entry(book_id).or_default().push(rating);
     }
 
     Ok(ratings_map)
@@ -167,10 +164,7 @@ async fn fetch_statuses_for_books(
                 avatar_image: row.get("user_avatar_image"),
             },
         };
-        statuses_map
-            .entry(book_id)
-            .or_default()
-            .push(status);
+        statuses_map.entry(book_id).or_default().push(status);
     }
 
     Ok(statuses_map)
