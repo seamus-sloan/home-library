@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test";
-import { User } from "../../src/contexts/UserContext";
+import type { User } from "../../src/types.ts";
 import { hexToRgb } from "../../src/utils/colorUtils";
 import BasePage from "./BasePage";
 

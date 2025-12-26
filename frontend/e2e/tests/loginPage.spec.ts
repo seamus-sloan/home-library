@@ -1,5 +1,5 @@
 import test, { expect } from "@playwright/test";
-import type { User } from "../../src/contexts/UserContext";
+import type { User } from "../../src/types.ts";
 import LoginPage from "../pages/LoginPage";
 
 let loginPage: LoginPage;

@@ -65,7 +65,6 @@ export const api = createApi({
           : [{ type: 'Book', id: 'all' }]
       },
       keepUnusedDataFor: 0, // Don't cache unused data
-      refetchOnMountOrArgChange: true, // Always refetch on component mount
     }),
 
     getBook: builder.query<BookWithDetails, string>({

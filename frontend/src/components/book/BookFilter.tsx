@@ -83,7 +83,10 @@ export function BookFilter({
             <div className="space-y-4">
               {/* Genre Filter */}
               <div>
-                <label data-testid="genre-label" className="block text-sm font-medium text-amber-200 mb-2">
+                <label
+                  data-testid="genre-label"
+                  className="block text-sm font-medium text-amber-200 mb-2"
+                >
                   Genre
                 </label>
                 <select
@@ -103,7 +106,10 @@ export function BookFilter({
 
               {/* Rating Filter */}
               <div>
-                <label data-testid="rating-label" className="block text-sm font-medium text-amber-200 mb-2">
+                <label
+                  data-testid="rating-label"
+                  className="block text-sm font-medium text-amber-200 mb-2"
+                >
                   Rating
                 </label>
                 <select
@@ -127,7 +133,10 @@ export function BookFilter({
 
               {/* Tags Filter */}
               <div>
-                <label data-testid="tags-label" className="block text-sm font-medium text-amber-200 mb-2">
+                <label
+                  data-testid="tags-label"
+                  className="block text-sm font-medium text-amber-200 mb-2"
+                >
                   Tags
                 </label>
                 <select
