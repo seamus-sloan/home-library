@@ -5,6 +5,9 @@ import LoginPage from "../pages/LoginPage";
 let loginPage: LoginPage;
 let users: User[] = [];
 
+// Clear storage state for login tests since we're testing the login flow
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.beforeEach(async({page}) => {
     loginPage = new LoginPage(page);
 });
@@ -64,6 +67,8 @@ test("selecting user navigates to home page", async() => {
             const stored = localStorage.getItem('currentUser');
             return stored ? JSON.parse(stored) : null;
         });
+
+        console.log(storedUser);
 
         expect(storedUser, "User should be stored in localStorage").toBeDefined();
         expect(storedUser?.id).toBe(testUser!.id);

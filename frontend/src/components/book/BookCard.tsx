@@ -63,6 +63,7 @@ export function BookCard({ book, onClick }: BookCardProps) {
   return (
     <>
       <div
+        data-testid={`book-card-${book.title}`}
         className={`cursor-pointer group relative rounded-lg ml-1 mr-1 p-3 shadow-[inset_0_4px_12px_rgba(0,0,0,0.7)] transition-colors duration-300`}
         style={{
           background: backgroundColor,
