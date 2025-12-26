@@ -83,10 +83,11 @@ export function BookFilter({
             <div className="space-y-4">
               {/* Genre Filter */}
               <div>
-                <label className="block text-sm font-medium text-amber-200 mb-2">
+                <label data-testid="genre-label" className="block text-sm font-medium text-amber-200 mb-2">
                   Genre
                 </label>
                 <select
+                  data-testid="genre-dropdown"
                   value={selectedGenre}
                   onChange={e => onGenreChange(e.target.value)}
                   className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50"
@@ -102,10 +103,11 @@ export function BookFilter({
 
               {/* Rating Filter */}
               <div>
-                <label className="block text-sm font-medium text-amber-200 mb-2">
+                <label data-testid="rating-label" className="block text-sm font-medium text-amber-200 mb-2">
                   Rating
                 </label>
                 <select
+                  data-testid="rating-dropdown"
                   value={selectedRating || ''}
                   onChange={e =>
                     onRatingChange(
@@ -125,10 +127,11 @@ export function BookFilter({
 
               {/* Tags Filter */}
               <div>
-                <label className="block text-sm font-medium text-amber-200 mb-2">
+                <label data-testid="tags-label" className="block text-sm font-medium text-amber-200 mb-2">
                   Tags
                 </label>
                 <select
+                  data-testid="tags-dropdown"
                   value={selectedTag || ''}
                   onChange={e => onTagChange(e.target.value)}
                   className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-600/50 focus:border-amber-600/50"
