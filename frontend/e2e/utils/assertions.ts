@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { expect, type Locator } from "@playwright/test";
 
 export const customMatchers = {
