@@ -32,12 +32,13 @@ test("search bar shows results", async() => {
     });
 
     await test.step("clear search bar", async() => {
-        const booksReq = galleryPage.waitForResponseStatus("/books", { method: "GET", returnJson: true });
-
         await galleryPage.searchBar.fill("");
+        const booksReq = galleryPage.waitForResponseStatus("/books", { method: "GET", returnJson: true });
         await galleryPage.searchBar.press("Enter");
         const books = await booksReq as Book[];
         
+        expect(books).not.toBeNull();
+        expect(books).toBeDefined();
         expect(books.length).toBeGreaterThan(20);
         await expect(galleryPage.searchResultsInfo).not.toBeInViewport();
         await expect(galleryPage.bookCards).toHaveAtLeast(20);
@@ -46,13 +47,13 @@ test("search bar shows results", async() => {
     await test.step("search via book author", async() => {
         const bookAuthor = "Frank Herbert";
         const bookResults = 3;
-        const searchRequest = galleryPage.waitForResponseStatus(/\/books\?search=/, { method: "GET", returnJson: true });
 
-        await galleryPage.searchBar.fill(bookAuthor);
-        await galleryPage.searchBar.press("Enter");
+        const searchResponse = await galleryPage.search(bookAuthor);
+        expect(searchResponse.length).toEqual(bookResults);
+        await expect(galleryPage.searchResultsInfo).toHaveText(`Found ${bookResults} books`);
 
-        const searchResults = await searchRequest as Book[];
-        expect(searchResults.length).toEqual(bookResults);
+        const bookCard = await galleryPage.getBookCard(searchResponse[0]);
+        await expect(bookCard).toBeVisible();
     });
 });
 
