@@ -11,6 +11,9 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    // Disable caching to ensure fresh data in tests
+    javaScriptEnabled: true,
+    bypassCSP: true,
   },
 
   projects: [

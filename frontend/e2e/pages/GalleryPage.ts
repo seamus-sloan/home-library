@@ -29,7 +29,7 @@ export default class GalleryPage extends BasePage {
 
     /**
      * Enters a search term into the search bar and returns the search results.
-     * @param searchTerm 
+     * @param searchTerm
      */
     async search(searchTerm: string): Promise<Book[]> {
         const searchRequest = this.waitForResponseStatus(/\/books\?search=/, { method: "GET", returnJson: true });

@@ -15,7 +15,7 @@ const testUser = {
     last_login: '2025-12-25 19:08:38'
 }
 
-setup('login', async ({ page }) => {
+setup('login', async ({ page, context }) => {
   console.log("Setting up currentUser in localStorage");
 
   // Create .auth directory if it doesn't exist
@@ -24,8 +24,21 @@ setup('login', async ({ page }) => {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
+  // Clear all browser cache and cookies
+  await context.clearCookies();
+
   // Navigate to the app
   await page.goto('/');
+
+  // Clear browser cache via evaluate
+  await page.evaluate(() => {
+    // Clear all caches
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => caches.delete(name));
+      });
+    }
+  });
 
   // Set the currentUser in localStorage
   await page.evaluate((user) => {

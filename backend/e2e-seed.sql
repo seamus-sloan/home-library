@@ -257,9 +257,9 @@ INSERT INTO book_tags (book_id, tag_id, created_at, updated_at) VALUES
     (6, 2, datetime('now', '-20 days'), datetime('now', '-20 days')),
     (9, 2, datetime('now', '-17 days'), datetime('now', '-17 days'));
 
--- Insert ratings (Test user has rated books they've read)
+-- Insert ratings (Multiple users rating various books)
 INSERT INTO ratings (user_id, book_id, rating, created_at, updated_at) VALUES
-    -- Books rated by Test user
+    -- Test user ratings (books 1-15 are read, plus some currently reading)
     (1, 1, 5.0, datetime('now', '-20 days'), datetime('now', '-20 days')),
     (1, 2, 4.5, datetime('now', '-19 days'), datetime('now', '-19 days')),
     (1, 3, 4.0, datetime('now', '-18 days'), datetime('now', '-18 days')),
@@ -275,9 +275,40 @@ INSERT INTO ratings (user_id, book_id, rating, created_at, updated_at) VALUES
     (1, 13, 3.5, datetime('now', '-8 days'), datetime('now', '-8 days')),
     (1, 14, 5.0, datetime('now', '-7 days'), datetime('now', '-7 days')),
     (1, 15, 5.0, datetime('now', '-6 days'), datetime('now', '-6 days')),
+    (1, 16, 4.5, datetime('now', '-5 days'), datetime('now', '-5 days')),
+    (1, 17, 5.0, datetime('now', '-4 days'), datetime('now', '-4 days')),
+    (1, 18, 4.0, datetime('now', '-3 days'), datetime('now', '-3 days')),
+    (1, 41, 4.5, datetime('now', '-2 days'), datetime('now', '-2 days')),
+    (1, 42, 5.0, datetime('now', '-1 day'), datetime('now', '-1 day')),
+    (1, 43, 3.5, datetime('now'), datetime('now')),
+    (1, 44, 4.0, datetime('now', '-25 days'), datetime('now', '-25 days')),
+    (1, 45, 4.5, datetime('now', '-24 days'), datetime('now', '-24 days')),
 
-    -- Alice and Bob ratings
+    -- Alice ratings (user_id=2)
+    (2, 1, 5.0, datetime('now', '-15 days'), datetime('now', '-15 days')),
+    (2, 2, 4.5, datetime('now', '-14 days'), datetime('now', '-14 days')),
+    (2, 6, 5.0, datetime('now', '-13 days'), datetime('now', '-13 days')),
+    (2, 8, 4.5, datetime('now', '-12 days'), datetime('now', '-12 days')),
+    (2, 9, 5.0, datetime('now', '-11 days'), datetime('now', '-11 days')),
+    (2, 16, 4.0, datetime('now', '-9 days'), datetime('now', '-9 days')),
+    (2, 41, 4.0, datetime('now', '-8 days'), datetime('now', '-8 days')),
+    (2, 42, 4.5, datetime('now', '-7 days'), datetime('now', '-7 days')),
+    (2, 10, 3.5, datetime('now', '-6 days'), datetime('now', '-6 days')),
+    (2, 44, 5.0, datetime('now', '-5 days'), datetime('now', '-5 days')),
     (2, 51, 4.5, datetime('now', '-10 days'), datetime('now', '-10 days')),
+
+    -- Bob ratings (user_id=3)
+    (3, 1, 4.5, datetime('now', '-18 days'), datetime('now', '-18 days')),
+    (3, 4, 5.0, datetime('now', '-17 days'), datetime('now', '-17 days')),
+    (3, 5, 4.5, datetime('now', '-16 days'), datetime('now', '-16 days')),
+    (3, 6, 4.5, datetime('now', '-15 days'), datetime('now', '-15 days')),
+    (3, 7, 3.5, datetime('now', '-14 days'), datetime('now', '-14 days')),
+    (3, 14, 5.0, datetime('now', '-13 days'), datetime('now', '-13 days')),
+    (3, 15, 4.5, datetime('now', '-12 days'), datetime('now', '-12 days')),
+    (3, 16, 4.5, datetime('now', '-11 days'), datetime('now', '-11 days')),
+    (3, 41, 3.5, datetime('now', '-10 days'), datetime('now', '-10 days')),
+    (3, 42, 5.0, datetime('now', '-9 days'), datetime('now', '-9 days')),
+    (3, 44, 4.0, datetime('now', '-7 days'), datetime('now', '-7 days')),
     (3, 53, 4.0, datetime('now', '-8 days'), datetime('now', '-8 days'));
 
 -- Insert reading statuses
