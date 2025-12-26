@@ -1,9 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export default defineConfig({
   testDir: './tests',
@@ -13,9 +8,6 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
 
-  // Global setup to reset database before all tests (skip in CI)
-  globalSetup: process.env.CI ? undefined : resolve(__dirname, './setup/globalSetup.ts'),
-
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
@@ -23,26 +15,50 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup currentUser',
+      testMatch: /global\.setup\.ts/,
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      dependencies: ['setup currentUser'],
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      dependencies: ['setup currentUser'],
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      dependencies: ['setup currentUser'],
     },
     {
       name: 'Mobile Chrome',
-      use: { ...devices['iPhone 12'] },
+      use: {
+        ...devices['iPhone 12'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      dependencies: ['setup currentUser'],
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      use: {
+        ...devices['iPhone 12'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      dependencies: ['setup currentUser'],
     },
   ],
 });

@@ -1,17 +1,17 @@
 {
     "compilerOptions": {
-        "types": ["node"],
+        "types": ["node", "@playwright/test"],
         "target": "ESNext",
-        "module": "CommonJS",
+        "module": "ESNext",
         "lib": ["ESNext", "DOM"],
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "Node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
-        "outDir": "./dist",
-        "rootDir": "./",
+        "noEmit": true,
         "baseUrl": "./"
-    }
+    },
+    "include": ["e2e/**/*"]
 }
