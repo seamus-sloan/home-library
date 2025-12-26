@@ -40,7 +40,6 @@ test("search bar shows results", async() => {
         
         // Wait for the response to complete first
         const books = await booksReq as Book[];
-        console.log("Books returned:", books);
         expect(books).not.toBeNull();
         expect(books).toBeDefined();
         expect(books.length).toBeGreaterThan(20);

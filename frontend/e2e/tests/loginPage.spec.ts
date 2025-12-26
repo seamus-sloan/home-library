@@ -55,7 +55,6 @@ test("selecting user navigates to home page", async() => {
 
         // Validate the endpoint was called
         const selectResponse = await selectUserRequest;
-        console.log(selectResponse);
         expect(selectResponse).toBeDefined();
 
         // Validate navigation to home page
@@ -67,8 +66,6 @@ test("selecting user navigates to home page", async() => {
             const stored = localStorage.getItem('currentUser');
             return stored ? JSON.parse(stored) : null;
         });
-
-        console.log(storedUser);
 
         expect(storedUser, "User should be stored in localStorage").toBeDefined();
         expect(storedUser?.id).toBe(testUser!.id);
