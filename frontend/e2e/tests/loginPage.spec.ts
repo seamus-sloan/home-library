@@ -1,9 +1,12 @@
 import test, { expect } from "@playwright/test";
-import type { User } from "../../src/contexts/UserContext";
+import type { User } from "../../src/types.ts";
 import LoginPage from "../pages/LoginPage";
 
 let loginPage: LoginPage;
 let users: User[] = [];
+
+// Clear storage state for login tests since we're testing the login flow
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.beforeEach(async({page}) => {
     loginPage = new LoginPage(page);
@@ -52,7 +55,6 @@ test("selecting user navigates to home page", async() => {
 
         // Validate the endpoint was called
         const selectResponse = await selectUserRequest;
-        console.log(selectResponse);
         expect(selectResponse).toBeDefined();
 
         // Validate navigation to home page

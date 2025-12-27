@@ -20,6 +20,7 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: '/',
+    cache: 'no-store', // Disable HTTP caching
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState
       const currentUserId = state.user?.currentUser?.id
@@ -28,6 +29,8 @@ export const api = createApi({
       }
       // Set content type
       headers.set('Content-Type', 'application/json')
+      // Disable caching
+      headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
 
       return headers
     },

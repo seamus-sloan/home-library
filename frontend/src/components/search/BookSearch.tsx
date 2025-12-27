@@ -34,7 +34,10 @@ export function BookSearch({
         resultsCount !== undefined &&
         totalCount !== undefined &&
         totalCount > 0 && (
-          <div className="mt-4 text-amber-300 text-sm">
+          <div
+            data-testid="search-results-info"
+            className="mt-4 text-amber-300 text-sm"
+          >
             Found {resultsCount} book{resultsCount !== 1 ? 's' : ''}
             {resultsCount !== totalCount && ` out of ${totalCount} total`}
           </div>

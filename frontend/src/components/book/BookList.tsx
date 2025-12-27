@@ -1,5 +1,7 @@
 import { BookOpenIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../../store/store'
 import { useScrollRestoration } from '../../hooks/useScrollRestoration'
 import { useGetBooksQuery } from '../../middleware/backend'
 import { BookSearch } from '../search/BookSearch'
@@ -7,6 +9,7 @@ import { BookCard } from './BookCard'
 import { BookFilter } from './BookFilter'
 
 export function BookList() {
+  const currentUser = useSelector((state: RootState) => state.user.currentUser)
   const { navigateWithScrollState } = useScrollRestoration()
   const [searchQuery, setSearchQuery] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -38,13 +41,20 @@ export function BookList() {
     return Array.from(genreSet).sort()
   }, [books])
 
-  // Get unique ratings from books
+  // Get unique ratings from books (current user's ratings)
   const ratings = useMemo(() => {
+    if (!currentUser) return []
     const ratingSet = new Set(
-      books.map(book => book.rating).filter(rating => rating !== null)
+      books
+        .flatMap(book =>
+          book.ratings
+            ?.filter(r => r.user_id === currentUser.id)
+            .map(r => r.rating)
+        )
+        .filter((rating): rating is number => rating !== null)
     )
     return Array.from(ratingSet).sort((a, b) => a - b)
-  }, [books])
+  }, [books, currentUser])
 
   const tags = useMemo(() => {
     const tagSet = new Set(
@@ -64,9 +74,14 @@ export function BookList() {
         }
       }
 
-      // Rating filter
-      if (selectedRating !== null && book.rating !== selectedRating) {
-        return false
+      // Rating filter - check if current user has rated the book with the selected rating
+      if (selectedRating !== null && currentUser) {
+        const currentUserRating = book.ratings?.find(
+          r => r.user_id === currentUser.id
+        )
+        if (!currentUserRating || currentUserRating.rating !== selectedRating) {
+          return false
+        }
       }
 
       // Tag filter
@@ -79,7 +94,7 @@ export function BookList() {
 
       return true
     })
-  }, [books, selectedGenre, selectedRating, selectedTag])
+  }, [books, currentUser, selectedGenre, selectedRating, selectedTag])
 
   const handleBookClick = (bookId: number) => {
     navigateWithScrollState(`/book/${bookId}`)
