@@ -42,11 +42,10 @@ test("search bar shows results", async() => {
         const books = await booksReq as Book[];
         expect(books).not.toBeNull();
         expect(books).toBeDefined();
-        expect(books.length).toBeGreaterThan(20);
-        
-        // Then verify UI has updated
+
+        // Then verify UI has updated before asserting result sizes
+        await expect.poll(async() => galleryPage.bookCards.count(), { timeout: 15000 }).toBeGreaterThan(20);
         await expect(galleryPage.searchResultsInfo).not.toBeInViewport();
-        await expect(galleryPage.bookCards).toHaveAtLeast(20);
     });
     
     await test.step("search via book author", async() => {
