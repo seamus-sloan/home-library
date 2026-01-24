@@ -1,5 +1,6 @@
 import { Locator, Page } from "@playwright/test";
-import { createFormField, createRatingField, FormField, RatingField } from "../utils/locators";
+import { createFormField, FormField } from "../utils/formFieldHelpers";
+import { createRatingField, RatingField } from "../utils/ratingHelpers";
 import BasePage from "./BasePage";
 
 export default class NewBookPage extends BasePage {
@@ -40,7 +41,7 @@ export default class NewBookPage extends BasePage {
         
         // Other Form Fields
         this.ratingField = createRatingField(
-            this.page.getByText('Rating0.5 Stars1 Star1.5')
+            this.page.locator('div', { has: this.page.getByText('Rating', { exact: true }) })
         );
         // TODO: These should be updated with more specific locators.
         this.genreField = createFormField(
