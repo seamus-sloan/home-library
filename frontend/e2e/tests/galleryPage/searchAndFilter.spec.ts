@@ -1,8 +1,8 @@
 import test, { expect } from "@playwright/test";
-import type { Book } from "../../../src/types.ts";
-import FilterDropdown from "../../components/FilterDropdown";
-import GalleryPage from "../../pages/GalleryPage";
-import "../../utils/assertions";
+import type { Book } from "../../../src/types.js";
+import FilterDropdown from "../../components/FilterDropdown.js";
+import GalleryPage from "../../pages/GalleryPage.js";
+import "../../utils/assertions.js";
 
 let galleryPage: GalleryPage;
 let filterDropdown: FilterDropdown;
