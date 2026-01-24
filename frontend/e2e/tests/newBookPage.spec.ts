@@ -72,11 +72,11 @@ test("validate new book page elements", async() => {
 });
 
 test("add a new book with valid details", async() => {
-    const bookTitle = `E2E Book ${Date.now()}`;
+    const bookTitle = `E2E Book ${Date.now() * Math.random() / 2}`;
     const bookAuthor = "E2E Author";
     const bookSeries = "E2E Series";
     const bookCoverImage = "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1719736668i/201116293.jpg";
-    const bookRating = 4; // out of 5
+    const bookRating = 4;
     let book: Book;
 
     await test.step("fill out form", async() => {
@@ -84,6 +84,7 @@ test("add a new book with valid details", async() => {
         await newBookPage.authorField.input.fill(bookAuthor);
         await newBookPage.seriesField.input.fill(bookSeries);
         await newBookPage.coverImageField.input.fill(bookCoverImage);
+        await newBookPage.ratingField.stars.nth((bookRating * 2) - 1).click();
     })
 
     await test.step("submit form", async() => {
