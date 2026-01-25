@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+import { createDropdownField, DropdownField } from "../utils/dropdownHelpers";
 import { createFormField, FormField } from "../utils/formFieldHelpers";
 import { createRatingField, RatingField } from "../utils/ratingHelpers";
 import BasePage from "./BasePage";
@@ -13,8 +14,8 @@ export default class NewBookPage extends BasePage {
     readonly coverImageField: FormField;
 
     readonly ratingField: RatingField;
-    readonly genreField: FormField;
-    readonly tagsField: FormField;
+    readonly genreField: DropdownField;
+    readonly tagsField: DropdownField;
 
     readonly cancelButton: Locator;
     readonly submitButton: Locator;
@@ -43,12 +44,11 @@ export default class NewBookPage extends BasePage {
         this.ratingField = createRatingField(
             this.page.locator('div', { has: this.page.getByText('Rating', { exact: true }) })
         );
-        // TODO: These should be updated with more specific locators.
-        this.genreField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Genres$/ })
+        this.genreField = createDropdownField(
+            this.page.locator('div').filter({ hasText: /^Genres/ })
         )
-        this.tagsField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Tags$/ })
+        this.tagsField = createDropdownField(
+            this.page.locator('div').filter({ hasText: /^Tags/ })
         )
 
         // Form Buttons

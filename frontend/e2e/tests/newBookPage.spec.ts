@@ -2,6 +2,7 @@ import test, { expect } from "@playwright/test";
 import { Book } from "../../src/types";
 import GalleryPage from "../pages/GalleryPage";
 import NewBookPage from "../pages/NewBookPage";
+import { selectDropdownOption } from "../utils/dropdownHelpers";
 
 let newBookPage: NewBookPage;
 let galleryPage: GalleryPage;
@@ -51,14 +52,14 @@ test("validate new book page elements", async() => {
     await newBookPage.ratingField.label.scrollIntoViewIfNeeded();
     await expect(newBookPage.ratingField.label).toBeInViewport();
 
-    await newBookPage.genreField.input.scrollIntoViewIfNeeded();
-    await expect(newBookPage.genreField.input).toBeInViewport();
+    await newBookPage.genreField.textInput.scrollIntoViewIfNeeded();
+    await expect(newBookPage.genreField.textInput).toBeInViewport();
 
     await newBookPage.genreField.label.scrollIntoViewIfNeeded();
     await expect(newBookPage.genreField.label).toBeInViewport();
 
-    await newBookPage.tagsField.input.scrollIntoViewIfNeeded();
-    await expect(newBookPage.tagsField.input).toBeInViewport();
+    await newBookPage.tagsField.textInput.scrollIntoViewIfNeeded();
+    await expect(newBookPage.tagsField.textInput).toBeInViewport();
 
     await newBookPage.tagsField.label.scrollIntoViewIfNeeded();
     await expect(newBookPage.tagsField.label).toBeInViewport();
@@ -76,7 +77,9 @@ test("add a new book with valid details", async() => {
     const bookAuthor = "E2E Author";
     const bookSeries = "E2E Series";
     const bookCoverImage = "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1719736668i/201116293.jpg";
-    const bookRating = 4;
+    const bookRating = 4; // This does not work with decimal values currently...
+    const bookGenre = "Philosophy";
+    const bookTags = "Favorite";
     let book: Book;
 
     await test.step("fill out form", async() => {
@@ -85,6 +88,8 @@ test("add a new book with valid details", async() => {
         await newBookPage.seriesField.input.fill(bookSeries);
         await newBookPage.coverImageField.input.fill(bookCoverImage);
         await newBookPage.ratingField.stars.nth((bookRating * 2) - 1).click();
+        await selectDropdownOption(newBookPage.genreField, bookGenre);
+        await selectDropdownOption(newBookPage.tagsField, bookTags);
     })
 
     await test.step("submit form", async() => {

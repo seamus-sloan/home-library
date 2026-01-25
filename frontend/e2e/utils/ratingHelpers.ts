@@ -10,7 +10,7 @@ export const createRatingField = (root: Locator): RatingField => {
     return {
         root,
         label: root.getByText('Rating', { exact: true }),
-        stars: root.getByRole('radio')
+        stars: root.locator('label').filter({ hasText: /Star/ })
     };
 };
 
