@@ -17,6 +17,7 @@ pub struct CreateBookRequest {
     pub cover_image: Option<String>,
     pub title: String,
     pub author: String,
+    pub rating: Option<f64>,
     pub tags: Option<Vec<i64>>,
     pub genres: Option<Vec<i64>>,
     pub series: Option<String>,

@@ -138,6 +138,23 @@ pub async fn create_book(
                 }
             }
 
+            // Handle rating if provided
+            if let Some(rating) = request.rating {
+                // Validate rating is between 0 and 5
+                if rating >= 0.0 && rating <= 5.0 && (rating * 2.0).fract() == 0.0 {
+                    debug!("Creating rating {} for book {}", rating, created_book.id);
+                    if let Err(e) =
+                        upsert_rating_query(&pool, user_id, created_book.id, rating).await
+                    {
+                        error!("Failed to create rating: {}", e);
+                        // Continue without failing the entire request
+                        warn!("Book created successfully but rating was not set");
+                    }
+                } else {
+                    warn!("Invalid rating value provided: {}, skipping", rating);
+                }
+            }
+
             match &created_book.cover_image {
                 Some(cover) if !cover.is_empty() => {
                     debug!("Cover image provided. Skipping default book cover.");
