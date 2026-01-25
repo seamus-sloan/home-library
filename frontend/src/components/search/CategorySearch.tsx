@@ -222,7 +222,10 @@ export function CategorySearch<T extends CategoryItem>({
 
       {/* Dropdown */}
       {isDropdownOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-64 overflow-y-auto">
+        <div
+          data-testid="category-search-dropdown"
+          className="absolute z-50 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-64 overflow-y-auto"
+        >
           {isLoading ? (
             <div className="px-3 py-2 text-amber-400 text-sm">
               Loading {categoryPlural}...

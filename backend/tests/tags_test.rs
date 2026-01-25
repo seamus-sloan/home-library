@@ -47,14 +47,8 @@ async fn test_get_tag_by_id() {
         .create_test_tag(user_id, "Test Tag", "#00ff00")
         .await;
 
-    let (status, body) = make_request(
-        &test_app,
-        "GET",
-        &format!("/tags/{}", tag_id),
-        user_id,
-        None,
-    )
-    .await;
+    let (status, body) =
+        make_request(&test_app, "GET", &format!("/tags/{tag_id}"), user_id, None).await;
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["id"], tag_id);
@@ -91,7 +85,7 @@ async fn test_update_tag_basic() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/tags/{}", tag_id),
+        &format!("/tags/{tag_id}"),
         user_id,
         Some(update_data),
     )

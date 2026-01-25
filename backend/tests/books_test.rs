@@ -78,7 +78,7 @@ async fn test_create_book_with_tags_and_genres() {
     let (details_status, details_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -104,7 +104,7 @@ async fn test_get_book_by_id() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -148,7 +148,7 @@ async fn test_update_book_basic() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -194,7 +194,7 @@ async fn test_update_book_tags_and_genres() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -309,7 +309,7 @@ async fn test_rating_update_and_clear() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -416,7 +416,7 @@ async fn test_update_book_bad_request_invalid_json() {
     let (status, _body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(invalid_data),
     )
@@ -592,7 +592,7 @@ async fn test_delete_book_basic() {
     let (status, _body) = make_request(
         &test_app,
         "DELETE",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -604,7 +604,7 @@ async fn test_delete_book_basic() {
     let (status, _body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -637,7 +637,7 @@ async fn test_delete_book_with_tags_and_genres() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -651,7 +651,7 @@ async fn test_delete_book_with_tags_and_genres() {
     let (status, _body) = make_request(
         &test_app,
         "DELETE",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -663,7 +663,7 @@ async fn test_delete_book_with_tags_and_genres() {
     let (status, _body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -711,7 +711,7 @@ async fn test_delete_book_with_journals() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data1),
     )
@@ -721,7 +721,7 @@ async fn test_delete_book_with_journals() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data2),
     )
@@ -732,7 +732,7 @@ async fn test_delete_book_with_journals() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -745,7 +745,7 @@ async fn test_delete_book_with_journals() {
     let (status, _body) = make_request(
         &test_app,
         "DELETE",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -757,7 +757,7 @@ async fn test_delete_book_with_journals() {
     let (status, _body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -769,7 +769,7 @@ async fn test_delete_book_with_journals() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         None,
     )
@@ -821,7 +821,7 @@ async fn test_delete_book_complex_scenario() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data),
     )
@@ -832,7 +832,7 @@ async fn test_delete_book_complex_scenario() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -847,7 +847,7 @@ async fn test_delete_book_complex_scenario() {
     let (status, _body) = make_request(
         &test_app,
         "DELETE",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -859,7 +859,7 @@ async fn test_delete_book_complex_scenario() {
     let (status, _body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )

@@ -1,6 +1,5 @@
 use axum::{body::Body, extract::Request, http::StatusCode};
 use http_body_util::BodyExt;
-use serde_json;
 use tower::ServiceExt;
 
 use crate::common::TestApp;

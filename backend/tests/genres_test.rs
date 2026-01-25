@@ -51,7 +51,7 @@ async fn test_get_genre_by_id() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/genres/{}", genre_id),
+        &format!("/genres/{genre_id}"),
         user_id,
         None,
     )
@@ -92,7 +92,7 @@ async fn test_update_genre_basic() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/genres/{}", genre_id),
+        &format!("/genres/{genre_id}"),
         user_id,
         Some(update_data),
     )

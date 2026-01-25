@@ -1,0 +1,152 @@
+import test, { expect } from "@playwright/test";
+import { Book } from "../../src/types";
+import GalleryPage from "../pages/GalleryPage";
+import NewBookPage from "../pages/NewBookPage";
+import { selectDropdownOption } from "../utils/dropdownHelpers";
+
+let newBookPage: NewBookPage;
+let galleryPage: GalleryPage;
+
+test.beforeEach(async({ page }) => {
+    galleryPage = new GalleryPage(page);
+    await galleryPage.goto();
+    await galleryPage.headerBar.addBookButton.click();
+    newBookPage = new NewBookPage(page);
+});
+
+test("validate new book page elements", async() => {
+    // The scrolling here is a bit egregious, but simplifies the guessing for mobile tests
+    await newBookPage.addNewBookHeader.scrollIntoViewIfNeeded();
+    await expect(newBookPage.addNewBookHeader).toBeInViewport();
+
+    await newBookPage.goBackButton.scrollIntoViewIfNeeded();
+    await expect(newBookPage.goBackButton).toBeInViewport();
+
+    await newBookPage.bookTitleField.input.scrollIntoViewIfNeeded();
+    await expect(newBookPage.bookTitleField.input).toBeInViewport();
+
+    await newBookPage.bookTitleField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.bookTitleField.label).toBeInViewport();
+
+    await newBookPage.authorField.input.scrollIntoViewIfNeeded();
+    await expect(newBookPage.authorField.input).toBeInViewport();
+
+    await newBookPage.authorField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.authorField.label).toBeInViewport();
+
+    await newBookPage.seriesField.input.scrollIntoViewIfNeeded();
+    await expect(newBookPage.seriesField.input).toBeInViewport();
+
+    await newBookPage.seriesField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.seriesField.label).toBeInViewport();
+
+    await newBookPage.coverImageField.input.scrollIntoViewIfNeeded();
+    await expect(newBookPage.coverImageField.input).toBeInViewport();
+
+    await newBookPage.coverImageField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.coverImageField.label).toBeInViewport();
+
+    await newBookPage.ratingField.stars.first().scrollIntoViewIfNeeded();
+    await expect(newBookPage.ratingField.stars).toHaveCount(10);
+
+    await newBookPage.ratingField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.ratingField.label).toBeInViewport();
+
+    await newBookPage.genreField.textInput.scrollIntoViewIfNeeded();
+    await expect(newBookPage.genreField.textInput).toBeInViewport();
+
+    await newBookPage.genreField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.genreField.label).toBeInViewport();
+
+    await newBookPage.tagsField.textInput.scrollIntoViewIfNeeded();
+    await expect(newBookPage.tagsField.textInput).toBeInViewport();
+
+    await newBookPage.tagsField.label.scrollIntoViewIfNeeded();
+    await expect(newBookPage.tagsField.label).toBeInViewport();
+
+    await newBookPage.cancelButton.scrollIntoViewIfNeeded();
+    await expect(newBookPage.cancelButton).toBeInViewport();
+
+    await newBookPage.submitButton.scrollIntoViewIfNeeded();
+    await expect(newBookPage.submitButton).toBeInViewport();
+
+});
+
+test("add a new book with valid details", async() => {
+    const bookTitle = `E2E Book ${Date.now() * Math.random() / 2}`;
+    const bookAuthor = "E2E Author";
+    const bookSeries = "E2E Series";
+    const bookCoverImage = "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1719736668i/201116293.jpg";
+    const bookRating = 4; // This does not work with decimal values currently...
+    const bookGenre = "Philosophy";
+    const bookTags = "Favorite";
+    let book: Book;
+
+    await test.step("fill out form", async() => {
+        await newBookPage.bookTitleField.input.fill(bookTitle);
+        await newBookPage.authorField.input.fill(bookAuthor);
+        await newBookPage.seriesField.input.fill(bookSeries);
+        await newBookPage.coverImageField.input.fill(bookCoverImage);
+        await newBookPage.ratingField.stars.nth((bookRating * 2) - 1).click();
+        await selectDropdownOption(newBookPage.genreField, bookGenre);
+        await selectDropdownOption(newBookPage.tagsField, bookTags);
+    })
+
+    await test.step("submit form", async() => {
+        const addBookResponse = newBookPage.waitForResponseStatus(/\/books$/, { method: "POST", returnJson: true, timeout: 15000 });
+        await newBookPage.submitButton.click();
+        book = await addBookResponse;
+        expect(book).toBeDefined();
+        expect(book.title).toBe(bookTitle);
+        expect(book.author).toBe(bookAuthor);
+        expect(book.series).toBe(bookSeries);
+        expect(book.cover_image).toBe(bookCoverImage);
+    })
+
+    await test.step("validate navigation & book in gallery", async() => {
+        await newBookPage.page.waitForURL("/");
+
+        const addedBookCard = await galleryPage.getBookCard(book);
+        await expect(addedBookCard).toBeVisible();
+    });
+
+    // TODO: Validate book details page
+});
+
+test("add a new book with missing fields", async() => {
+    await test.step("missing title error", async () => {
+        await newBookPage.authorField.input.fill("E2E Author");
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.bookTitleField.error).toHaveText("Title is required");
+    });
+
+    await test.step("missing author error", async () => {
+        await newBookPage.authorField.input.clear();
+        await newBookPage.bookTitleField.input.fill("E2E Book");
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.authorField.error).toHaveText("Author is required");
+    });
+
+    await test.step("both fields missing", async() => {
+        await newBookPage.bookTitleField.input.clear();
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.bookTitleField.error).toHaveText("Title is required");
+        await expect(newBookPage.authorField.error).toHaveText("Author is required");
+    });
+});
+
+test("cancel & back buttons", async() => {
+    await test.step("cancel button", async() => {
+        await newBookPage.cancelButton.click();
+        await newBookPage.page.waitForURL("/");
+    });
+
+    await test.step("re-open new book page", async() => {
+        await galleryPage.headerBar.addBookButton.click();
+    });
+
+    await test.step("go back button", async() => {
+        await newBookPage.goBackButton.click();
+        await newBookPage.page.waitForURL("/");
+    });
+});
