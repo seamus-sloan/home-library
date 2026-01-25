@@ -50,7 +50,7 @@ async fn test_get_tag_by_id() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/tags/{}", tag_id),
+        &format!("/tags/{tag_id}"),
         user_id,
         None,
     )
@@ -91,7 +91,7 @@ async fn test_update_tag_basic() {
     let (status, body) = make_request(
         &test_app,
         "PUT",
-        &format!("/tags/{}", tag_id),
+        &format!("/tags/{tag_id}"),
         user_id,
         Some(update_data),
     )

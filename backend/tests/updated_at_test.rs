@@ -34,7 +34,7 @@ async fn test_books_updated_at_on_update() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -59,7 +59,7 @@ async fn test_books_updated_at_on_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -94,7 +94,7 @@ async fn test_books_updated_at_on_tag_update() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -116,7 +116,7 @@ async fn test_books_updated_at_on_tag_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -145,7 +145,7 @@ async fn test_books_updated_at_on_genre_update() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -167,7 +167,7 @@ async fn test_books_updated_at_on_genre_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -196,7 +196,7 @@ async fn test_books_updated_at_on_rating_update() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -214,7 +214,7 @@ async fn test_books_updated_at_on_rating_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -255,7 +255,7 @@ async fn test_users_updated_at_on_update() {
     let (status, _) = make_request(
         &test_app,
         "PUT",
-        &format!("/users/{}", user_id),
+        &format!("/users/{user_id}"),
         user_id,
         Some(update_data),
     )
@@ -313,7 +313,7 @@ async fn test_tags_updated_at_on_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/tags/{}", tag_id),
+        &format!("/tags/{tag_id}"),
         user_id,
         Some(update_data),
     )
@@ -365,7 +365,7 @@ async fn test_genres_updated_at_on_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/genres/{}", genre_id),
+        &format!("/genres/{genre_id}"),
         user_id,
         Some(update_data),
     )
@@ -405,7 +405,7 @@ async fn test_journal_entries_updated_at_on_update() {
     let (status, journal_body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data),
     )
@@ -427,7 +427,7 @@ async fn test_journal_entries_updated_at_on_update() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}/journals/{}", book_id, journal_id),
+        &format!("/books/{book_id}/journals/{journal_id}"),
         user_id,
         Some(update_data),
     )
@@ -515,7 +515,7 @@ async fn test_multiple_updates_keep_updating_updated_at() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -533,7 +533,7 @@ async fn test_multiple_updates_keep_updating_updated_at() {
     let (status, update1_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update1_data),
     )
@@ -551,7 +551,7 @@ async fn test_multiple_updates_keep_updating_updated_at() {
     let (status, update2_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update2_data),
     )
@@ -586,7 +586,7 @@ async fn test_partial_updates_still_update_updated_at() {
     let (status, initial_body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         None,
     )
@@ -604,7 +604,7 @@ async fn test_partial_updates_still_update_updated_at() {
     let (status, updated_body) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )
@@ -666,7 +666,7 @@ async fn test_book_tag_genre_updates_do_not_update_tag_genre_timestamps() {
     let (status, _) = make_request(
         &test_app,
         "PUT",
-        &format!("/books/{}", book_id),
+        &format!("/books/{book_id}"),
         user_id,
         Some(update_data),
     )

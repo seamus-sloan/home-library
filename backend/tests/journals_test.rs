@@ -41,7 +41,7 @@ async fn test_get_book_journals_empty() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         None,
     )
@@ -69,7 +69,7 @@ async fn test_create_book_journal_entry() {
     let (status, body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data),
     )
@@ -112,7 +112,7 @@ async fn test_get_book_journals_with_data() {
     let (status1, body1) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal1_data),
     )
@@ -122,7 +122,7 @@ async fn test_get_book_journals_with_data() {
     let (status2, body2) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal2_data),
     )
@@ -133,7 +133,7 @@ async fn test_get_book_journals_with_data() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         None,
     )
@@ -193,7 +193,7 @@ async fn test_get_all_journals_with_data() {
     let (status1, _) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book1_id),
+        &format!("/books/{book1_id}/journals"),
         user_id,
         Some(journal1_data),
     )
@@ -203,7 +203,7 @@ async fn test_get_all_journals_with_data() {
     let (status2, _) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book2_id),
+        &format!("/books/{book2_id}/journals"),
         user_id,
         Some(journal2_data),
     )
@@ -253,7 +253,7 @@ async fn test_get_journal_by_id_found() {
     let (status, body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(journal_data),
     )
@@ -266,7 +266,7 @@ async fn test_get_journal_by_id_found() {
     let (status, body) = make_request(
         &test_app,
         "GET",
-        &format!("/journals/{}", journal_id),
+        &format!("/journals/{journal_id}"),
         user_id,
         None,
     )
@@ -355,7 +355,7 @@ async fn test_create_book_journal_validation_missing_title() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(invalid_data),
     )
@@ -381,7 +381,7 @@ async fn test_create_book_journal_validation_missing_content() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(invalid_data),
     )
@@ -405,7 +405,7 @@ async fn test_create_book_journal_bad_request_empty_json() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(empty_data),
     )
@@ -432,7 +432,7 @@ async fn test_create_book_journal_bad_request_invalid_json_field() {
     let (status, _body) = make_request(
         &test_app,
         "POST",
-        &format!("/books/{}/journals", book_id),
+        &format!("/books/{book_id}/journals"),
         user_id,
         Some(invalid_data),
     )
@@ -456,7 +456,7 @@ async fn test_create_book_journal_bad_request_malformed_json_syntax() {
 
     let request = Request::builder()
         .method("POST")
-        .uri(&format!("/books/{}/journals", book_id))
+        .uri(format!("/books/{book_id}/journals"))
         .header("currentUserId", user_id.to_string())
         .header("content-type", "application/json")
         .body(Body::from(
