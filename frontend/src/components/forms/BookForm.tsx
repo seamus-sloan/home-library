@@ -51,29 +51,29 @@ export function BookForm({
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>(
     mode === 'edit' && book && 'tags' in book
-      ? book.tags.map(
-          tag =>
-            ({
-              ...tag,
-              user_id: book.user_id,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }) as Tag
-        )
+      ? book.tags!.map(
+        tag =>
+          ({
+            ...tag,
+            user_id: book.user_id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }) as Tag
+      )
       : []
   )
 
   const [selectedGenres, setSelectedGenres] = useState<Genre[]>(
     mode === 'edit' && book && 'genres' in book
       ? (book.genres || []).map(
-          genre =>
-            ({
-              ...genre,
-              user_id: book.user_id,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }) as Genre
-        )
+        genre =>
+          ({
+            ...genre,
+            user_id: book.user_id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }) as Genre
+      )
       : []
   )
 
@@ -227,7 +227,7 @@ export function BookForm({
     <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Title */}
-        <div>
+        <div data-testid="book-title-field">
           <label
             htmlFor="title"
             className="block text-sm font-medium text-amber-200 mb-2"
@@ -240,18 +240,17 @@ export function BookForm({
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${
-              errors.title ? 'border-red-500' : 'border-zinc-700'
-            }`}
+            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${errors.title ? 'border-red-500' : 'border-zinc-700'
+              }`}
             placeholder="Enter book title"
           />
           {errors.title && (
-            <p className="mt-1 text-sm text-red-400">{errors.title}</p>
+            <p className="mt-1 text-sm text-red-400" data-testid="form-error">{errors.title}</p>
           )}
         </div>
 
         {/* Author */}
-        <div>
+        <div data-testid="author-field">
           <label
             htmlFor="author"
             className="block text-sm font-medium text-amber-200 mb-2"
@@ -264,19 +263,18 @@ export function BookForm({
             name="author"
             value={formData.author}
             onChange={handleChange}
-            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${
-              errors.author ? 'border-red-500' : 'border-zinc-700'
-            }`}
+            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${errors.author ? 'border-red-500' : 'border-zinc-700'
+              }`}
             placeholder="Enter author name"
           />
           {errors.author && (
-            <p className="mt-1 text-sm text-red-400">{errors.author}</p>
+            <p className="mt-1 text-sm text-red-400" data-testid="form-error">{errors.author}</p>
           )}
         </div>
       </div>
 
       {/* Series */}
-      <div>
+      <div data-testid="series-field">
         <label
           htmlFor="series"
           className="block text-sm font-medium text-amber-200 mb-2"
@@ -295,7 +293,7 @@ export function BookForm({
       </div>
 
       {/* Cover Image */}
-      <div>
+      <div data-testid="cover-image-field">
         <label
           htmlFor="cover_image"
           className="block text-sm font-medium text-amber-200 mb-2"
@@ -314,7 +312,7 @@ export function BookForm({
       </div>
 
       {/* Rating */}
-      <div>
+      <div data-testid="rating-field">
         <label className="block text-sm font-medium text-amber-200 mb-2">
           Rating
         </label>
@@ -327,7 +325,7 @@ export function BookForm({
       </div>
 
       {/* Genres */}
-      <div>
+      <div data-testid="genres-field">
         <label className="block text-sm font-medium text-amber-200 mb-2">
           Genres
         </label>
@@ -340,7 +338,7 @@ export function BookForm({
       </div>
 
       {/* Tags */}
-      <div>
+      <div data-testid="tags-field">
         <label className="block text-sm font-medium text-amber-200 mb-2">
           Tags
         </label>

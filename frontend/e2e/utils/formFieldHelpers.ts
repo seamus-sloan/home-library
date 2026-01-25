@@ -4,12 +4,14 @@ export type FormField = {
     root: Locator;
     label: Locator;
     input: Locator;
+    error: Locator;
 }
 
 export const createFormField = (root: Locator): FormField => {
     return {
         root,
         label: root.locator('label'),
-        input: root.getByRole('textbox')
+        input: root.getByRole('textbox'),
+        error: root.getByTestId('form-error')
     };
 };

@@ -28,27 +28,27 @@ export default class NewBookPage extends BasePage {
 
         // Form Text Fields
         this.bookTitleField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Book Title \*$/ })
+            this.page.getByTestId('book-title-field')
         )
         this.authorField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Author \*$/ })
+            this.page.getByTestId('author-field')
         )
         this.seriesField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Series$/ })
+            this.page.getByTestId('series-field')
         )
         this.coverImageField = createFormField(
-            this.page.locator('div').filter({ hasText: /^Cover Image URL$/ })
+            this.page.getByTestId('cover-image-field')
         )
         
         // Other Form Fields
         this.ratingField = createRatingField(
-            this.page.locator('div', { has: this.page.getByText('Rating', { exact: true }) })
+            this.page.getByTestId('rating-field')
         );
         this.genreField = createDropdownField(
-            this.page.locator('div').filter({ hasText: /^Genres/ })
+            this.page.getByTestId('genres-field')
         )
         this.tagsField = createDropdownField(
-            this.page.locator('div').filter({ hasText: /^Tags/ })
+            this.page.getByTestId('tags-field')
         )
 
         // Form Buttons

@@ -96,6 +96,11 @@ test("add a new book with valid details", async() => {
         const addBookResponse = newBookPage.waitForResponseStatus(/\/books$/, { method: "POST", returnJson: true, timeout: 15000 });
         await newBookPage.submitButton.click();
         book = await addBookResponse;
+        expect(book).toBeDefined();
+        expect(book.title).toBe(bookTitle);
+        expect(book.author).toBe(bookAuthor);
+        expect(book.series).toBe(bookSeries);
+        expect(book.cover_image).toBe(bookCoverImage);
     })
 
     await test.step("validate navigation & book in gallery", async() => {
@@ -104,6 +109,44 @@ test("add a new book with valid details", async() => {
         const addedBookCard = await galleryPage.getBookCard(book);
         await expect(addedBookCard).toBeVisible();
     });
+
+    // TODO: Validate book details page
 });
 
-test("add a new book with missing fields", async() => {});
+test("add a new book with missing fields", async() => {
+    await test.step("missing title error", async () => {
+        await newBookPage.authorField.input.fill("E2E Author");
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.bookTitleField.error).toHaveText("Title is required");
+    });
+
+    await test.step("missing author error", async () => {
+        await newBookPage.authorField.input.clear();
+        await newBookPage.bookTitleField.input.fill("E2E Book");
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.authorField.error).toHaveText("Author is required");
+    });
+
+    await test.step("both fields missing", async() => {
+        await newBookPage.bookTitleField.input.clear();
+        await newBookPage.submitButton.click();
+        await expect(newBookPage.bookTitleField.error).toHaveText("Title is required");
+        await expect(newBookPage.authorField.error).toHaveText("Author is required");
+    });
+});
+
+test("cancel & back buttons", async() => {
+    await test.step("cancel button", async() => {
+        await newBookPage.cancelButton.click();
+        await newBookPage.page.waitForURL("/");
+    });
+
+    await test.step("re-open new book page", async() => {
+        await galleryPage.headerBar.addBookButton.click();
+    });
+
+    await test.step("go back button", async() => {
+        await newBookPage.goBackButton.click();
+        await newBookPage.page.waitForURL("/");
+    });
+});
