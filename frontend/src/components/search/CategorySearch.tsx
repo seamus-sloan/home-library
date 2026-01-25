@@ -213,15 +213,19 @@ export function CategorySearch<T extends CategoryItem>({
           />
           <ChevronDownIcon
             size={16}
-            className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''
-              }`}
+            className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-400 transition-transform ${
+              isDropdownOpen ? 'rotate-180' : ''
+            }`}
           />
         </div>
       </div>
 
       {/* Dropdown */}
       {isDropdownOpen && (
-        <div data-testid="category-search-dropdown" className="absolute z-50 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-64 overflow-y-auto">
+        <div
+          data-testid="category-search-dropdown"
+          className="absolute z-50 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg max-h-64 overflow-y-auto"
+        >
           {isLoading ? (
             <div className="px-3 py-2 text-amber-400 text-sm">
               Loading {categoryPlural}...
@@ -244,10 +248,11 @@ export function CategorySearch<T extends CategoryItem>({
                         onClick={() => {
                           setNewItemColor(color)
                         }}
-                        className={`w-8 h-8 rounded-full border-3 transition-all hover:scale-110 ${newItemColor === color
+                        className={`w-8 h-8 rounded-full border-3 transition-all hover:scale-110 ${
+                          newItemColor === color
                             ? 'border-amber-400 shadow-lg ring-2 ring-amber-400'
                             : 'border-gray-400 hover:border-gray-300'
-                          }`}
+                        }`}
                         style={{ backgroundColor: color }}
                         title={`Select ${color}`}
                       />
