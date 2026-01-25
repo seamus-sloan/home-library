@@ -52,28 +52,28 @@ export function BookForm({
   const [selectedTags, setSelectedTags] = useState<Tag[]>(
     mode === 'edit' && book && 'tags' in book
       ? book.tags!.map(
-        tag =>
-          ({
-            ...tag,
-            user_id: book.user_id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }) as Tag
-      )
+          tag =>
+            ({
+              ...tag,
+              user_id: book.user_id,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }) as Tag
+        )
       : []
   )
 
   const [selectedGenres, setSelectedGenres] = useState<Genre[]>(
     mode === 'edit' && book && 'genres' in book
       ? (book.genres || []).map(
-        genre =>
-          ({
-            ...genre,
-            user_id: book.user_id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }) as Genre
-      )
+          genre =>
+            ({
+              ...genre,
+              user_id: book.user_id,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }) as Genre
+        )
       : []
   )
 
@@ -240,12 +240,15 @@ export function BookForm({
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${errors.title ? 'border-red-500' : 'border-zinc-700'
-              }`}
+            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${
+              errors.title ? 'border-red-500' : 'border-zinc-700'
+            }`}
             placeholder="Enter book title"
           />
           {errors.title && (
-            <p className="mt-1 text-sm text-red-400" data-testid="form-error">{errors.title}</p>
+            <p className="mt-1 text-sm text-red-400" data-testid="form-error">
+              {errors.title}
+            </p>
           )}
         </div>
 
@@ -263,12 +266,15 @@ export function BookForm({
             name="author"
             value={formData.author}
             onChange={handleChange}
-            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${errors.author ? 'border-red-500' : 'border-zinc-700'
-              }`}
+            className={`w-full px-4 py-3 bg-zinc-800/50 border rounded-lg text-amber-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition-all ${
+              errors.author ? 'border-red-500' : 'border-zinc-700'
+            }`}
             placeholder="Enter author name"
           />
           {errors.author && (
-            <p className="mt-1 text-sm text-red-400" data-testid="form-error">{errors.author}</p>
+            <p className="mt-1 text-sm text-red-400" data-testid="form-error">
+              {errors.author}
+            </p>
           )}
         </div>
       </div>
