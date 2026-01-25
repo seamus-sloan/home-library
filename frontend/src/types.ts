@@ -6,8 +6,6 @@ export interface Book {
   author: string
   rating: number | null
   series: string | null
-  genres: string[] | null
-  tags: string[] | null
   created_at: string
   updated_at: string
 }
